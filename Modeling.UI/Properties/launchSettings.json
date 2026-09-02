@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Modeling.UI (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "Modeling.UI (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
