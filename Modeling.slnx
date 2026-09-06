@@ -4,6 +4,7 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
+  <Project Path="Modeling.Core/Modeling.Core.csproj" Id="ea3aee23-47df-4868-83ec-06c2e296b870" />
   <Project Path="Modeling.Models/Modeling.Models.csproj">
     <Platform Solution="Debug|x64" Project="x64" />
     <Platform Solution="Debug|x86" Project="x86" />

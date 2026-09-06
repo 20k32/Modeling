@@ -1,41 +1,40 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
+using Modeling.Core.Dispatching;
+using Modeling.Core.Logging;
+using Modeling.PlatformHelpers.Windowing;
 using Modeling.UI.DependencyInjection;
-using Modeling.ViewModels.DependencyInjection;
-using System;
-
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
+using System.Threading;
 
 namespace Modeling.UI
 {
-    /// <summary>
-    /// Provides application-specific behavior to supplement the default Application class.
-    /// </summary>
     public partial class App : Application
     {
         private Window? _window;
 
-        /// <summary>
-        /// Initializes the singleton application object.  This is the first line of authored code
-        /// executed, and as such is the logical equivalent of main() or WinMain().
-        /// </summary>
-        public App()
-        {
-            InitializeComponent();
-        }
-
-        /// <summary>
-        /// Invoked when the application is launched.
-        /// </summary>
-        /// <param name="args">Details about the launch request and process.</param>
-        protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
+        static App()
         {
             Ioc.Default.ConfigureContainer();
 
-            _window = new MainWindow();
-            _window.Activate();
+            Ioc.Default.GetRequiredService<IUserInterfaceThreadContext>().Initialize(SynchronizationContext.Current);
+        }
+
+        public App()
+        {
+            InitializeComponent();
+
+            Logger.Information("Application initialized");
+        }
+
+        protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
+        {
+            var windowHelper = Ioc.Default.GetRequiredService<IWindowHelper>();
+
+            windowHelper.MainWindow = new MainWindow();
+
+            windowHelper.ActivateApplicationWindow();
+
+            Logger.Information("Activated application window");
         }
     }
 }

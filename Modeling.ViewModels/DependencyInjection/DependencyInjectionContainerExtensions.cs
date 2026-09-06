@@ -5,7 +5,7 @@ namespace Modeling.ViewModels.DependencyInjection
 {
     public static class DependencyInjectionContainerExtensions
     {
-        public static IServiceCollection RegisterViewModelServices(this ServiceCollection services)
-            => services.RegisterModelsServices();
+        public static IServiceCollection RegisterViewModelServices(this IServiceCollection services)
+            => services.AddSingleton<DrawingViewModel>().RegisterModelsServices();
     }
 }

@@ -5,7 +5,7 @@ namespace Modeling.PlatformHelpers.DependencyInjection
 {
     public static class DependencyInjectionContainerExtensions
     {
-        public static IServiceCollection RegisterPlatformHelpers(this ServiceCollection services)
+        public static IServiceCollection RegisterPlatformHelpers(this IServiceCollection services)
             => services.AddSingleton<IWindowHelper, WindowHelper>();
     }
 }
