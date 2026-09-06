@@ -6,5 +6,6 @@ namespace Modeling.PlatformHelpers.Windowing
     {
         public Window MainWindow { get; set; }
         public void CenterMainWindow();
+        public void ActivateApplicationWindow();
     }
 }

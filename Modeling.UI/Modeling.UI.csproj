@@ -15,6 +15,10 @@
         <Nullable>enable</Nullable>
         <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     </PropertyGroup>
+    <ItemGroup>
+      <None Remove="Controls\Canvas\Win2DCanvas.xaml" />
+      <None Remove="Controls\Root\MainPage.xaml" />
+    </ItemGroup>
 
     <ItemGroup>
         <Content Include="Assets\SplashScreen.scale-200.png" />
@@ -44,10 +48,21 @@
         <PackageReference Include="Microsoft.Graphics.Win2D" Version="1.4.0" />
         <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.2705" />
         <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.4.0" />
+        <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="3.0.1" />
         <PackageReference Include="WinUIEx" Version="2.9.3" />
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\Modeling.ViewModels\Modeling.ViewModels.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+      <Page Update="Controls\Canvas\Win2DCanvas.xaml">
+        <Generator>MSBuild:Compile</Generator>
+      </Page>
+    </ItemGroup>
+    <ItemGroup>
+      <Page Update="Controls\Root\MainPage.xaml">
+        <Generator>MSBuild:Compile</Generator>
+      </Page>
     </ItemGroup>
 
     <!--

@@ -5,28 +5,33 @@ namespace Modeling.PlatformHelpers.Windowing
 {
     sealed class WindowHelper : IWindowHelper
     {
-        private Window mainWindow;
+        private Window _mainWindow;
         public Window MainWindow
         {
-            get => mainWindow;
+            get => _mainWindow;
             set
             {
-                if (mainWindow is not null)
+                if (_mainWindow is not null)
                 {
-                    throw new ArgumentOutOfRangeException(string.Format(Constants.ArgumentNotNullExceptionFormat, mainWindow));
+                    throw new ArgumentOutOfRangeException(string.Format(Constants.ArgumentNotNullExceptionFormat, _mainWindow));
                 }
                 else if (value is null)
                 {
-                    throw new ArgumentNullException(string.Format(Constants.ArgumentNullExceptionFormat, mainWindow));
+                    throw new ArgumentNullException(string.Format(Constants.ArgumentNullExceptionFormat, _mainWindow));
                 }
                 else
                 {
-                    mainWindow = value;
+                    _mainWindow = value;
                 }
             }
         }
 
-        private bool CanChangeMainWindow => mainWindow is not null;
+        private bool CanChangeMainWindow => _mainWindow is not null;
+
+        public void ActivateApplicationWindow()
+        {
+            MainWindow?.Activate();
+        }
 
         public void CenterMainWindow()
         {
