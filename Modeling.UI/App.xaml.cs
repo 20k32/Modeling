@@ -10,8 +10,6 @@ namespace Modeling.UI
 {
     public partial class App : Application
     {
-        private Window? _window;
-
         static App()
         {
             Ioc.Default.ConfigureContainer();
@@ -32,6 +30,7 @@ namespace Modeling.UI
 
             windowHelper.MainWindow = new MainWindow();
 
+            windowHelper.CenterMainWindow();
             windowHelper.ActivateApplicationWindow();
 
             Logger.Information("Activated application window");

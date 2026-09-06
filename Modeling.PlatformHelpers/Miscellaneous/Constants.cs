@@ -1,4 +1,4 @@
-﻿namespace Modeling.PlatformHelpers
+﻿namespace Modeling.PlatformHelpers.Miscellaneous
 {
     static class Constants
     {

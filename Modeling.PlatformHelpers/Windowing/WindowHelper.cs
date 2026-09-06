@@ -1,5 +1,11 @@
-﻿using Microsoft.UI.Xaml;
+﻿using CommunityToolkit.Mvvm.DependencyInjection;
+using Microsoft.UI.Xaml;
+using Modeling.Core.Constants;
+using Modeling.PlatformHelpers.Miscellaneous;
+using Modeling.PlatformHelpers.Screens;
 using System;
+using System.Linq;
+using Windows.Graphics;
 
 namespace Modeling.PlatformHelpers.Windowing
 {
@@ -37,7 +43,19 @@ namespace Modeling.PlatformHelpers.Windowing
         {
             if (CanChangeMainWindow)
             {
+                var primaryScreenLocation = Ioc.Default.GetService<IScreenListener>()
+                    .Locations.First(location => location.IsPrimary);
 
+                var centerX = (int)(primaryScreenLocation.ScaledSize.Width - ApplicationWindowConstants.DesignWidth) / 2;
+                var centerY = (int)(primaryScreenLocation.ScaledSize.Height - ApplicationWindowConstants.DesignHeight) / 2;
+
+                var desiredWindowBounds = new RectInt32(
+                    _X: centerX,
+                    _Y: centerY,
+                    _Width: ApplicationWindowConstants.DesignWidth,
+                    _Height: ApplicationWindowConstants.DesignHeight);
+
+                MainWindow.AppWindow.MoveAndResize(desiredWindowBounds);
             }
         }
     }
