@@ -11,7 +11,7 @@ using System;
 using System.Collections.Concurrent;
 
 
-namespace Modeling.UI.Controls.Canvas
+namespace Modeling.UI.Resources.Controls.Canvas
 {
     public sealed partial class Win2DCanvas : UserControl
     {

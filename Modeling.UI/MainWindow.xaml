@@ -5,9 +5,15 @@
                   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                   xmlns:local="using:Modeling.UI"
                   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-                  xmlns:rootControls="using:Modeling.UI.Controls.Root"
+                  xmlns:media="using:CommunityToolkit.WinUI.Media"
+                  xmlns:rootControls="using:Modeling.UI.Resources.Controls.Root"
                   xmlns:winUiEx="using:WinUIEx"
                   Title="Modeling"
                   mc:Ignorable="d">
+
+    <Window.SystemBackdrop>
+        <DesktopAcrylicBackdrop />
+    </Window.SystemBackdrop>
+
     <rootControls:MainPage />
 </winUiEx:WindowEx>

@@ -14,10 +14,13 @@
         <EnableMsixTooling>true</EnableMsixTooling>
         <Nullable>enable</Nullable>
         <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
     <ItemGroup>
-      <None Remove="Controls\Canvas\Win2DCanvas.xaml" />
-      <None Remove="Controls\Root\MainPage.xaml" />
+      <None Remove="Resources\Controls\Canvas\Win2DCanvas.xaml" />
+      <None Remove="Resources\Controls\Root\MainPage.xaml" />
+      <None Remove="Resources\Dictionaries\SharedResources.xaml" />
+      <None Remove="Resources\GeneralResources.xaml" />
     </ItemGroup>
 
     <ItemGroup>
@@ -44,6 +47,7 @@
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+        <PackageReference Include="CommunityToolkit.WinUI.Media" Version="8.2.251219" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.11" />
         <PackageReference Include="Microsoft.Graphics.Win2D" Version="1.4.0" />
         <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.2705" />
@@ -55,12 +59,17 @@
       <ProjectReference Include="..\Modeling.ViewModels\Modeling.ViewModels.csproj" />
     </ItemGroup>
     <ItemGroup>
-      <Page Update="Controls\Canvas\Win2DCanvas.xaml">
+      <Page Update="Resources\GeneralResources.xaml">
         <Generator>MSBuild:Compile</Generator>
       </Page>
     </ItemGroup>
     <ItemGroup>
-      <Page Update="Controls\Root\MainPage.xaml">
+      <Page Update="Resources\Dictionaries\SharedResources.xaml">
+        <Generator>MSBuild:Compile</Generator>
+      </Page>
+    </ItemGroup>
+    <ItemGroup>
+      <Page Update="Resources\Dictionaries\ThemeResources.xaml">
         <Generator>MSBuild:Compile</Generator>
       </Page>
     </ItemGroup>
