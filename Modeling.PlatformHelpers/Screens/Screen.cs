@@ -6,7 +6,7 @@ using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Gdi;
 using static Windows.Win32.PInvoke;
 
-namespace Modeling.PlatformHelpers.Monitor
+namespace Modeling.PlatformHelpers.Screens
 {
     public sealed class Screen
     {
