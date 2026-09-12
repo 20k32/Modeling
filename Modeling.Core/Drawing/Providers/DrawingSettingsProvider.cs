@@ -1,38 +1,39 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
 using Modeling.Core.Abstractions.Providers;
+using Modeling.Core.Serializer;
 using Modeling.Core.Settings;
-using System;
 using System.Threading.Tasks;
 
 namespace Modeling.Core.Drawing.Providers
 {
-    //todo: fix formatting in whole app
-    //todo: json parsing
     sealed class DrawingSettingsProvider : IDrawingSettingsProvider
     {
-        IApplicationSettingsProvider _applicationSettingsProvider;
-        IApplicationKeyProvider _applicationKeyProvider;
-        IStorageItemProvider _storageItemProvider;
+        readonly IApplicationSettingsProvider _applicationSettingsProvider;
+        readonly IApplicationKeyProvider _applicationKeyProvider;
+        readonly IStorageItemProvider _storageItemProvider;
+        readonly ISerializer _serializer;
 
         string _storageItemFileToken;
 
-        public IDrawingSettings Settings { get; }
+        public IDrawingSettings Settings { get; private set; }
 
         public DrawingSettingsProvider()
         {
             _applicationSettingsProvider = Ioc.Default.GetService<IApplicationSettingsProvider>();
             _applicationKeyProvider = Ioc.Default.GetService<IApplicationKeyProvider>();
             _storageItemProvider = Ioc.Default.GetService<IStorageItemProvider>();
+            _serializer = Ioc.Default.GetService<ISerializer>();
         }
 
         public async Task LoadSettingsAsync()
         {
             var fileContent = await _storageItemProvider.LoadContentAsync(_storageItemFileToken);
+            Settings = _serializer.DeserializeFromString<IDrawingSettings>(fileContent);
         }
 
         public async Task SaveSettingsAsync()
         {
-            var serializedContent = string.Empty;
+            var serializedContent = _serializer.Serialize(Settings);
             await _storageItemProvider.SaveContentAsync(serializedContent, _storageItemFileToken);
         }
 
@@ -43,6 +44,13 @@ namespace Modeling.Core.Drawing.Providers
             var key = _applicationKeyProvider.DrawingSettingsTokenKey;
 
             _storageItemFileToken = await _applicationSettingsProvider.GetSettingsValueAsync<string>(key);
+        }
+
+        public async Task SetFileTokenAsync(string token)
+        {
+            var key = _applicationKeyProvider.DrawingSettingsTokenKey;
+
+            await _applicationSettingsProvider.SetSettingsValueAsync(key, token);
         }
     }
 }

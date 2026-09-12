@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Modeling.Core.Settings
 {
-    internal sealed class DrawingSettings : IDrawingSettings
+    sealed class DrawingSettings : IDrawingSettings
     {
         public int DpiX { get; set; }
         public int DpiY { get; set; }

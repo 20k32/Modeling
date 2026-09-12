@@ -14,5 +14,6 @@ namespace Modeling.Core.Drawing.Providers
 
         Task SaveSettingsAsync();
         Task LoadSettingsAsync();
+        Task SetFileTokenAsync(string token);
     }
 }

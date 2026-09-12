@@ -5,13 +5,15 @@ using Modeling.PlatformHelpers.Miscellaneous;
 using Modeling.PlatformHelpers.Screens;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Windows.Graphics;
 
 namespace Modeling.PlatformHelpers.Windowing
 {
     sealed class WindowHelper : IWindowHelper
     {
-        private Window _mainWindow;
+        readonly TaskCompletionSource _windowInitializationSource;
+        Window _mainWindow;
         public Window MainWindow
         {
             get => _mainWindow;
@@ -28,11 +30,29 @@ namespace Modeling.PlatformHelpers.Windowing
                 else
                 {
                     _mainWindow = value;
+                    _mainWindow.Activated += OnMainWindowActivated;
                 }
             }
         }
 
-        private bool CanChangeMainWindow => _mainWindow is not null;
+        bool CanChangeMainWindow => _mainWindow is not null;
+        public Task WindowInitializationTask => _windowInitializationSource.Task;
+
+        void OnMainWindowActivated(object sender, WindowActivatedEventArgs args)
+        {
+            if (sender is Window window)
+            {
+                window.Activated -= OnMainWindowActivated;
+            }
+
+            _windowInitializationSource.TrySetResult();
+        }
+
+
+        public WindowHelper()
+        {
+            _windowInitializationSource = new TaskCompletionSource();
+        }
 
         public void ActivateApplicationWindow()
         {

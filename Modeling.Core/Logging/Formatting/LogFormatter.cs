@@ -4,17 +4,17 @@ using System.Text;
 
 namespace Modeling.Core.Logging.Formatting
 {
-    internal class LogFormatter : ILogFormatter
+    class LogFormatter : ILogFormatter
     {
-        private const string MESSAGE_FORMAT = "Message: {0}";
-        private const string METHOD_NAME_FORMAT = "Method name: {0}";
-        private const string FILE_PATH_FORMAT = "File path: {0}";
-        private const string LINE_NUMBER_FORMAT = "Line number: {0}";
+        const string MESSAGE_FORMAT = "Message: {0}";
+        const string METHOD_NAME_FORMAT = "Method name: {0}";
+        const string FILE_PATH_FORMAT = "File path: {0}";
+        const string LINE_NUMBER_FORMAT = "Line number: {0}";
 
-        private const string PROPERTY_VALUE_FORMAT = "{0}: {1}";
-        private const string EXCETPION_EXTRA_DATA_FORMAT = "Data[{0}]: {1}";
+        const string PROPERTY_VALUE_FORMAT = "{0}: {1}";
+        const string EXCETPION_EXTRA_DATA_FORMAT = "Data[{0}]: {1}";
 
-        private static void AppendExceptionFields(StringBuilder builder, System.Exception ex)
+        static void AppendExceptionFields(StringBuilder builder, System.Exception ex)
         {
             var exceptionType = ex.GetType();
             var properties = exceptionType.GetProperties(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
@@ -41,7 +41,7 @@ namespace Modeling.Core.Logging.Formatting
             }
         }
 
-        private static void AppendCommonInfo(StringBuilder builder, string memberName, string filePath, int lineNumber)
+        static void AppendCommonInfo(StringBuilder builder, string memberName, string filePath, int lineNumber)
         {
             builder.AppendLine(string.Format(METHOD_NAME_FORMAT, memberName));
             builder.AppendLine(string.Format(FILE_PATH_FORMAT, filePath));

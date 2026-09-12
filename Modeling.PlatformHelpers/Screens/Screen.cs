@@ -17,7 +17,7 @@ namespace Modeling.PlatformHelpers.Screens
         public string DeviceName { get; }
         public double ScaleFactor { get; }
 
-        private Screen(nint handle)
+        Screen(nint handle)
         {
             var handleMonitor = new HMONITOR(handle);
             Handle = handle;

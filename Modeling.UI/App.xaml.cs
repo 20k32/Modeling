@@ -32,7 +32,7 @@ namespace Modeling.UI
 
             windowHelper.CenterMainWindow();
             windowHelper.ActivateApplicationWindow();
-
+            
             Logger.Information("Activated application window");
         }
     }

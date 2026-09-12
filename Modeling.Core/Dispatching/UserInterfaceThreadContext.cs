@@ -1,10 +1,6 @@
 ﻿using Modeling.Core.Dispatching.Messages;
 using Modeling.Core.Logging;
-using Modeling.Core.Messages.Base.SynchronousMessages;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -12,9 +8,9 @@ namespace Modeling.Core.Dispatching
 {
     public sealed class UserInterfaceThreadContext : IUserInterfaceThreadContext
     {
-        private SynchronizationContext _context;
+        SynchronizationContext _context;
 
-        private MainThreadMessage<MainThreadMessageState<T>> ConfigureMainThreadMessage<T>(MainThreadMessageState<T> state = default, CancellationToken token = default)
+        MainThreadMessage<MainThreadMessageState<T>> ConfigureMainThreadMessage<T>(MainThreadMessageState<T> state = default, CancellationToken token = default)
         {
             return new MainThreadMessage<MainThreadMessageState<T>>(state ?? MainThreadMessageState<T>.Default, cancellationToken: token);
         }

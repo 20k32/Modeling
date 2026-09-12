@@ -6,7 +6,7 @@ using Windows.Foundation;
 
 namespace Modeling.PlatformHelpers.Monitor
 {
-    internal class ScreenListener : IScreenListener
+    class ScreenListener : IScreenListener
     {
         ReadOnlyCollection<Screen> _monitors => new([.. Screen.All]);
 

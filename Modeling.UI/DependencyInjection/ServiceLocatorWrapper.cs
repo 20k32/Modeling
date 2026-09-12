@@ -1,9 +1,10 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
+using Modeling.Models.Drawing.DrawingPipeline;
 using Modeling.ViewModels;
 
 namespace Modeling.UI.DependencyInjection
 {
-    internal sealed class ServiceLocatorWrapper
+    sealed class ServiceLocatorWrapper
     {
         public ServiceLocatorWrapper()
         { }

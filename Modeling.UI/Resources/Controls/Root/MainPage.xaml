@@ -24,12 +24,12 @@
         <Grid Grid.Column="0"
               HorizontalAlignment="Stretch"
               VerticalAlignment="Stretch">
-            <controls:Win2DCanvas />
+            <controls:Win2DCanvas Initialize="{Binding DrawingViewModel.CanvasInitializedCommand, Source={StaticResource ServiceLocator}}"/>
         </Grid>
 
 
         <Grid Grid.Column="1">
-            <Button Content="Test" />
+            <Button Command="{Binding DrawingViewModel.ClearWorkingAreaCommand, Source={StaticResource ServiceLocator}}" Content="Test" />
         </Grid>
     </Grid>
 
