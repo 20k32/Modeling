@@ -10,5 +10,6 @@ namespace Modeling.UI.DependencyInjection
         { }
 
         public static DrawingViewModel DrawingViewModel => Ioc.Default.GetRequiredService<DrawingViewModel>();
+        public static SettingsViewModel SettingsViewModel => Ioc.Default.GetRequiredService<SettingsViewModel>();
     }
 }

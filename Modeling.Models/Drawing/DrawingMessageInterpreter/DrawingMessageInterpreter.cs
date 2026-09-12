@@ -1,11 +1,6 @@
 ﻿using Modeling.Core.Messages.Base.SynchronousMessages;
 using Modeling.Core.Messages.Canvas.Drawing;
 using Modeling.Models.Drawing.DrawingMessageValues;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Modeling.Models.Drawing.DrawingMessageInterpreter
 {
@@ -15,6 +10,9 @@ namespace Modeling.Models.Drawing.DrawingMessageInterpreter
 
         static ConnectPointsMessageValue InterpretConnectTwoPointsMessage(ConnectTwoPointsMessage message)
             => new(message.Value.Color, message.Value.Thickness, message.Value.PointA, message.Value.PointB);
+
+        static ConnectPointsMessageValue InterpretConnectPointsMessage(ConnectPointsMessage message)
+            => new(message.Value.Color, message.Value.Thickness, message.Value.Points);
 
         public bool TryInterpretMessage(Message message, out DrawingMessageValue result)
         {
@@ -27,6 +25,10 @@ namespace Modeling.Models.Drawing.DrawingMessageInterpreter
             else if (message is ClearCanvasMessage clearCanvasMessage)
             {
                 result = InterpretClearCanvasMessage(clearCanvasMessage);
+            }
+            else if (message is ConnectPointsMessage connectPointsMessage)
+            {
+                result = InterpretConnectPointsMessage(connectPointsMessage);
             }
 
             return result is not null;

@@ -2,18 +2,14 @@
 <UserControl x:Class="Modeling.UI.Resources.Controls.Root.MainPage"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:behaviors="using:Modeling.UI.Behaviors"
              xmlns:controls="using:Modeling.UI.Resources.Controls.Canvas"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             behaviors:ViewModelsInitializationBehavior.IsDrawingViewModelInitializationEnabled="{Binding DrawingViewModel.InitializeCommand, Source={StaticResource ServiceLocator}}"
+             behaviors:ViewModelsInitializationBehavior.IsSettingsViewModelInitializationEnabled="{Binding SettingsViewModel.InitializeCommand, Source={StaticResource ServiceLocator}}"
              mc:Ignorable="d">
-
-    <interactivity:Interaction.Behaviors>
-        <interactivity:EventTriggerBehavior EventName="Loaded">
-            <interactivity:InvokeCommandAction Command="{Binding DrawingViewModel.InitializeCommand, Source={StaticResource ServiceLocator}}" />
-        </interactivity:EventTriggerBehavior>
-    </interactivity:Interaction.Behaviors>
-
 
     <Grid>
         <Grid.ColumnDefinitions>
@@ -24,7 +20,7 @@
         <Grid Grid.Column="0"
               HorizontalAlignment="Stretch"
               VerticalAlignment="Stretch">
-            <controls:Win2DCanvas Initialize="{Binding DrawingViewModel.CanvasInitializedCommand, Source={StaticResource ServiceLocator}}"/>
+            <controls:Win2DCanvas Initialize="{Binding DrawingViewModel.InitializeCanvasCommand, Source={StaticResource ServiceLocator}}" />
         </Grid>
 
 

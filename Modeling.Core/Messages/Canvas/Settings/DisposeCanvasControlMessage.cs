@@ -7,9 +7,6 @@ using System.Threading.Tasks;
 
 namespace Modeling.Core.Messages.Canvas.Settings
 {
-    public sealed class DisposeCanvasControlMessage : Message
-    {
-        public DisposeCanvasControlMessage(object sender) : base(sender)
-        { }
-    }
+    public sealed class DisposeCanvasControlMessage(object sender) : Message(sender)
+    { }
 }

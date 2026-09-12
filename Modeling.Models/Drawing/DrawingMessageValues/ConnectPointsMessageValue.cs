@@ -17,6 +17,14 @@ namespace Modeling.Models.Drawing.DrawingMessageValues
             Thickness = thickness;
         }
 
+        public ConnectPointsMessageValue(DrawingColor color, float thickness, IList<PointSingle> points) : base(color)
+        {
+            MessageType = DrawingMessageType.DrawPolygon;
+
+            Points = points ?? [];
+            Thickness = thickness;
+        }
+
         public override bool IsDefault() => base.IsDefault() || (Points?.Count ?? 0) == 0;
     }
 }

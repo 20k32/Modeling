@@ -1,9 +1,5 @@
 ﻿using Modeling.Core.Abstractions;
 using Modeling.Core.Settings;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Modeling.Core.Drawing.Providers
@@ -14,6 +10,6 @@ namespace Modeling.Core.Drawing.Providers
 
         Task SaveSettingsAsync();
         Task LoadSettingsAsync();
-        Task SetFileTokenAsync(string token);
+        void SetFileToken(string token);
     }
 }

@@ -2,9 +2,11 @@
 
 namespace Modeling.Core.Abstractions.Providers
 {
-    public interface IStorageItemProvider : IAsyncInitializer
+    public interface IStorageItemProvider
     {
-        Task<string> LoadContentAsync(string token);
-        Task SaveContentAsync(string content, string token);
+        string PathToFile { get; }
+        Task<string> LoadContentAsync();
+        Task SaveContentAsync(string content);
+        Task InitializeAsync(string key, string token, string defaultFileNameWithExtension);
     }
 }

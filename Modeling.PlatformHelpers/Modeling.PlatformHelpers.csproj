@@ -21,7 +21,6 @@
     <ItemGroup>
         <Folder Include="NativeMethods\" />
         <AdditionalFiles Include="NativeMethods\NativeMethods.txt" />
-        <Folder Include="Settings\" />
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\Modeling.Core\Modeling.Core.csproj" />

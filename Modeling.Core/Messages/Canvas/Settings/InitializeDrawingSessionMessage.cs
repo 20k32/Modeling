@@ -2,9 +2,6 @@
 
 namespace Modeling.Core.Messages.Canvas.Settings
 {
-    public sealed class InitializeDrawingSessionMessage : Message
-    {
-        public InitializeDrawingSessionMessage(object sender) : base(sender)
-        { }
-    }
+    public sealed class InitializeDrawingSessionMessage(object sender) : Message(sender)
+    { }
 }

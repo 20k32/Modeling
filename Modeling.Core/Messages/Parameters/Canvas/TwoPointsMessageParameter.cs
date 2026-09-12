@@ -4,22 +4,13 @@ using Modeling.Core.Drawing;
 
 namespace Modeling.Core.Messages.Parameters.Canvas
 {
-    public sealed class TwoPointsMessageParameter : IDefaultCheck
+    public sealed class TwoPointsMessageParameter(PointSingle pointA, PointSingle pointB, DrawingColor color, float thickness = DrawingConstants.DEFAULT_DRAWING_THICKNESS) : IDefaultCheck
     {
-        public readonly PointSingle PointA;
-        public readonly PointSingle PointB;
+        public PointSingle PointA { get; init; } = pointA;
+        public PointSingle PointB { get; init; } = pointB;
 
-        public readonly float Thickness;
-        public DrawingColor Color;
-
-
-        public TwoPointsMessageParameter(PointSingle pointA, PointSingle pointB, DrawingColor color, float thickness = DrawingConstants.DEFAULT_DRAWING_THICKNESS)
-        {
-            PointA = pointA;
-            PointB = pointB;
-            Color = color;
-            Thickness = thickness;
-        }
+        public float Thickness { get; init; } = thickness;
+        public DrawingColor Color { get; init; } = color;
 
         public bool IsDefault() => PointA == DrawingConstants.DEFAULT_POINT && PointB == DrawingConstants.DEFAULT_POINT;
     }

@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
 using Modeling.Core.Abstractions.Providers;
+using Modeling.Core.Constants;
 using Modeling.Core.Serializer;
 using Modeling.Core.Settings;
 using System.Threading.Tasks;
@@ -27,30 +28,33 @@ namespace Modeling.Core.Drawing.Providers
 
         public async Task LoadSettingsAsync()
         {
-            var fileContent = await _storageItemProvider.LoadContentAsync(_storageItemFileToken);
+            var fileContent = await _storageItemProvider.LoadContentAsync();
             Settings = _serializer.DeserializeFromString<IDrawingSettings>(fileContent);
         }
 
         public async Task SaveSettingsAsync()
         {
             var serializedContent = _serializer.Serialize(Settings);
-            await _storageItemProvider.SaveContentAsync(serializedContent, _storageItemFileToken);
+            await _storageItemProvider.SaveContentAsync(serializedContent);
         }
 
         public async Task InitializeAsync()
         {
             await _applicationKeyProvider.InitializeAsync();
+            await _applicationSettingsProvider.InitializeAsync(CoreConstants.APPLICATION_SETTINGS_DEFAULT_FILE_NAME_WITH_EXTENSION);
 
             var key = _applicationKeyProvider.DrawingSettingsTokenKey;
 
-            _storageItemFileToken = await _applicationSettingsProvider.GetSettingsValueAsync<string>(key);
+            _storageItemFileToken = _applicationSettingsProvider.GetSettingsValue<string>(key);
+
+            await _storageItemProvider.InitializeAsync(key, _storageItemFileToken, CoreConstants.SAVING_FILE_NAME_WITH_EXTENSION);
         }
 
-        public async Task SetFileTokenAsync(string token)
+        public void SetFileToken(string token)
         {
             var key = _applicationKeyProvider.DrawingSettingsTokenKey;
 
-            await _applicationSettingsProvider.SetSettingsValueAsync(key, token);
+            _applicationSettingsProvider.SetSettingsValue(key, token);
         }
     }
 }

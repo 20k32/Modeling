@@ -30,13 +30,13 @@ namespace Modeling.UI.Resources.Controls.Canvas
 
         public static readonly DependencyProperty InitializeProperty =
             DependencyProperty.Register(nameof(Initialize),
-            typeof(IRelayCommand),
+            typeof(IAsyncRelayCommand),
             typeof(Win2DCanvas),
             new PropertyMetadata(default));
 
-        public IRelayCommand Initialize
+        public IAsyncRelayCommand Initialize
         {
-            get { return (IRelayCommand)GetValue(InitializeProperty); }
+            get { return (IAsyncRelayCommand)GetValue(InitializeProperty); }
             set { SetValue(InitializeProperty, value); }
         }
 
@@ -50,12 +50,61 @@ namespace Modeling.UI.Resources.Controls.Canvas
             _drawingPipeline = Ioc.Default.GetRequiredService<IDrawingPipeline>();
         }
 
+        void RegisterMessages()
+        {
+            WeakReferenceMessenger.Default.Register<InitializeDrawingSessionMessage>(this, OnWin2DCanvasInitializeDrawingSessionMessage);
+            WeakReferenceMessenger.Default.Register<EndDrawingSessionMessage>(this, OnWin2DCanvasEndDrawingSessionMessage);
+            WeakReferenceMessenger.Default.Register<ConnectTwoPointsMessage>(this, OnWin2DCanvasReceivedDrawingMessage);
+            WeakReferenceMessenger.Default.Register<ClearCanvasMessage>(this, OnWin2DCanvasReceivedDrawingMessage);
+            WeakReferenceMessenger.Default.Register<ConnectPointsMessage>(this, OnWin2DCanvasReceivedDrawingMessage);
+            WeakReferenceMessenger.Default.Register<ChangeRedrawStatusMessage>(this, OnWin2DCanvasChangeRedrawStatusMessage);
+            WeakReferenceMessenger.Default.Register<ChangeCanvasRefreshRateMessage>(this, OnWin2DCanvasChangeCanvasRefreshRateMessage);
+        }
+
+        void UnregisterMessages()
+        {
+            WeakReferenceMessenger.Default.Unregister<InitializeDrawingSessionMessage>(this);
+            WeakReferenceMessenger.Default.Unregister<EndDrawingSessionMessage>(this);
+            WeakReferenceMessenger.Default.Unregister<ConnectTwoPointsMessage>(this);
+            WeakReferenceMessenger.Default.Unregister<ClearCanvasMessage>(this);
+            WeakReferenceMessenger.Default.Unregister<ConnectPointsMessage>(this);
+            WeakReferenceMessenger.Default.Unregister<ChangeRedrawStatusMessage>(this);
+            WeakReferenceMessenger.Default.Unregister<ChangeCanvasRefreshRateMessage>(this);
+
+        }
+
+        void OnWin2DCanvasChangeCanvasRefreshRateMessage(object recipient, ChangeCanvasRefreshRateMessage message)
+        {
+            if (message.ApplyBasicMessageValidation(recipient))
+            {
+                AnimatedCanvas.TargetElapsedTime = message.Value.RefreshRate;
+            }
+        }
+
+        void OnWin2DCanvasChangeRedrawStatusMessage(object recipient, ChangeRedrawStatusMessage message)
+        {
+            if (message.ApplyBasicMessageValidation(recipient))
+            {
+                if (message.Value.Paused)
+                {
+                    AnimatedCanvas.Draw -= OnCanvasAnimatedControlDraw;
+                }
+                else
+                {
+                    AnimatedCanvas.Draw -= OnCanvasAnimatedControlDraw;
+                    AnimatedCanvas.Draw += OnCanvasAnimatedControlDraw;
+                }
+
+                AnimatedCanvas.Paused = message.Value.Paused;
+            }
+        }
+
         async void OnWin2DCanvasDisposeCanvasControlMessage(object recipient, DisposeCanvasControlMessage message)
         {
-            if (_isControlInitialized && message.ApplyBaseMessageValidation(recipient))
+            if (_isControlInitialized && message.ApplyBasicMessageValidation(recipient))
             {
                 _isControlInitialized = false;
-                
+
                 await DisposeDrawingPipelineAsync();
 
                 UnregisterMessages();
@@ -64,7 +113,7 @@ namespace Modeling.UI.Resources.Controls.Canvas
 
         async void OnWin2DCanvasInitializeCanvasControlMessage(object recipient, InitializeCanvasControlMessage message)
         {
-            if (!_isControlInitialized && message.ApplyBaseMessageValidation(recipient))
+            if (!_isControlInitialized && message.ApplyBasicMessageValidation(recipient))
             {
                 Logger.InitializedInformation(nameof(Win2DCanvas));
 
@@ -80,41 +129,30 @@ namespace Modeling.UI.Resources.Controls.Canvas
             }
         }
 
-        void RegisterMessages()
+        void EnqueueMessageToPipeline(object recipient, Core.Messages.Base.SynchronousMessages.Message message)
         {
-            WeakReferenceMessenger.Default.Register<InitializeDrawingSessionMessage>(this, OnWin2DCanvasInitializeDrawingSessionMessage);
-            WeakReferenceMessenger.Default.Register<EndDrawingSessionMessage>(this, OnWin2DCanvasEndDrawingSessionMessage);
-            WeakReferenceMessenger.Default.Register<ConnectTwoPointsMessage>(this, OnWin2DCanvasConnectTwoPointsMessage);
-            WeakReferenceMessenger.Default.Register<ClearCanvasMessage>(this, OnWin2DCanvasClearCanvasMessage);
-        }
-
-        void UnregisterMessages()
-        {
-            WeakReferenceMessenger.Default.Unregister<InitializeDrawingSessionMessage>(this);
-            WeakReferenceMessenger.Default.Unregister<EndDrawingSessionMessage>(this);
-            WeakReferenceMessenger.Default.Unregister<ConnectTwoPointsMessage>(this);
-            WeakReferenceMessenger.Default.Unregister<ClearCanvasMessage>(this);
-        }
-
-        void OnWin2DCanvasClearCanvasMessage(object recipient, ClearCanvasMessage message)
-        {
-            if (message.ApplyBaseMessageValidation(recipient))
+            if (message.ApplyBasicMessageValidation(recipient))
             {
-                EnqueueMessageToPipeline(message);
+                EnqueueMessageToPipelineCore(message);
             }
         }
 
-        void OnWin2DCanvasConnectTwoPointsMessage(object recipient, ConnectTwoPointsMessage message)
+        void EnqueueMessageToPipelineCore(Core.Messages.Base.SynchronousMessages.Message message)
         {
-            if (message.ApplyBaseMessageValidation(recipient))
+            if (!_drawingPipeline.TryEnqueue(message))
             {
-                EnqueueMessageToPipeline(message);
+                Logger.Information($"Cannot enqueue message: {message.GetType()}");
             }
+        }
+
+        void OnWin2DCanvasReceivedDrawingMessage(object recipient, Core.Messages.Base.SynchronousMessages.Message message)
+        {
+            EnqueueMessageToPipeline(recipient, message);
         }
 
         void OnWin2DCanvasEndDrawingSessionMessage(object recipient, EndDrawingSessionMessage message)
         {
-            if (message.ApplyBaseMessageValidation(recipient))
+            if (message.ApplyBasicMessageValidation(recipient))
             {
                 AnimatedCanvas.Draw -= OnCanvasAnimatedControlDraw;
 
@@ -124,7 +162,7 @@ namespace Modeling.UI.Resources.Controls.Canvas
 
         void OnWin2DCanvasInitializeDrawingSessionMessage(object recipient, InitializeDrawingSessionMessage message)
         {
-            if (message.ApplyBaseMessageValidation(recipient))
+            if (message.ApplyBasicMessageValidation(recipient))
             {
                 AnimatedCanvas.CreateResources -= OnCanvasAnimatedControlCreateResources;
                 AnimatedCanvas.CreateResources += OnCanvasAnimatedControlCreateResources;
@@ -134,7 +172,7 @@ namespace Modeling.UI.Resources.Controls.Canvas
             }
         }
 
-        private void OnCanvasAnimatedControlCreateResources(CanvasAnimatedControl sender, CanvasCreateResourcesEventArgs args)
+        async void OnCanvasAnimatedControlCreateResources(CanvasAnimatedControl sender, CanvasCreateResourcesEventArgs args)
         {
             if (sender is not null)
             {
@@ -142,7 +180,7 @@ namespace Modeling.UI.Resources.Controls.Canvas
 
                 CreateRenderTarget(sender);
 
-                Initialize?.Execute(parameter: default);
+                await (Initialize?.ExecuteAsync(parameter: default) ?? Task.CompletedTask);
             }
         }
 
@@ -162,14 +200,6 @@ namespace Modeling.UI.Resources.Controls.Canvas
             catch (Exception ex)
             {
                 Logger.Exception(ex);
-            }
-        }
-
-        void EnqueueMessageToPipeline(Core.Messages.Base.SynchronousMessages.Message message)
-        {
-            if (!_drawingPipeline.TryEnqueue(message))
-            {
-                Logger.Information($"Cannot enqueue message: {message.GetType()}");
             }
         }
 
@@ -235,7 +265,7 @@ namespace Modeling.UI.Resources.Controls.Canvas
             await _drawingPipeline.DisposeAsync();
         }
 
-        private void OnDrawingPipelineMessageReceived(DrawingMessageValue value)
+        void OnDrawingPipelineMessageReceived(DrawingMessageValue value)
         {
             HandlePipelineMessage(value);
         }

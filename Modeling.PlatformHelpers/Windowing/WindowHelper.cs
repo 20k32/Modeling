@@ -13,6 +13,7 @@ namespace Modeling.PlatformHelpers.Windowing
     sealed class WindowHelper : IWindowHelper
     {
         readonly TaskCompletionSource _windowInitializationSource;
+
         Window _mainWindow;
         public Window MainWindow
         {
@@ -21,11 +22,11 @@ namespace Modeling.PlatformHelpers.Windowing
             {
                 if (_mainWindow is not null)
                 {
-                    throw new ArgumentOutOfRangeException(string.Format(Constants.ArgumentNotNullExceptionFormat, _mainWindow));
+                    throw new ArgumentOutOfRangeException(string.Format(Constants.ARGUMENT_NOT_NULL_EXCEPTION_FORMAT, _mainWindow));
                 }
                 else if (value is null)
                 {
-                    throw new ArgumentNullException(string.Format(Constants.ArgumentNullExceptionFormat, _mainWindow));
+                    throw new ArgumentNullException(string.Format(Constants.ARGUMENT_NULL_EXCEPTION_FORMAT, _mainWindow));
                 }
                 else
                 {
@@ -66,14 +67,14 @@ namespace Modeling.PlatformHelpers.Windowing
                 var primaryScreenLocation = Ioc.Default.GetService<IScreenListener>()
                     .Locations.First(location => location.IsPrimary);
 
-                var centerX = (int)(primaryScreenLocation.ScaledSize.Width - ApplicationWindowConstants.DesignWidth) / 2;
-                var centerY = (int)(primaryScreenLocation.ScaledSize.Height - ApplicationWindowConstants.DesignHeight) / 2;
+                var centerX = (int)(primaryScreenLocation.ScaledSize.Width - ApplicationWindowConstants.DESIGN_WIDTH) / 2;
+                var centerY = (int)(primaryScreenLocation.ScaledSize.Height - ApplicationWindowConstants.DESIGN_HEIGHT) / 2;
 
                 var desiredWindowBounds = new RectInt32(
                     _X: centerX,
                     _Y: centerY,
-                    _Width: ApplicationWindowConstants.DesignWidth,
-                    _Height: ApplicationWindowConstants.DesignHeight);
+                    _Width: ApplicationWindowConstants.DESIGN_WIDTH,
+                    _Height: ApplicationWindowConstants.DESIGN_HEIGHT);
 
                 MainWindow.AppWindow.MoveAndResize(desiredWindowBounds);
             }

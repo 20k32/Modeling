@@ -4,7 +4,8 @@ namespace Modeling.Core.Abstractions.Providers
 {
     public interface IApplicationSettingsProvider
     {
-        Task<T> GetSettingsValueAsync<T>(string token);
-        Task SetSettingsValueAsync<T>(string key, T value);
+        T GetSettingsValue<T>(string token);
+        void SetSettingsValue<T>(string key, T value);
+        Task InitializeAsync(string defaultFileNameWithExtension);
     }
 }
