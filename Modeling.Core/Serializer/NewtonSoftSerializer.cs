@@ -6,7 +6,8 @@ namespace Modeling.Core.Serializer
     {
         readonly JsonSerializerSettings _options = new()
         {
-            TypeNameHandling = TypeNameHandling.Auto
+            TypeNameHandling = TypeNameHandling.All,
+            Formatting = Formatting.Indented
         };
 
         public T DeserializeFromString<T>(string value) => JsonConvert.DeserializeObject<T>(value, _options);

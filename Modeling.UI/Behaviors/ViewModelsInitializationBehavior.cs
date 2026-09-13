@@ -1,8 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.Input;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.Xaml.Interactivity;
-using System;
 using System.Threading.Tasks;
 
 namespace Modeling.UI.Behaviors

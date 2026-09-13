@@ -1,5 +1,4 @@
-﻿using Modeling.Core.Messages.Base.SynchronousMessages;
-using System;
+﻿using System;
 using System.Text;
 
 namespace Modeling.Core.Logging.Formatting

@@ -25,7 +25,12 @@
 
 
         <Grid Grid.Column="1">
-            <Button Command="{Binding DrawingViewModel.ClearWorkingAreaCommand, Source={StaticResource ServiceLocator}}" Content="Test" />
+            <Button Command="{Binding DrawingViewModel.DrawLinesCommand, Source={StaticResource ServiceLocator}}" Content="Test" />
+            <Button VerticalAlignment="Bottom">
+                <Button.Content>
+                    <PathIcon Data="{StaticResource SettingsIcon}" />
+                </Button.Content>
+            </Button>
         </Grid>
     </Grid>
 

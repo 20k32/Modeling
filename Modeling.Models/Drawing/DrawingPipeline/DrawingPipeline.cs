@@ -1,5 +1,4 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
-using Modeling.Core.Drawing;
 using Modeling.Core.Messages.Base.SynchronousMessages;
 using Modeling.Models.Drawing.DrawingMessageInterpreter;
 using Modeling.Models.Drawing.DrawingMessageValues;

@@ -1,6 +1,5 @@
 ﻿using Modeling.Core.Messages.Base.SynchronousMessages;
 using Modeling.Core.Messages.Parameters.Canvas;
-using System.Collections.Generic;
 
 namespace Modeling.Core.Messages.Canvas.Drawing
 {

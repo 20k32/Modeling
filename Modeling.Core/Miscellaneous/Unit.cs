@@ -1,5 +1,10 @@
 ﻿namespace Modeling.Core.Miscellaneous
 {
-    public struct Unit
-    { }
+    /// <summary>
+    /// Stub
+    /// </summary>
+    public readonly struct Unit
+    {
+        public static readonly Unit Default = new();
+    }
 }

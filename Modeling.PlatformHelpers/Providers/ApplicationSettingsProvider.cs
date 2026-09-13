@@ -2,12 +2,10 @@
 using Modeling.Core.Abstractions.Providers;
 using Modeling.PlatformHelpers.Providers.ApplicationData;
 using Modeling.PlatformHelpers.Windowing;
-using System;
 using System.Threading.Tasks;
 
 namespace Modeling.PlatformHelpers.Providers
 {
-    //todo: local wrapper around appdata!!!
     sealed class ApplicationSettingsProvider : IApplicationSettingsProvider
     {
         readonly IWindowHelper _windowHelper;

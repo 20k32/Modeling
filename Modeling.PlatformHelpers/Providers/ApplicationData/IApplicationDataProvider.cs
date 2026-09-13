@@ -1,5 +1,4 @@
-﻿using Modeling.Core.Abstractions;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Windows.Storage;
 
 namespace Modeling.PlatformHelpers.Providers.ApplicationData

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
         <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
@@ -21,6 +21,7 @@
       <None Remove="Resources\Controls\Root\MainPage.xaml" />
       <None Remove="Resources\Dictionaries\SharedResources.xaml" />
       <None Remove="Resources\GeneralResources.xaml" />
+      <None Remove="Resources\Icons\FluentIcons.xaml" />
     </ItemGroup>
 
     <ItemGroup>
@@ -70,6 +71,11 @@
     </ItemGroup>
     <ItemGroup>
       <Page Update="Resources\Dictionaries\ThemeResources.xaml">
+        <Generator>MSBuild:Compile</Generator>
+      </Page>
+    </ItemGroup>
+    <ItemGroup>
+      <Page Update="Resources\Icons\FluentIcons.xaml">
         <Generator>MSBuild:Compile</Generator>
       </Page>
     </ItemGroup>

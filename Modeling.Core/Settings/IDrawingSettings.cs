@@ -1,22 +1,23 @@
 ﻿using Modeling.Core.Drawing;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Windows.UI;
 
 namespace Modeling.Core.Settings
 {
     public interface IDrawingSettings
     {
+        bool? Initialized { get; set; }
+
         int DpiX { get; set; }
         int DpiY { get; set; }
         
+        Color BackgroundColor { get; set; }
+
         Color DrawingColor { get; set; }
-        double DrawingThickness { get; set; }
+        float DrawingThickness { get; set; }
         
-        double Scale { get; set; }
+        float Scale { get; set; }
         
         PointSingle CenterCanvasPosition { get; set; }
         PointSingle RotatePointPosition { get; set;}
@@ -25,5 +26,7 @@ namespace Modeling.Core.Settings
         bool DisplayMarkInCanvasCenter { get; set; }
         bool DisplayGrid { get; set; }
         bool DisplayAxis { get; set; }
+
+        TimeSpan RefreshRate { get; set; }
     }
 }

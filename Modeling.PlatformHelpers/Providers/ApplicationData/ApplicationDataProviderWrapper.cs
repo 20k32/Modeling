@@ -1,11 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
 using Modeling.PlatformHelpers.Providers.ApplicationPackage;
 using Modeling.PlatformHelpers.Providers.PackageRelatedProviders.ApplicationDataAccess;
-using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Windows.Storage;
 

@@ -6,25 +6,33 @@ namespace Modeling.Models.Drawing.DrawingMessageValues
 {
     public sealed class ConnectPointsMessageValue : DrawingMessageValue
     {
-        public IList<PointSingle> Points { get; init; }
+        public IReadOnlyList<PointSingle> Points { get; init; }
         public float Thickness { get; init; }
+        public DrawingColor BackgroundColor { get; init; }
+        public bool ShouldClearBeforeRedraw { get; init; }
 
-        public ConnectPointsMessageValue(DrawingColor color, float thickness, params PointSingle[] points) : base(color)
+        ConnectPointsMessageValue(DrawingColor color, float thickness, bool shouldClearCanvas, DrawingColor backgroundColor) : base(color)
         {
-            MessageType = DrawingMessageType.DrawPolygon;
-
-            Points = points ?? [];
+            MessageType = DrawingMessageType.Draw;
+            ShouldClearBeforeRedraw = shouldClearCanvas;
+            BackgroundColor = backgroundColor;
             Thickness = thickness;
         }
 
-        public ConnectPointsMessageValue(DrawingColor color, float thickness, IList<PointSingle> points) : base(color)
+        public ConnectPointsMessageValue(DrawingColor color, float thickness, bool shouldClearCanvas, DrawingColor backgroundColor, params PointSingle[] points)
+            : this(color, thickness, shouldClearCanvas, backgroundColor)
         {
-            MessageType = DrawingMessageType.DrawPolygon;
-
             Points = points ?? [];
-            Thickness = thickness;
         }
 
-        public override bool IsDefault() => base.IsDefault() || (Points?.Count ?? 0) == 0;
+        public ConnectPointsMessageValue(DrawingColor color, float thickness, bool shouldClearCanvas, DrawingColor backgroundColor, IReadOnlyList<PointSingle> points)
+            : this(color, thickness, shouldClearCanvas, backgroundColor)
+        {
+            Points = points ?? [];
+        }
+
+        public override bool IsDefault() => base.IsDefault() 
+            || (Points?.Count ?? 0) == 0 
+            || (ShouldClearBeforeRedraw && (BackgroundColor?.IsDefault() ?? true));
     }
 }

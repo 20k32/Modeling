@@ -2,7 +2,6 @@
 using Modeling.Core.Serializer;
 using Modeling.PlatformHelpers.Miscellaneous;
 using Modeling.PlatformHelpers.Windowing;
-using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;

@@ -1,3 +1,4 @@
+using ABI.Microsoft.UI.Xaml.Media;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -8,6 +9,7 @@ using Microsoft.Graphics.Canvas.UI.Xaml;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Modeling.Core.Constants;
+using Modeling.Core.Drawing;
 using Modeling.Core.Extensions;
 using Modeling.Core.Logging;
 using Modeling.Core.Messages.Canvas.Drawing;
@@ -57,6 +59,7 @@ namespace Modeling.UI.Resources.Controls.Canvas
             WeakReferenceMessenger.Default.Register<ConnectTwoPointsMessage>(this, OnWin2DCanvasReceivedDrawingMessage);
             WeakReferenceMessenger.Default.Register<ClearCanvasMessage>(this, OnWin2DCanvasReceivedDrawingMessage);
             WeakReferenceMessenger.Default.Register<ConnectPointsMessage>(this, OnWin2DCanvasReceivedDrawingMessage);
+            WeakReferenceMessenger.Default.Register<TransformPointsMessage>(this, OnWin2DCanvasReceivedDrawingMessage);
             WeakReferenceMessenger.Default.Register<ChangeRedrawStatusMessage>(this, OnWin2DCanvasChangeRedrawStatusMessage);
             WeakReferenceMessenger.Default.Register<ChangeCanvasRefreshRateMessage>(this, OnWin2DCanvasChangeCanvasRefreshRateMessage);
         }
@@ -68,6 +71,7 @@ namespace Modeling.UI.Resources.Controls.Canvas
             WeakReferenceMessenger.Default.Unregister<ConnectTwoPointsMessage>(this);
             WeakReferenceMessenger.Default.Unregister<ClearCanvasMessage>(this);
             WeakReferenceMessenger.Default.Unregister<ConnectPointsMessage>(this);
+            WeakReferenceMessenger.Default.Unregister<TransformPointsMessage>(this);
             WeakReferenceMessenger.Default.Unregister<ChangeRedrawStatusMessage>(this);
             WeakReferenceMessenger.Default.Unregister<ChangeCanvasRefreshRateMessage>(this);
 
@@ -85,16 +89,6 @@ namespace Modeling.UI.Resources.Controls.Canvas
         {
             if (message.ApplyBasicMessageValidation(recipient))
             {
-                if (message.Value.Paused)
-                {
-                    AnimatedCanvas.Draw -= OnCanvasAnimatedControlDraw;
-                }
-                else
-                {
-                    AnimatedCanvas.Draw -= OnCanvasAnimatedControlDraw;
-                    AnimatedCanvas.Draw += OnCanvasAnimatedControlDraw;
-                }
-
                 AnimatedCanvas.Paused = message.Value.Paused;
             }
         }
@@ -212,9 +206,48 @@ namespace Modeling.UI.Resources.Controls.Canvas
 
             switch (message.MessageType)
             {
-                case DrawingMessageType.ClearCanvas: HandleClearCanvasMessage((ClearCanvasMessageValue)message); break;
-                case DrawingMessageType.DrawPolygon: HandleConnectPointsCanvasMessage((ConnectPointsMessageValue)message); break;
+                case DrawingMessageType.ClearAll: HandleClearCanvasMessage((ClearCanvasMessageValue)message); break;
+                case DrawingMessageType.Draw: HandleConnectPointsCanvasMessage((ConnectPointsMessageValue)message); break;
+                case DrawingMessageType.Transform: HandleTransformPointsCanvasMessage((TransformPointsMessageValue)message); break;
                 case DrawingMessageType.NoAction: break;
+            }
+        }
+
+        private void HandleTransformPointsCanvasMessage(TransformPointsMessageValue message)
+        {
+            var shouldApplyTransform = message.Transform != default 
+                && message.Transform != DrawingConstants.NON_TRANSFORM_MATRIX;
+
+            using (var builder = new CanvasPathBuilder(_canvasRenderTarget))
+            {
+                var firstPoint = message.Points.First();
+                var firstPointTransformed = shouldApplyTransform ? message.Transform * firstPoint : firstPoint;
+
+                builder.BeginFigure(firstPointTransformed.ToVector2());
+
+                for (int i = 1; i < message.Points.Count; i++)
+                {
+                    var point = message.Points[i];
+                    var transformedPoint = shouldApplyTransform ? message.Transform * point : point;
+
+                    builder.AddLine(transformedPoint.ToVector2());
+                }
+
+                builder.EndFigure(CanvasFigureLoop.Open);
+
+                using (var geometry = CanvasGeometry.CreatePath(builder))
+                using (var drawingSession = _canvasRenderTarget.CreateDrawingSession())
+                {
+                    if (message.ShouldClearBeforeRedraw)
+                    {
+                        drawingSession.Clear(message.BackgroundColor.WindowsUIColor);
+                    }
+
+                    drawingSession.DrawGeometry(
+                        geometry,
+                        message.Color.WindowsUIColor,
+                        message.Thickness);
+                }
             }
         }
 
@@ -242,6 +275,11 @@ namespace Modeling.UI.Resources.Controls.Canvas
                 using (var geometry = CanvasGeometry.CreatePath(builder))
                 using (var drawingSession = _canvasRenderTarget.CreateDrawingSession())
                 {
+                    if (message.ShouldClearBeforeRedraw)
+                    {
+                        drawingSession.Clear(message.BackgroundColor.WindowsUIColor);
+                    }
+
                     drawingSession.DrawGeometry(
                         geometry,
                         message.Color.WindowsUIColor,
@@ -267,7 +305,14 @@ namespace Modeling.UI.Resources.Controls.Canvas
 
         void OnDrawingPipelineMessageReceived(DrawingMessageValue value)
         {
-            HandlePipelineMessage(value);
+            try
+            {
+                HandlePipelineMessage(value);
+            }
+            catch (Exception ex)
+            {
+                Logger.Exception(ex);
+            }
         }
 
         void CreateRenderTarget(CanvasAnimatedControl canvasAnimatedControl)
