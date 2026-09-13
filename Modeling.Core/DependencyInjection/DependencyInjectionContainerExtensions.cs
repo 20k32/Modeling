@@ -1,13 +1,10 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Modeling.Core.Dispatching;
+using Modeling.Core.Drawing.Providers;
 using Modeling.Core.Logging;
 using Modeling.Core.Logging.Formatting;
+using Modeling.Core.Serializer;
 using Serilog;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Modeling.Core.DependencyInjection
 {
@@ -17,7 +14,10 @@ namespace Modeling.Core.DependencyInjection
         {
             LoggerInitializer.Initialize();
 
-            return services.AddSingleton<IUserInterfaceThreadContext, UserInterfaceThreadContext>()
+            return services
+                .AddSingleton<IDrawingSettingsProvider, DrawingSettingsProvider>()
+                .AddSingleton<ISerializer, NewtonSoftSerializer>()
+                .AddSingleton<IUserInterfaceThreadContext, UserInterfaceThreadContext>()
                 .AddSingleton<ILogFormatter, LogFormatter>()
                 .AddLogging(loggingBuilder => loggingBuilder.AddSerilog(Log.Logger, dispose: true));
         }

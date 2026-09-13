@@ -1,4 +1,5 @@
 ﻿using Microsoft.UI.Xaml;
+using System.Threading.Tasks;
 
 namespace Modeling.PlatformHelpers.Windowing
 {
@@ -7,5 +8,7 @@ namespace Modeling.PlatformHelpers.Windowing
         public Window MainWindow { get; set; }
         public void CenterMainWindow();
         public void ActivateApplicationWindow();
+
+        Task WindowInitializationTask { get; }
     }
 }

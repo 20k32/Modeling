@@ -1,9 +1,8 @@
-﻿MONITORINFOEX
+﻿MONITORENUMPROC
+MONITORINFOEX
 MONITORINFOEXW
 MONITORINFOF_*
-MFW
 RECT
-MonitorEnumProc
 GetDesktopWindow
 GetShellWindow
 EnumDisplayMonitors

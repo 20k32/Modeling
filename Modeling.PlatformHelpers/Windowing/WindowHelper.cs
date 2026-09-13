@@ -1,11 +1,20 @@
-﻿using Microsoft.UI.Xaml;
+﻿using CommunityToolkit.Mvvm.DependencyInjection;
+using Microsoft.UI.Xaml;
+using Modeling.Core.Constants;
+using Modeling.PlatformHelpers.Miscellaneous;
+using Modeling.PlatformHelpers.Screens;
 using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Windows.Graphics;
 
 namespace Modeling.PlatformHelpers.Windowing
 {
     sealed class WindowHelper : IWindowHelper
     {
-        private Window _mainWindow;
+        readonly TaskCompletionSource _windowInitializationSource;
+
+        Window _mainWindow;
         public Window MainWindow
         {
             get => _mainWindow;
@@ -13,20 +22,38 @@ namespace Modeling.PlatformHelpers.Windowing
             {
                 if (_mainWindow is not null)
                 {
-                    throw new ArgumentOutOfRangeException(string.Format(Constants.ArgumentNotNullExceptionFormat, _mainWindow));
+                    throw new ArgumentOutOfRangeException(string.Format(Constants.ARGUMENT_NOT_NULL_EXCEPTION_FORMAT, _mainWindow));
                 }
                 else if (value is null)
                 {
-                    throw new ArgumentNullException(string.Format(Constants.ArgumentNullExceptionFormat, _mainWindow));
+                    throw new ArgumentNullException(string.Format(Constants.ARGUMENT_NULL_EXCEPTION_FORMAT, _mainWindow));
                 }
                 else
                 {
                     _mainWindow = value;
+                    _mainWindow.Activated += OnMainWindowActivated;
                 }
             }
         }
 
-        private bool CanChangeMainWindow => _mainWindow is not null;
+        bool CanChangeMainWindow => _mainWindow is not null;
+        public Task WindowInitializationTask => _windowInitializationSource.Task;
+
+        void OnMainWindowActivated(object sender, WindowActivatedEventArgs args)
+        {
+            if (sender is Window window)
+            {
+                window.Activated -= OnMainWindowActivated;
+            }
+
+            _windowInitializationSource.TrySetResult();
+        }
+
+
+        public WindowHelper()
+        {
+            _windowInitializationSource = new TaskCompletionSource();
+        }
 
         public void ActivateApplicationWindow()
         {
@@ -37,7 +64,19 @@ namespace Modeling.PlatformHelpers.Windowing
         {
             if (CanChangeMainWindow)
             {
+                var primaryScreenLocation = Ioc.Default.GetService<IScreenListener>()
+                    .Locations.First(location => location.IsPrimary);
 
+                var centerX = (int)(primaryScreenLocation.ScaledSize.Width - ApplicationWindowConstants.DESIGN_WIDTH) / 2;
+                var centerY = (int)(primaryScreenLocation.ScaledSize.Height - ApplicationWindowConstants.DESIGN_HEIGHT) / 2;
+
+                var desiredWindowBounds = new RectInt32(
+                    _X: centerX,
+                    _Y: centerY,
+                    _Width: ApplicationWindowConstants.DESIGN_WIDTH,
+                    _Height: ApplicationWindowConstants.DESIGN_HEIGHT);
+
+                MainWindow.AppWindow.MoveAndResize(desiredWindowBounds);
             }
         }
     }
