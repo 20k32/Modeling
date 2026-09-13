@@ -6,6 +6,7 @@ using Microsoft.UI;
 using Modeling.Core.Constants;
 using Modeling.Core.Drawing;
 using Modeling.Core.Drawing.Providers;
+using Modeling.Core.Extensions;
 using Modeling.Core.Logging;
 using Modeling.Core.Messages.Canvas.Drawing;
 using Modeling.Core.Messages.Canvas.Settings;
@@ -57,18 +58,15 @@ namespace Modeling.ViewModels
 
             var thickness = _drawingSettingsProvider.Settings.DrawingThickness;
 
-            for (var i = 0; i < 100; i++)
-            {
-                var transformMessageParameter = new PointListTransformMessageParameter(
+            var transformMessageParameter = new PointListTransformMessageParameter(
                 points: _figure,
                 color: drawingColor,
-                transformMatrix: MatrixExtensions.CreateTranslationTransform(i, i),
+                transformMatrix: MatrixExtensions.CreateTranslationTransform(100, 100) * MatrixExtensions.CreateRotationTransform(2f.DegreesToRadian()),
                 thickness: thickness,
                 clearBeforeRedraw: true,
                 backgroundColor: backgroundColor);
 
-                WeakReferenceMessenger.Default.Send(new TransformPointsMessage(this, transformMessageParameter));
-            }
+            WeakReferenceMessenger.Default.Send(new TransformPointsMessage(this, transformMessageParameter));
         }
 
         [RelayCommand]

@@ -36,5 +36,20 @@ namespace Modeling.Core.Constants
         public static readonly TimeSpan DEFAULT_REFRESH_RATE = new(ONE_SECOND_MILISECONDS / DEFAULT_FRAMES_PER_SECOND);
 
         public const int STANDART_DPI = 96;
+
+        public static readonly Matrix3x3Single NON_TRANSFORM_MATRIX = new()
+        {
+            M11 = 1,
+            M12 = 0,
+            M13 = 0,
+
+            M21 = 0,
+            M22 = 1,
+            M23 = 0,
+
+            M31 = 0,
+            M32 = 0,
+            M33 = 1
+        };
     }
 }

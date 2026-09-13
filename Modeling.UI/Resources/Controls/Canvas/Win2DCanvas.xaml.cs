@@ -1,3 +1,4 @@
+using ABI.Microsoft.UI.Xaml.Media;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -8,6 +9,7 @@ using Microsoft.Graphics.Canvas.UI.Xaml;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Modeling.Core.Constants;
+using Modeling.Core.Drawing;
 using Modeling.Core.Extensions;
 using Modeling.Core.Logging;
 using Modeling.Core.Messages.Canvas.Drawing;
@@ -213,17 +215,20 @@ namespace Modeling.UI.Resources.Controls.Canvas
 
         private void HandleTransformPointsCanvasMessage(TransformPointsMessageValue message)
         {
+            var shouldApplyTransform = message.Transform != default 
+                && message.Transform != DrawingConstants.NON_TRANSFORM_MATRIX;
+
             using (var builder = new CanvasPathBuilder(_canvasRenderTarget))
             {
                 var firstPoint = message.Points.First();
-                var firstPointTransformed = message.Transform * firstPoint;
+                var firstPointTransformed = shouldApplyTransform ? message.Transform * firstPoint : firstPoint;
 
                 builder.BeginFigure(firstPointTransformed.ToVector2());
 
                 for (int i = 1; i < message.Points.Count; i++)
                 {
                     var point = message.Points[i];
-                    var transformedPoint = message.Transform * point;
+                    var transformedPoint = shouldApplyTransform ? message.Transform * point : point;
 
                     builder.AddLine(transformedPoint.ToVector2());
                 }

@@ -31,6 +31,8 @@ namespace Modeling.Models.Drawing.DrawingMessageValues
             Points = points ?? [];
         }
 
-        public override bool IsDefault() => base.IsDefault() || (Points?.Count ?? 0) == 0;
+        public override bool IsDefault() => base.IsDefault() 
+            || (Points?.Count ?? 0) == 0 
+            || (ShouldClearBeforeRedraw && (BackgroundColor?.IsDefault() ?? true));
     }
 }
