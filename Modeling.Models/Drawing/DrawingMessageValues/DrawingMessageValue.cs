@@ -1,11 +1,6 @@
 ﻿using Modeling.Core.Abstractions;
 using Modeling.Core.Drawing;
 using Modeling.Models.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Modeling.Models.Drawing.DrawingMessageValues
 {

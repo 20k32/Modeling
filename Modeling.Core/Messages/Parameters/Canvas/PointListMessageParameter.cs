@@ -1,7 +1,6 @@
 ﻿using Modeling.Core.Abstractions;
 using Modeling.Core.Constants;
 using Modeling.Core.Drawing;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 

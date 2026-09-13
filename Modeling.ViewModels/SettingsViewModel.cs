@@ -3,7 +3,6 @@ using CommunityToolkit.Mvvm.Messaging;
 using Modeling.Core.Messages.Settings;
 using Modeling.Core.Extensions;
 using System.Threading.Tasks;
-using System;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using Modeling.Core.Drawing.Providers;

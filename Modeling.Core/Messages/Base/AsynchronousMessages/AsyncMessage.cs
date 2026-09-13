@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.Messaging.Messages;
 using Modeling.Core.Abstractions;
-using System;
 using System.Threading.Tasks;
 
 namespace Modeling.Core.Messages.Base.AsynchronousMessages

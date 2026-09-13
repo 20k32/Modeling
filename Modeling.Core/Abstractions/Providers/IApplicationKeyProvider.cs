@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace Modeling.Core.Abstractions.Providers
+﻿namespace Modeling.Core.Abstractions.Providers
 {
     public interface IApplicationKeyProvider : IAsyncInitializer
     {

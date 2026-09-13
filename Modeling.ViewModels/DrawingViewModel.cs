@@ -1,15 +1,11 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Modeling.Core.Constants;
-using Modeling.Core.Dispatching;
 using Modeling.Core.Logging;
 using Modeling.Core.Messages.Canvas.Drawing;
 using Modeling.Core.Messages.Canvas.Settings;
 using Modeling.Core.Messages.Settings;
-using Modeling.Core.Miscellaneous;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Modeling.ViewModels

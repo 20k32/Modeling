@@ -2,7 +2,6 @@
 using Modeling.Core.Abstractions.Providers;
 using Modeling.PlatformHelpers.Providers.ApplicationData;
 using Modeling.PlatformHelpers.Windowing;
-using System;
 using System.Threading.Tasks;
 
 namespace Modeling.PlatformHelpers.Providers
