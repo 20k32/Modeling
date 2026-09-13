@@ -1,4 +1,5 @@
 ﻿using Modeling.Core.Constants;
+using System;
 
 namespace Modeling.Core.Drawing
 {
@@ -21,8 +22,23 @@ namespace Modeling.Core.Drawing
             X == single.X
             && Y == single.Y;
 
+        public override int GetHashCode() => HashCode.Combine(X.GetHashCode(), Y.GetHashCode());
+
         public static bool operator ==(PointSingle left, PointSingle right) => left.Equals(right);
 
         public static bool operator !=(PointSingle left, PointSingle right) => !(left == right);
+
+        public static PointSingle operator *(Matrix3x3Single matrix, PointSingle point)
+        {
+            float x = point.X * matrix.M11
+                    + point.Y * matrix.M12
+                    + matrix.M13;
+
+            float y = point.X * matrix.M21
+                    + point.Y * matrix.M22
+                    + matrix.M23;
+
+            return new PointSingle(x, y);
+        }
     }
 }

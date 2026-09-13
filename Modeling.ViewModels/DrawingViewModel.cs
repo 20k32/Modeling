@@ -19,11 +19,14 @@ namespace Modeling.ViewModels
     public sealed partial class DrawingViewModel : ObservableObject
     {
         readonly IDrawingSettingsProvider _drawingSettingsProvider;
+
+        readonly List<PointSingle> _grid;
         readonly List<PointSingle> _figure;
 
         public DrawingViewModel()
         {
             _figure = [];
+            _grid = [];
             _drawingSettingsProvider = Ioc.Default.GetRequiredService<IDrawingSettingsProvider>();
         }
 
@@ -46,15 +49,26 @@ namespace Modeling.ViewModels
         [RelayCommand]
         void DrawLines()
         {
-            var color = new DrawingColor(Colors.Yellow);
-            var thickness = 1f;
+            var rawBackgroundColor = _drawingSettingsProvider.Settings.BackgroundColor;
+            var backgroundColor = new DrawingColor(rawBackgroundColor);
 
-            var connectPointsMessageParameter = new PointListMessageParameter(
+            var rawDrawingColor = _drawingSettingsProvider.Settings.DrawingColor;
+            var drawingColor = new DrawingColor(rawDrawingColor);
+
+            var thickness = _drawingSettingsProvider.Settings.DrawingThickness;
+
+            for (var i = 0; i < 100; i++)
+            {
+                var transformMessageParameter = new PointListTransformMessageParameter(
                 points: _figure,
-                color: color,
-                thickness: thickness);
+                color: drawingColor,
+                transformMatrix: MatrixExtensions.CreateTranslationTransform(i, i),
+                thickness: thickness,
+                clearBeforeRedraw: true,
+                backgroundColor: backgroundColor);
 
-            WeakReferenceMessenger.Default.Send(new ConnectPointsMessage(this, connectPointsMessageParameter));
+                WeakReferenceMessenger.Default.Send(new TransformPointsMessage(this, transformMessageParameter));
+            }
         }
 
         [RelayCommand]
@@ -62,6 +76,11 @@ namespace Modeling.ViewModels
         {
             await LoadSettingsAsync();
 
+            LoadCanvasState();
+        }
+
+        void LoadCanvasState()
+        {
             var backgroundColor = new DrawingColor(_drawingSettingsProvider.Settings.BackgroundColor);
             ClearCanvas(backgroundColor);
         }

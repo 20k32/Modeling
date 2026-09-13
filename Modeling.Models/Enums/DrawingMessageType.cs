@@ -1,12 +1,10 @@
-﻿using System;
-
-namespace Modeling.Models.Enums
+﻿namespace Modeling.Models.Enums
 {
-    [Flags]
-    public enum DrawingMessageType : ulong
+    public enum DrawingMessageType
     {
-        NoAction = 0,
-        ClearCanvas = 1ul << 0,
-        DrawPolygon = 1ul << 1,
+        NoAction,
+        ClearAll,
+        Draw,
+        Transform
     }
 }

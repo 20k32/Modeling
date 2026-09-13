@@ -4,31 +4,34 @@ using System.Collections.Generic;
 
 namespace Modeling.Models.Drawing.DrawingMessageValues
 {
-    public sealed class ConnectPointsMessageValue : DrawingMessageValue
+    public class TransformPointsMessageValue : DrawingMessageValue
     {
         public IReadOnlyList<PointSingle> Points { get; init; }
         public float Thickness { get; init; }
+        public Matrix3x3Single Transform { get; init; }
         public DrawingColor BackgroundColor { get; init; }
         public bool ShouldClearBeforeRedraw { get; init; }
 
-        ConnectPointsMessageValue(DrawingColor color, float thickness, bool shouldClearCanvas, DrawingColor backgroundColor) : base(color)
+        TransformPointsMessageValue(DrawingColor color, float thickness, bool shouldClearCanvas, DrawingColor backgroundColor) : base(color)
         {
-            MessageType = DrawingMessageType.Draw;
+            MessageType = DrawingMessageType.Transform;
+            Thickness = thickness;
             ShouldClearBeforeRedraw = shouldClearCanvas;
             BackgroundColor = backgroundColor;
-            Thickness = thickness;
         }
 
-        public ConnectPointsMessageValue(DrawingColor color, float thickness, bool shouldClearCanvas, DrawingColor backgroundColor, params PointSingle[] points)
+        public TransformPointsMessageValue(DrawingColor color, float thickness, Matrix3x3Single transform, bool shouldClearCanvas, DrawingColor backgroundColor, params PointSingle[] points)
             : this(color, thickness, shouldClearCanvas, backgroundColor)
         {
             Points = points ?? [];
+            Transform = transform;
         }
 
-        public ConnectPointsMessageValue(DrawingColor color, float thickness, bool shouldClearCanvas, DrawingColor backgroundColor, IReadOnlyList<PointSingle> points)
+        public TransformPointsMessageValue(DrawingColor color, float thickness, Matrix3x3Single transform, bool shouldClearCanvas, DrawingColor backgroundColor, IReadOnlyList<PointSingle> points)
             : this(color, thickness, shouldClearCanvas, backgroundColor)
         {
             Points = points ?? [];
+            Transform = transform;
         }
 
         public override bool IsDefault() => base.IsDefault() || (Points?.Count ?? 0) == 0;

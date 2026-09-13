@@ -8,8 +8,6 @@ using CommunityToolkit.Mvvm.DependencyInjection;
 using Modeling.Core.Drawing.Providers;
 using Modeling.Core.Abstractions.Providers;
 using Modeling.Core.Constants;
-using Modeling.Core.Drawing;
-using Microsoft.UI;
 using Modeling.Core.Miscellaneous;
 
 namespace Modeling.ViewModels
@@ -126,6 +124,8 @@ namespace Modeling.ViewModels
             _drawingSettingsProvider.Settings.DisplayMarkInCanvasCenter = DrawingConstants.DISPLAY_MARK_IN_CANVAS_CENTER_BY_DEFAULT;
             _drawingSettingsProvider.Settings.DisplayAxis = DrawingConstants.DISPLAY_AXIS_BY_DEFAULT;
             _drawingSettingsProvider.Settings.DisplayGrid = DrawingConstants.DISPLAY_GRID_BY_DEFAULT;
+
+            _drawingSettingsProvider.Settings.RefreshRate = DrawingConstants.DEFAULT_REFRESH_RATE;
         }
     }
 }

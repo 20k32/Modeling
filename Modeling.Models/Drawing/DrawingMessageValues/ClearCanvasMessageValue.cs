@@ -7,7 +7,7 @@ namespace Modeling.Models.Drawing.DrawingMessageValues
     {
         public ClearCanvasMessageValue(DrawingColor color) : base(color)
         {
-            MessageType = DrawingMessageType.ClearCanvas;
+            MessageType = DrawingMessageType.ClearAll;
         }
     }
 }

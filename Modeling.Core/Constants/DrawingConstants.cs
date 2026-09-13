@@ -1,5 +1,6 @@
 ﻿using Microsoft.UI;
 using Modeling.Core.Drawing;
+using System;
 using Windows.UI;
 
 namespace Modeling.Core.Constants
@@ -26,11 +27,13 @@ namespace Modeling.Core.Constants
         public static readonly PointSingle DEFAULT_CENTER_CANVAS_POSITION = INVALID_POINT;
         public static readonly PointSingle DEFAULT_ROTATE_POINT_POSITION = INVALID_POINT;
 
-        public static bool DISPLAY_MARK_IN_CANVAS_CENTER_BY_DEFAULT = false;
-        public static bool DISPLAY_AXIS_BY_DEFAULT = true;
-        public static bool DISPLAY_GRID_BY_DEFAULT = true;
+        public const bool DISPLAY_MARK_IN_CANVAS_CENTER_BY_DEFAULT = false;
+        public const bool DISPLAY_AXIS_BY_DEFAULT = true;
+        public const bool DISPLAY_GRID_BY_DEFAULT = true;
 
-
+        public const int ONE_SECOND_MILISECONDS = 1000;
+        public const int DEFAULT_FRAMES_PER_SECOND = 60;
+        public static readonly TimeSpan DEFAULT_REFRESH_RATE = new(ONE_SECOND_MILISECONDS / DEFAULT_FRAMES_PER_SECOND);
 
         public const int STANDART_DPI = 96;
     }

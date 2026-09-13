@@ -1,4 +1,5 @@
 ﻿using Modeling.Core.Drawing;
+using System;
 using System.Collections.Generic;
 using Windows.UI;
 
@@ -14,9 +15,9 @@ namespace Modeling.Core.Settings
         Color BackgroundColor { get; set; }
 
         Color DrawingColor { get; set; }
-        double DrawingThickness { get; set; }
+        float DrawingThickness { get; set; }
         
-        double Scale { get; set; }
+        float Scale { get; set; }
         
         PointSingle CenterCanvasPosition { get; set; }
         PointSingle RotatePointPosition { get; set;}
@@ -25,5 +26,7 @@ namespace Modeling.Core.Settings
         bool DisplayMarkInCanvasCenter { get; set; }
         bool DisplayGrid { get; set; }
         bool DisplayAxis { get; set; }
+
+        TimeSpan RefreshRate { get; set; }
     }
 }
