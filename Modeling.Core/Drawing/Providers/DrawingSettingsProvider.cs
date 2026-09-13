@@ -29,7 +29,8 @@ namespace Modeling.Core.Drawing.Providers
         public async Task LoadSettingsAsync()
         {
             var fileContent = await _storageItemProvider.LoadContentAsync();
-            Settings = _serializer.DeserializeFromString<IDrawingSettings>(fileContent);
+            Settings = _serializer.DeserializeFromString<IDrawingSettings>(fileContent) 
+                ?? Ioc.Default.GetRequiredService<IDrawingSettings>();
         }
 
         public async Task SaveSettingsAsync()

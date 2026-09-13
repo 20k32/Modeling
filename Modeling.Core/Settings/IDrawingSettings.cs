@@ -1,14 +1,18 @@
 ﻿using Modeling.Core.Drawing;
 using System.Collections.Generic;
-using System.Drawing;
+using Windows.UI;
 
 namespace Modeling.Core.Settings
 {
     public interface IDrawingSettings
     {
+        bool? Initialized { get; set; }
+
         int DpiX { get; set; }
         int DpiY { get; set; }
         
+        Color BackgroundColor { get; set; }
+
         Color DrawingColor { get; set; }
         double DrawingThickness { get; set; }
         

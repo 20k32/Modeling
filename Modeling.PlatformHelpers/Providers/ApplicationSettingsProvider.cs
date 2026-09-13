@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 
 namespace Modeling.PlatformHelpers.Providers
 {
-    //todo: local wrapper around appdata!!!
     sealed class ApplicationSettingsProvider : IApplicationSettingsProvider
     {
         readonly IWindowHelper _windowHelper;

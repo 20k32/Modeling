@@ -4,6 +4,7 @@ using Modeling.Core.Drawing.Providers;
 using Modeling.Core.Logging;
 using Modeling.Core.Logging.Formatting;
 using Modeling.Core.Serializer;
+using Modeling.Core.Settings;
 using Serilog;
 
 namespace Modeling.Core.DependencyInjection
@@ -14,7 +15,7 @@ namespace Modeling.Core.DependencyInjection
         {
             LoggerInitializer.Initialize();
 
-            return services
+            return services.AddTransient<IDrawingSettings, DrawingSettings>()
                 .AddSingleton<IDrawingSettingsProvider, DrawingSettingsProvider>()
                 .AddSingleton<ISerializer, NewtonSoftSerializer>()
                 .AddSingleton<IUserInterfaceThreadContext, UserInterfaceThreadContext>()
