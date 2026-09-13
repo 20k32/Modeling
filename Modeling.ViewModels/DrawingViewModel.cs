@@ -58,15 +58,41 @@ namespace Modeling.ViewModels
 
             var thickness = _drawingSettingsProvider.Settings.DrawingThickness;
 
-            var transformMessageParameter = new PointListTransformMessageParameter(
+            var transformMatrix = MatrixExtensions.CreateTranslationTransform(100, 100);
+
+            var swapDirection = false;
+            var rotationAngle = 0f;
+
+            while (true)
+            {
+                var transformMessageParameter = new PointListTransformMessageParameter(
                 points: _figure,
                 color: drawingColor,
-                transformMatrix: MatrixExtensions.CreateTranslationTransform(100, 100) * MatrixExtensions.CreateRotationTransform(2f.DegreesToRadian()),
+                transformMatrix: transformMatrix * MatrixExtensions.CreateRotationTransform(rotationAngle.DegreesToRadian()),
                 thickness: thickness,
                 clearBeforeRedraw: true,
                 backgroundColor: backgroundColor);
 
-            WeakReferenceMessenger.Default.Send(new TransformPointsMessage(this, transformMessageParameter));
+                WeakReferenceMessenger.Default.Send(new TransformPointsMessage(this, transformMessageParameter));
+
+                if (rotationAngle >= 361)
+                {
+                    swapDirection = true;
+                }
+                else if (rotationAngle < 0)
+                {
+                    swapDirection = false;
+                }
+
+                if (swapDirection)
+                {
+                    rotationAngle--;
+                }
+                else
+                {
+                    rotationAngle++;
+                }
+            }
         }
 
         [RelayCommand]

@@ -215,7 +215,7 @@ namespace Modeling.UI.Resources.Controls.Canvas
 
         private void HandleTransformPointsCanvasMessage(TransformPointsMessageValue message)
         {
-            var shouldApplyTransform = message.Transform != default 
+            var shouldApplyTransform = message.Transform != default
                 && message.Transform != DrawingConstants.NON_TRANSFORM_MATRIX;
 
             using (var builder = new CanvasPathBuilder(_canvasRenderTarget))

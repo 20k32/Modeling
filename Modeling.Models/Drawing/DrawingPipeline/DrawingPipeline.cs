@@ -11,6 +11,12 @@ namespace Modeling.Models.Drawing.DrawingPipeline
 {
     sealed class DrawingPipeline : IDrawingPipeline
     {
+        const int MAXIUM_PROCESSED_MESSAGES_COUNT_64 = 500;
+        const int MAXIUM_PROCESSED_MESSAGES_COUNT_86 = 200;
+        static readonly TimeSpan MAXIUM_TIME_TO_WAIT = TimeSpan.FromMilliseconds(800);
+
+        readonly int _maximumProcessedMessagesCount;
+
         readonly ConcurrentQueue<DrawingMessageValue> _pipeline;
         readonly IDrawingMessageInterpreter _messageInterpreter;
 
@@ -23,6 +29,10 @@ namespace Modeling.Models.Drawing.DrawingPipeline
 
         public DrawingPipeline()
         {
+            _maximumProcessedMessagesCount = Environment.Is64BitProcess
+                ? MAXIUM_PROCESSED_MESSAGES_COUNT_64
+                : MAXIUM_PROCESSED_MESSAGES_COUNT_86;
+
             _messageInterpreter = Ioc.Default.GetService<IDrawingMessageInterpreter>();
 
             _pipeline = new ConcurrentQueue<DrawingMessageValue>();
@@ -34,7 +44,7 @@ namespace Modeling.Models.Drawing.DrawingPipeline
 
             if (messageEnqueued)
             {
-                _consumerCollection.Add(interpretedValue);
+                messageEnqueued = _consumerCollection.TryAdd(interpretedValue, MAXIUM_TIME_TO_WAIT);
             }
 
             return messageEnqueued;
@@ -42,7 +52,7 @@ namespace Modeling.Models.Drawing.DrawingPipeline
 
         public void Initialize()
         {
-            _consumerCollection = new BlockingCollection<DrawingMessageValue>(_pipeline);
+            _consumerCollection = new BlockingCollection<DrawingMessageValue>(_pipeline, _maximumProcessedMessagesCount);
             _consumerCollectionCancelationSource = new CancellationTokenSource();
 
             foreach (var messageValue in _consumerCollection.GetConsumingEnumerable(_consumerCollectionCancelationSource.Token))
