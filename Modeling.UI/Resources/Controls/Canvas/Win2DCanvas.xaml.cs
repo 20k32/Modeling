@@ -6,6 +6,7 @@ using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Geometry;
 using Microsoft.Graphics.Canvas.UI;
 using Microsoft.Graphics.Canvas.UI.Xaml;
+using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Modeling.Core.Constants;
@@ -18,8 +19,11 @@ using Modeling.Models.Drawing.DrawingMessageValues;
 using Modeling.Models.Drawing.DrawingPipeline;
 using Modeling.Models.Enums;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Windows.System;
+using Windows.UI.Core;
 
 
 namespace Modeling.UI.Resources.Controls.Canvas
@@ -213,44 +217,6 @@ namespace Modeling.UI.Resources.Controls.Canvas
             }
         }
 
-        private void HandleTransformPointsCanvasMessage(TransformPointsMessageValue message)
-        {
-            var shouldApplyTransform = message.Transform != default
-                && message.Transform != DrawingConstants.NON_TRANSFORM_MATRIX;
-
-            using (var builder = new CanvasPathBuilder(_canvasRenderTarget))
-            {
-                var firstPoint = message.Points.First();
-                var firstPointTransformed = shouldApplyTransform ? message.Transform * firstPoint : firstPoint;
-
-                builder.BeginFigure(firstPointTransformed.ToVector2());
-
-                for (int i = 1; i < message.Points.Count; i++)
-                {
-                    var point = message.Points[i];
-                    var transformedPoint = shouldApplyTransform ? message.Transform * point : point;
-
-                    builder.AddLine(transformedPoint.ToVector2());
-                }
-
-                builder.EndFigure(CanvasFigureLoop.Open);
-
-                using (var geometry = CanvasGeometry.CreatePath(builder))
-                using (var drawingSession = _canvasRenderTarget.CreateDrawingSession())
-                {
-                    if (message.ShouldClearBeforeRedraw)
-                    {
-                        drawingSession.Clear(message.BackgroundColor.WindowsUIColor);
-                    }
-
-                    drawingSession.DrawGeometry(
-                        geometry,
-                        message.Color.WindowsUIColor,
-                        message.Thickness);
-                }
-            }
-        }
-
         void HandleClearCanvasMessage(ClearCanvasMessageValue message)
         {
             using (var drawingSession = _canvasRenderTarget.CreateDrawingSession())
@@ -259,18 +225,76 @@ namespace Modeling.UI.Resources.Controls.Canvas
             }
         }
 
-        void HandleConnectPointsCanvasMessage(ConnectPointsMessageValue message)
+        static void DrawFigure(CanvasPathBuilder builder, IReadOnlyList<PointSingle> points, bool applyTransform, Matrix3x3Single transform)
         {
-            using (var builder = new CanvasPathBuilder(_canvasRenderTarget))
-            {
-                builder.BeginFigure(message.Points.First().ToVector2());
+            bool figureStarted = false;
 
-                for (int i = 1; i < message.Points.Count; i++)
+            for (int i = 0; i < points.Count; i++)
+            {
+                var point = points[i];
+
+                if (float.IsNaN(point.X) || float.IsNaN(point.Y))
                 {
-                    builder.AddLine(message.Points[i].ToVector2());
+                    if (figureStarted)
+                    {
+                        builder.EndFigure(CanvasFigureLoop.Open);
+                        figureStarted = false;
+                    }
+
+                    continue;
                 }
 
+                var transformedPoint = applyTransform ? transform * point : point;
+
+                if (!figureStarted)
+                {
+                    builder.BeginFigure(transformedPoint.ToVector2());
+                    figureStarted = true;
+                }
+                else
+                {
+                    builder.AddLine(transformedPoint.ToVector2());
+                }
+            }
+
+            if (figureStarted)
+            {
                 builder.EndFigure(CanvasFigureLoop.Open);
+            }
+        }
+
+        void HandleConnectPointsCanvasMessage(ConnectPointsMessageValue message)
+        {
+            using (var drawingSession = _canvasRenderTarget.CreateDrawingSession())
+            {
+                if (message.ShouldClearBeforeRedraw)
+                {
+                    drawingSession.Clear(message.BackgroundColor.WindowsUIColor);
+                }
+
+                using (var builder = new CanvasPathBuilder(_canvasRenderTarget))
+                {
+                    DrawFigure(builder, message.Points, applyTransform: false, DrawingConstants.NON_TRANSFORM_MATRIX);
+
+                    using (var geometry = CanvasGeometry.CreatePath(builder))
+                    {
+                        drawingSession.DrawGeometry(
+                            geometry,
+                            message.Color.WindowsUIColor,
+                            message.Thickness);
+                    }
+                }
+            }
+        }
+
+        void HandleTransformPointsCanvasMessage(TransformPointsMessageValue message)
+        {
+            var shouldApplyTransform = message.Transform != default
+                && message.Transform != DrawingConstants.NON_TRANSFORM_MATRIX;
+
+            using (var builder = new CanvasPathBuilder(_canvasRenderTarget))
+            {
+                DrawFigure(builder, message.Points, shouldApplyTransform, message.Transform);
 
                 using (var geometry = CanvasGeometry.CreatePath(builder))
                 using (var drawingSession = _canvasRenderTarget.CreateDrawingSession())
@@ -363,6 +387,40 @@ namespace Modeling.UI.Resources.Controls.Canvas
             {
                 Logger.Exception(ex);
             }
+        }
+
+        private void OnScrollViewerPointerWheelChanged(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            var scrollViewer = CanvasScrollViewer;
+
+            var point = e.GetCurrentPoint(scrollViewer);
+            var delta = point.Properties.MouseWheelDelta;
+
+            e.Handled = true;
+
+            var offsetX = default(double?);
+            var offsetY = default(double?);
+
+            if (InputKeyboardSource.GetKeyStateForCurrentThread(
+                    VirtualKey.Shift)
+                .HasFlag(CoreVirtualKeyStates.Down))
+            {
+                var offset = scrollViewer.HorizontalOffset;
+
+                offsetX = offset - delta;
+            }
+            else
+            {
+                var offset = scrollViewer.VerticalOffset;
+
+                offsetY = offset - delta;
+            }
+
+            scrollViewer.ChangeView(
+                    offsetX,
+                    offsetY,
+                    null,
+                    disableAnimation: false);
         }
     }
 }

@@ -50,6 +50,34 @@ namespace Modeling.ViewModels
         [RelayCommand]
         void DrawLines()
         {
+            DrawGrid();
+
+            /* var rawBackgroundColor = _drawingSettingsProvider.Settings.BackgroundColor;
+             var backgroundColor = new DrawingColor(rawBackgroundColor);
+
+             var rawDrawingColor = _drawingSettingsProvider.Settings.DrawingColor;
+             var drawingColor = new DrawingColor(rawDrawingColor);
+
+             var thickness = _drawingSettingsProvider.Settings.DrawingThickness;
+
+             var transformMessageParameter = new PointListTransformMessageParameter(
+                 points: _figure,
+                 color: drawingColor,
+                 transformMatrix: transformMatrix * MatrixExtensions.CreateRotationTransform(rotationAngle.DegreesToRadian()),
+                 thickness: thickness,
+                 clearBeforeRedraw: true,
+                 backgroundColor: backgroundColor);
+
+             WeakReferenceMessenger.Default.Send(new TransformPointsMessage(this, transformMessageParameter));*/
+        }
+
+        void DrawGrid()
+        {
+
+            _grid.Clear();
+
+            InitializeGrid();
+
             var rawBackgroundColor = _drawingSettingsProvider.Settings.BackgroundColor;
             var backgroundColor = new DrawingColor(rawBackgroundColor);
 
@@ -58,41 +86,14 @@ namespace Modeling.ViewModels
 
             var thickness = _drawingSettingsProvider.Settings.DrawingThickness;
 
-            var transformMatrix = MatrixExtensions.CreateTranslationTransform(100, 100);
-
-            var swapDirection = false;
-            var rotationAngle = 0f;
-
-            while (true)
-            {
-                var transformMessageParameter = new PointListTransformMessageParameter(
-                points: _figure,
-                color: drawingColor,
-                transformMatrix: transformMatrix * MatrixExtensions.CreateRotationTransform(rotationAngle.DegreesToRadian()),
-                thickness: thickness,
+            var connectPointsMessageParameter = new PointListMessageParameter(
+                _grid,
+                drawingColor,
                 clearBeforeRedraw: true,
-                backgroundColor: backgroundColor);
+                backgroundColor: backgroundColor,
+                thickness: thickness);
 
-                WeakReferenceMessenger.Default.Send(new TransformPointsMessage(this, transformMessageParameter));
-
-                if (rotationAngle >= 361)
-                {
-                    swapDirection = true;
-                }
-                else if (rotationAngle < 0)
-                {
-                    swapDirection = false;
-                }
-
-                if (swapDirection)
-                {
-                    rotationAngle--;
-                }
-                else
-                {
-                    rotationAngle++;
-                }
-            }
+            WeakReferenceMessenger.Default.Send(new ConnectPointsMessage(this, connectPointsMessageParameter));
         }
 
         [RelayCommand]
@@ -101,6 +102,40 @@ namespace Modeling.ViewModels
             await LoadSettingsAsync();
 
             LoadCanvasState();
+
+            InitializeGrid();
+        }
+
+        void InitializeGrid()
+        {
+            var canvasSize = _drawingSettingsProvider.Settings.CanvasSize;
+            var pixelsPerCentimeter = _drawingSettingsProvider.Settings.PixelsPerCentimeter;
+
+            for (var y = 0; y <= canvasSize.Height; y += (int)pixelsPerCentimeter)
+            {
+                for (var x = 0; x <= canvasSize.Width; x += (int)pixelsPerCentimeter)
+                {
+                    _grid.Add(new PointSingle(x, y));
+                }
+
+                if (y < canvasSize.Height)
+                {
+                    _grid.Add(DrawingConstants.INVALID_POINT);
+                }
+            }
+
+            for (var x = 0; x <= canvasSize.Width; x += (int)pixelsPerCentimeter)
+            {
+                for (var y = 0; y <= canvasSize.Height; y += (int)pixelsPerCentimeter)
+                {
+                    _grid.Add(new PointSingle(x, y));
+                }
+
+                if (x < canvasSize.Width)
+                {
+                    _grid.Add(DrawingConstants.INVALID_POINT);
+                }
+            }
         }
 
         void LoadCanvasState()

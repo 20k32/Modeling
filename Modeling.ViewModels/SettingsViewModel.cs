@@ -126,6 +126,9 @@ namespace Modeling.ViewModels
             _drawingSettingsProvider.Settings.DisplayGrid = DrawingConstants.DISPLAY_GRID_BY_DEFAULT;
 
             _drawingSettingsProvider.Settings.RefreshRate = DrawingConstants.DEFAULT_REFRESH_RATE;
+
+            _drawingSettingsProvider.Settings.PixelsPerCentimeter = DrawingConstants.PIXELS_PER_CENTIMETER;
+            _drawingSettingsProvider.Settings.CanvasSize = DrawingConstants.CANVAS_SIZE;
         }
     }
 }

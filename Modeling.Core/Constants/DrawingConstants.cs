@@ -1,13 +1,14 @@
 ﻿using Microsoft.UI;
 using Modeling.Core.Drawing;
 using System;
+using Windows.Graphics;
 using Windows.UI;
 
 namespace Modeling.Core.Constants
 {
     public static class DrawingConstants
     {
-        public const float INVALID_POINT_COORDIATE = float.PositiveInfinity;
+        public const float INVALID_POINT_COORDIATE = float.NaN;
         public const float DEFAULT_POINT_COORDINATE = 0;
 
         public static readonly PointSingle DEFAULT_POINT = new();
@@ -51,5 +52,8 @@ namespace Modeling.Core.Constants
             M32 = 0,
             M33 = 1
         };
+
+        public const int PIXELS_PER_CENTIMETER = 35;
+        public static readonly SizeInt32 CANVAS_SIZE = new(500, 500);
     }
 }

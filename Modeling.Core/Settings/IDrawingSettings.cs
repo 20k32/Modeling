@@ -1,6 +1,7 @@
 ﻿using Modeling.Core.Drawing;
 using System;
 using System.Collections.Generic;
+using Windows.Graphics;
 using Windows.UI;
 
 namespace Modeling.Core.Settings
@@ -28,5 +29,8 @@ namespace Modeling.Core.Settings
         bool DisplayAxis { get; set; }
 
         TimeSpan RefreshRate { get; set; }
+
+        public int PixelsPerCentimeter { get; set; }
+        public SizeInt32 CanvasSize { get; set; }
     }
 }

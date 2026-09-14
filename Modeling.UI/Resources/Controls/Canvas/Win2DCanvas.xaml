@@ -7,7 +7,18 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d">
 
-    <canvas:CanvasAnimatedControl x:Name="AnimatedCanvas"
-                                  HorizontalAlignment="Stretch"
-                                  VerticalAlignment="Stretch" />
+    <ScrollViewer x:Name="CanvasScrollViewer"
+                  MaxWidth="600"
+                  MaxHeight="600"
+                  Margin="15"
+                  HorizontalAlignment="Stretch"
+                  VerticalAlignment="Stretch"
+                  HorizontalScrollBarVisibility="Auto"
+                  VerticalScrollBarVisibility="Auto">
+
+        <canvas:CanvasAnimatedControl x:Name="AnimatedCanvas"
+                                      Width="1366"
+                                      Height="768"
+                                      PointerWheelChanged="OnScrollViewerPointerWheelChanged" />
+    </ScrollViewer>
 </UserControl>

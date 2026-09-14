@@ -3,5 +3,6 @@
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="/Resources/Icons/FluentIcons.xaml" />
         <ResourceDictionary Source="/Resources/Dictionaries/SharedResources.xaml" />
+        <ResourceDictionary Source="/Resources/Styles/ApplicationStyles.xaml" />
     </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>
