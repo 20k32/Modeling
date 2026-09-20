@@ -9,6 +9,7 @@ using Microsoft.Graphics.Canvas.UI.Xaml;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Modeling.Core.Constants;
 using Modeling.Core.Drawing;
@@ -46,6 +47,18 @@ namespace Modeling.UI.Resources.Controls.Canvas
         {
             get { return (IAsyncRelayCommand)GetValue(InitializeProperty); }
             set { SetValue(InitializeProperty, value); }
+        }
+
+        public static readonly DependencyProperty PointerMovedCommandProperty =
+            DependencyProperty.Register(nameof(PointerMovedCommand),
+            typeof(IRelayCommand<PointerRoutedEventArgs>),
+            typeof(Win2DCanvas),
+            new PropertyMetadata(default));
+
+        public IRelayCommand PointerMovedCommand
+        {
+            get { return (IRelayCommand<PointerRoutedEventArgs>)GetValue(PointerMovedCommandProperty); }
+            set { SetValue(PointerMovedCommandProperty, value); }
         }
 
         public Win2DCanvas()
@@ -106,6 +119,9 @@ namespace Modeling.UI.Resources.Controls.Canvas
                 await DisposeDrawingPipelineAsync();
 
                 UnregisterMessages();
+
+                AnimatedCanvas.PointerWheelChanged -= OnAnimatedCanvasPointerWheelChanged;
+                AnimatedCanvas.PointerMoved -= OnAnimatedCanvasPointerMoved;
             }
         }
 
@@ -118,6 +134,9 @@ namespace Modeling.UI.Resources.Controls.Canvas
                 _isControlInitialized = true;
 
                 RegisterMessages();
+
+                AnimatedCanvas.PointerWheelChanged += OnAnimatedCanvasPointerWheelChanged;
+                AnimatedCanvas.PointerMoved += OnAnimatedCanvasPointerMoved;
 
                 _ = InitializeDrawingPipelineAsync();
             }
@@ -167,7 +186,18 @@ namespace Modeling.UI.Resources.Controls.Canvas
 
                 AnimatedCanvas.Draw -= OnCanvasAnimatedControlDraw;
                 AnimatedCanvas.Draw += OnCanvasAnimatedControlDraw;
+
+                ScrollToCenter();
             }
+        }
+
+        void ScrollToCenter()
+        {
+            var canvasHorizontalCenter = (AnimatedCanvas.Width - CanvasScrollViewer.ActualWidth) / 2;
+            var canvasVerticalCenter = (AnimatedCanvas.Height - CanvasScrollViewer.ActualHeight) / 2;
+
+            CanvasScrollViewer.ScrollToHorizontalOffset(Math.Max(0, canvasHorizontalCenter));
+            CanvasScrollViewer.ScrollToVerticalOffset(Math.Max(0, canvasVerticalCenter));
         }
 
         async void OnCanvasAnimatedControlCreateResources(CanvasAnimatedControl sender, CanvasCreateResourcesEventArgs args)
@@ -289,11 +319,25 @@ namespace Modeling.UI.Resources.Controls.Canvas
                 DrawFigure(builder, message.Points, applyTransform: false, DrawingConstants.NON_TRANSFORM_MATRIX);
 
                 using (var geometry = CanvasGeometry.CreatePath(builder))
+                using (var strokeStyle = new CanvasStrokeStyle
                 {
+                    LineJoin = CanvasLineJoin.Round,
+                    StartCap = CanvasCapStyle.Round,
+                    EndCap = CanvasCapStyle.Round
+                })
+                {
+                    if (message.ShouldFillGeometry)
+                    {
+                        drawingSession.FillGeometry(
+                        geometry,
+                        message.FillColor.WindowsUIColor);
+                    }
+
                     drawingSession.DrawGeometry(
                         geometry,
                         message.Color.WindowsUIColor,
-                        message.Thickness);
+                        message.Thickness,
+                        strokeStyle);
                 }
             }
         }
@@ -312,23 +356,37 @@ namespace Modeling.UI.Resources.Controls.Canvas
         void HandleTransformPointsCanvasMessageCore(CanvasDrawingSession drawingSession, DrawTransformedPointsMessageValue message)
         {
             var shouldApplyTransform = message.Transform != default
-               && message.Transform != DrawingConstants.NON_TRANSFORM_MATRIX;
+                && message.Transform != DrawingConstants.NON_TRANSFORM_MATRIX;
 
             using (var builder = new CanvasPathBuilder(_canvasRenderTarget))
             {
                 DrawFigure(builder, message.Points, shouldApplyTransform, message.Transform);
 
                 using (var geometry = CanvasGeometry.CreatePath(builder))
+                using (var strokeStyle = new CanvasStrokeStyle
+                {
+                    LineJoin = CanvasLineJoin.Round,
+                    StartCap = CanvasCapStyle.Round,
+                    EndCap = CanvasCapStyle.Round
+                })
                 {
                     if (message.ShouldClearBeforeRedraw)
                     {
                         drawingSession.Clear(message.BackgroundColor.WindowsUIColor);
                     }
 
+                    if (message.ShouldFillGeometry)
+                    {
+                        drawingSession.FillGeometry(
+                        geometry,
+                        message.FillColor.WindowsUIColor);
+                    }
+
                     drawingSession.DrawGeometry(
                         geometry,
                         message.Color.WindowsUIColor,
-                        message.Thickness);
+                        message.Thickness,
+                        strokeStyle);
                 }
             }
         }
@@ -338,7 +396,7 @@ namespace Modeling.UI.Resources.Controls.Canvas
             _drawingPipeline.MessageReceived -= OnDrawingPipelineMessageReceived;
             _drawingPipeline.MessageReceived += OnDrawingPipelineMessageReceived;
 
-            await Task.Run(_drawingPipeline.Initialize);
+            await Task.Run(_drawingPipeline.Initialize).ConfigureAwait(false);
         }
 
         async Task DisposeDrawingPipelineAsync()
@@ -410,7 +468,7 @@ namespace Modeling.UI.Resources.Controls.Canvas
             }
         }
 
-        private void OnScrollViewerPointerWheelChanged(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+        private void OnAnimatedCanvasPointerWheelChanged(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
             var scrollViewer = CanvasScrollViewer;
 
@@ -442,6 +500,16 @@ namespace Modeling.UI.Resources.Controls.Canvas
                     offsetY,
                     null,
                     disableAnimation: false);
+        }
+
+        private void OnAnimatedCanvasPointerMoved(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            if (sender is CanvasAnimatedControl
+                && e is not null
+                && PointerMovedCommand is not null)
+            {
+                PointerMovedCommand.Execute(e);
+            }
         }
     }
 }

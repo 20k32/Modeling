@@ -9,6 +9,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              behaviors:ViewModelsInitializationBehavior.IsDrawingViewModelInitializationEnabled="{Binding DrawingViewModel.InitializeCommand, Source={StaticResource ServiceLocator}}"
              behaviors:ViewModelsInitializationBehavior.IsSettingsViewModelInitializationEnabled="{Binding SettingsViewModel.InitializeCommand, Source={StaticResource ServiceLocator}}"
+             DataContext="{Binding DrawingViewModel, Source={StaticResource ServiceLocator}}"
              mc:Ignorable="d">
 
     <Grid>
@@ -20,12 +21,12 @@
         <Grid Grid.Column="0"
               HorizontalAlignment="Stretch"
               VerticalAlignment="Stretch">
-            <controls:Win2DCanvas Initialize="{Binding DrawingViewModel.InitializeCanvasCommand, Source={StaticResource ServiceLocator}}" />
+            <controls:Win2DCanvas Initialize="{Binding InitializeCanvasCommand}" PointerMovedCommand="{Binding CanvasPointerMovedCommand}" />
         </Grid>
 
 
         <Grid Grid.Column="1">
-            <Button Command="{Binding DrawingViewModel.DrawLinesCommand, Source={StaticResource ServiceLocator}}" Content="Test" />
+            <Button Command="{Binding DrawLinesCommand}" Content="Test" />
             <Button VerticalAlignment="Bottom">
                 <Button.Content>
                     <PathIcon Data="{StaticResource SettingsIcon}" />

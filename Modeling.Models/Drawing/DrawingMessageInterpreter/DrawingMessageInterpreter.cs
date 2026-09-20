@@ -40,6 +40,8 @@ namespace Modeling.Models.Drawing.DrawingMessageInterpreter
                     connectPointsParameter.Thickness,
                     connectPointsParameter.ShouldClearBeforeRedraw,
                     connectPointsParameter.BackgroundColor,
+                    connectPointsParameter.ShouldFillGeometry,
+                    connectPointsParameter.FillColor,
                     connectPointsParameter.Points);
 
                 result.AddDrawingParameter(drawingParameter);
@@ -61,6 +63,8 @@ namespace Modeling.Models.Drawing.DrawingMessageInterpreter
                     connectPointsParameter.Thickness,
                     connectPointsParameter.ShouldClearBeforeRedraw,
                     connectPointsParameter.BackgroundColor,
+                    connectPointsParameter.ShouldFillGeometry,
+                    connectPointsParameter.FillColor,
                     connectPointsParameter.TransformMatrix,
                     connectPointsParameter.Points);
 

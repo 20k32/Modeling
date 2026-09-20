@@ -34,5 +34,17 @@ namespace Modeling.Core.Settings
 
         public int PixelsPerCentimeter { get; set; }
         public SizeInt32 CanvasSize { get; set; }
+
+        public Color HorizontalAxisColor { get; set; }
+        public Color VerticalAxisColor { get; set; }
+
+        public ICollection<PointSingle> HorizontalAxis { get; set; }
+        public ICollection<PointSingle> VerticalAxis { get; set; }
+        public Color VerticalAxisTicksColor { get; set; }
+        public Color HorizontalAxisTicksColor { get; set; }
+
+        public float AxisTickLength { get; set; }
+        public float AxisThickness { get; set; }
+        public float AxisTickThickness { get; set; }
     }
 }

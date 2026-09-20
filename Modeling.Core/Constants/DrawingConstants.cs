@@ -55,7 +55,18 @@ namespace Modeling.Core.Constants
 
         public const int PIXELS_PER_CENTIMETER = 35;
         public static readonly SizeInt32 CANVAS_SIZE = new(1366, 768);
-        public const int START_POINT_DRAWING_COORDINATE_X_Y = 1;
+        public const float START_POINT_DRAWING_COORDINATE_X_Y = 1;
+        public const float START_POINT_DRAWING_AXIST_COORDINATE_X_Y = PIXELS_PER_CENTIMETER * 2;
         public static readonly PointSingle START_DRAWING_POINT = new(START_POINT_DRAWING_COORDINATE_X_Y, START_POINT_DRAWING_COORDINATE_X_Y);
+
+        public static readonly Color X_AXIS_COLOR = Colors.Red;
+        public static readonly Color Y_AXIS_COLOR = Colors.Green;
+
+        public static readonly Color X_AXIS_TICKS_COLOR = Colors.Blue;
+        public static readonly Color Y_AXIS_TICKS_COLOR = Colors.Blue;
+
+        public const float X_Y_AXIS_THICKNESS = 3;
+        public const float X_Y_AXIS_TICKS_LENGTH_PIXELS = 15;
+        public const float X_Y_AXIST_TICKS_THICKNESS = 5;
     }
 }
