@@ -54,6 +54,8 @@ namespace Modeling.Core.Constants
         };
 
         public const int PIXELS_PER_CENTIMETER = 35;
-        public static readonly SizeInt32 CANVAS_SIZE = new(500, 500);
+        public static readonly SizeInt32 CANVAS_SIZE = new(1366, 768);
+        public const int START_POINT_DRAWING_COORDINATE_X_Y = 1;
+        public static readonly PointSingle START_DRAWING_POINT = new(START_POINT_DRAWING_COORDINATE_X_Y, START_POINT_DRAWING_COORDINATE_X_Y);
     }
 }

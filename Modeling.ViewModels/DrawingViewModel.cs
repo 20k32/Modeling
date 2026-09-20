@@ -3,11 +3,13 @@ using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.UI;
+using Microsoft.UI.Xaml.Media;
 using Modeling.Core.Constants;
 using Modeling.Core.Drawing;
 using Modeling.Core.Drawing.Providers;
 using Modeling.Core.Extensions;
 using Modeling.Core.Logging;
+using Modeling.Core.Messages.Base.SynchronousMessages;
 using Modeling.Core.Messages.Canvas.Drawing;
 using Modeling.Core.Messages.Canvas.Settings;
 using Modeling.Core.Messages.Parameters.Canvas;
@@ -22,6 +24,7 @@ namespace Modeling.ViewModels
         readonly IDrawingSettingsProvider _drawingSettingsProvider;
 
         readonly List<PointSingle> _grid;
+        readonly List<PointSingle> _axis;
         readonly List<PointSingle> _figure;
 
         public DrawingViewModel()
@@ -52,28 +55,27 @@ namespace Modeling.ViewModels
         {
             DrawGrid();
 
-            /* var rawBackgroundColor = _drawingSettingsProvider.Settings.BackgroundColor;
-             var backgroundColor = new DrawingColor(rawBackgroundColor);
+            /*var rawBackgroundColor = _drawingSettingsProvider.Settings.BackgroundColor;
+            var backgroundColor = new DrawingColor(rawBackgroundColor);
 
-             var rawDrawingColor = _drawingSettingsProvider.Settings.DrawingColor;
-             var drawingColor = new DrawingColor(rawDrawingColor);
+            var rawDrawingColor = _drawingSettingsProvider.Settings.DrawingColor;
+            var drawingColor = new DrawingColor(rawDrawingColor);
 
-             var thickness = _drawingSettingsProvider.Settings.DrawingThickness;
+            var thickness = _drawingSettingsProvider.Settings.DrawingThickness;
 
-             var transformMessageParameter = new PointListTransformMessageParameter(
-                 points: _figure,
-                 color: drawingColor,
-                 transformMatrix: transformMatrix * MatrixExtensions.CreateRotationTransform(rotationAngle.DegreesToRadian()),
-                 thickness: thickness,
-                 clearBeforeRedraw: true,
-                 backgroundColor: backgroundColor);
+            var transformMessageParameter = new PointListTransformMessageParameter(
+                points: _figure,
+                color: drawingColor,
+                transformMatrix: transformMatrix * MatrixExtensions.CreateRotationTransform(rotationAngle.DegreesToRadian()),
+                thickness: thickness,
+                clearBeforeRedraw: true,
+                backgroundColor: backgroundColor);
 
-             WeakReferenceMessenger.Default.Send(new TransformPointsMessage(this, transformMessageParameter));*/
+            WeakReferenceMessenger.Default.Send(new TransformPointsMessage(this, transformMessageParameter));*/
         }
 
         void DrawGrid()
         {
-
             _grid.Clear();
 
             InitializeGrid();
@@ -111,9 +113,11 @@ namespace Modeling.ViewModels
             var canvasSize = _drawingSettingsProvider.Settings.CanvasSize;
             var pixelsPerCentimeter = _drawingSettingsProvider.Settings.PixelsPerCentimeter;
 
-            for (var y = 0; y <= canvasSize.Height; y += (int)pixelsPerCentimeter)
+            for (var y = DrawingConstants.START_POINT_DRAWING_COORDINATE_X_Y;
+                y <= canvasSize.Height; y += (int)pixelsPerCentimeter)
             {
-                for (var x = 0; x <= canvasSize.Width; x += (int)pixelsPerCentimeter)
+                for (var x = DrawingConstants.START_POINT_DRAWING_COORDINATE_X_Y;
+                    x <= canvasSize.Width; x += (int)pixelsPerCentimeter)
                 {
                     _grid.Add(new PointSingle(x, y));
                 }
@@ -124,9 +128,47 @@ namespace Modeling.ViewModels
                 }
             }
 
-            for (var x = 0; x <= canvasSize.Width; x += (int)pixelsPerCentimeter)
+            for (var x = DrawingConstants.START_POINT_DRAWING_COORDINATE_X_Y;
+                x <= canvasSize.Width; x += (int)pixelsPerCentimeter)
             {
-                for (var y = 0; y <= canvasSize.Height; y += (int)pixelsPerCentimeter)
+                for (var y = DrawingConstants.START_POINT_DRAWING_COORDINATE_X_Y;
+                    y <= canvasSize.Height + pixelsPerCentimeter; y += (int)pixelsPerCentimeter)
+                {
+                    _grid.Add(new PointSingle(x, y));
+                }
+
+                if (x < canvasSize.Width)
+                {
+                    _grid.Add(DrawingConstants.INVALID_POINT);
+                }
+            }
+        }
+
+        void InitializeAxis()
+        {
+            var canvasSize = _drawingSettingsProvider.Settings.CanvasSize;
+            var pixelsPerCentimeter = _drawingSettingsProvider.Settings.PixelsPerCentimeter;
+
+            for (var y = DrawingConstants.START_POINT_DRAWING_COORDINATE_X_Y;
+                y <= canvasSize.Height; y += (int)pixelsPerCentimeter)
+            {
+                for (var x = DrawingConstants.START_POINT_DRAWING_COORDINATE_X_Y;
+                    x <= canvasSize.Width; x += (int)pixelsPerCentimeter)
+                {
+                    _grid.Add(new PointSingle(x, y));
+                }
+
+                if (y < canvasSize.Height)
+                {
+                    _grid.Add(DrawingConstants.INVALID_POINT);
+                }
+            }
+
+            for (var x = DrawingConstants.START_POINT_DRAWING_COORDINATE_X_Y;
+                x <= canvasSize.Width; x += (int)pixelsPerCentimeter)
+            {
+                for (var y = DrawingConstants.START_POINT_DRAWING_COORDINATE_X_Y;
+                    y <= canvasSize.Height + pixelsPerCentimeter; y += (int)pixelsPerCentimeter)
                 {
                     _grid.Add(new PointSingle(x, y));
                 }
@@ -156,7 +198,8 @@ namespace Modeling.ViewModels
 
         void ClearCanvas(DrawingColor color)
         {
-            WeakReferenceMessenger.Default.Send(new ClearCanvasMessage(this, color));
+            var message = new ClearCanvasMessageParameter(color, clearBeforeRedraw: true);
+            WeakReferenceMessenger.Default.Send(new ClearCanvasMessage(this, message));
         }
 
         void InitializeSettings()

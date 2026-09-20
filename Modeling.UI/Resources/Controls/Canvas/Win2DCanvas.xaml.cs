@@ -9,6 +9,7 @@ using Microsoft.Graphics.Canvas.UI.Xaml;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Modeling.Core.Constants;
 using Modeling.Core.Drawing;
 using Modeling.Core.Extensions;
@@ -16,6 +17,7 @@ using Modeling.Core.Logging;
 using Modeling.Core.Messages.Canvas.Drawing;
 using Modeling.Core.Messages.Canvas.Settings;
 using Modeling.Models.Drawing.DrawingMessageValues;
+using Modeling.Models.Drawing.DrawingMessageValues.Points;
 using Modeling.Models.Drawing.DrawingPipeline;
 using Modeling.Models.Enums;
 using System;
@@ -60,7 +62,6 @@ namespace Modeling.UI.Resources.Controls.Canvas
         {
             WeakReferenceMessenger.Default.Register<InitializeDrawingSessionMessage>(this, OnWin2DCanvasInitializeDrawingSessionMessage);
             WeakReferenceMessenger.Default.Register<EndDrawingSessionMessage>(this, OnWin2DCanvasEndDrawingSessionMessage);
-            WeakReferenceMessenger.Default.Register<ConnectTwoPointsMessage>(this, OnWin2DCanvasReceivedDrawingMessage);
             WeakReferenceMessenger.Default.Register<ClearCanvasMessage>(this, OnWin2DCanvasReceivedDrawingMessage);
             WeakReferenceMessenger.Default.Register<ConnectPointsMessage>(this, OnWin2DCanvasReceivedDrawingMessage);
             WeakReferenceMessenger.Default.Register<TransformPointsMessage>(this, OnWin2DCanvasReceivedDrawingMessage);
@@ -72,7 +73,6 @@ namespace Modeling.UI.Resources.Controls.Canvas
         {
             WeakReferenceMessenger.Default.Unregister<InitializeDrawingSessionMessage>(this);
             WeakReferenceMessenger.Default.Unregister<EndDrawingSessionMessage>(this);
-            WeakReferenceMessenger.Default.Unregister<ConnectTwoPointsMessage>(this);
             WeakReferenceMessenger.Default.Unregister<ClearCanvasMessage>(this);
             WeakReferenceMessenger.Default.Unregister<ConnectPointsMessage>(this);
             WeakReferenceMessenger.Default.Unregister<TransformPointsMessage>(this);
@@ -221,7 +221,10 @@ namespace Modeling.UI.Resources.Controls.Canvas
         {
             using (var drawingSession = _canvasRenderTarget.CreateDrawingSession())
             {
-                drawingSession.Clear(message.Color.WindowsUIColor);
+                foreach (var drawingParameter in message.DrawingParameters.Where(parameter => parameter.ShouldClearBeforeRedraw))
+                {
+                    drawingSession.Clear(drawingParameter.BackgroundColor.WindowsUIColor);
+                }
             }
         }
 
@@ -267,37 +270,55 @@ namespace Modeling.UI.Resources.Controls.Canvas
         {
             using (var drawingSession = _canvasRenderTarget.CreateDrawingSession())
             {
-                if (message.ShouldClearBeforeRedraw)
+                foreach (var drawingParameter in message.DrawingParameters.OfType<DrawPointsMessageValue>())
                 {
-                    drawingSession.Clear(message.BackgroundColor.WindowsUIColor);
+                    HandleConnectPointsCanvasMessageCore(drawingSession, drawingParameter);
                 }
+            }
+        }
 
-                using (var builder = new CanvasPathBuilder(_canvasRenderTarget))
+        void HandleConnectPointsCanvasMessageCore(CanvasDrawingSession drawingSession, DrawPointsMessageValue message)
+        {
+            if (message.ShouldClearBeforeRedraw)
+            {
+                drawingSession.Clear(message.BackgroundColor.WindowsUIColor);
+            }
+
+            using (var builder = new CanvasPathBuilder(_canvasRenderTarget))
+            {
+                DrawFigure(builder, message.Points, applyTransform: false, DrawingConstants.NON_TRANSFORM_MATRIX);
+
+                using (var geometry = CanvasGeometry.CreatePath(builder))
                 {
-                    DrawFigure(builder, message.Points, applyTransform: false, DrawingConstants.NON_TRANSFORM_MATRIX);
-
-                    using (var geometry = CanvasGeometry.CreatePath(builder))
-                    {
-                        drawingSession.DrawGeometry(
-                            geometry,
-                            message.Color.WindowsUIColor,
-                            message.Thickness);
-                    }
+                    drawingSession.DrawGeometry(
+                        geometry,
+                        message.Color.WindowsUIColor,
+                        message.Thickness);
                 }
             }
         }
 
         void HandleTransformPointsCanvasMessage(TransformPointsMessageValue message)
         {
+            using (var drawingSession = _canvasRenderTarget.CreateDrawingSession())
+            {
+                foreach (var drawingParameter in message.DrawingParameters.OfType<DrawTransformedPointsMessageValue>())
+                {
+                    HandleTransformPointsCanvasMessageCore(drawingSession, drawingParameter);
+                }
+            }
+        }
+
+        void HandleTransformPointsCanvasMessageCore(CanvasDrawingSession drawingSession, DrawTransformedPointsMessageValue message)
+        {
             var shouldApplyTransform = message.Transform != default
-                && message.Transform != DrawingConstants.NON_TRANSFORM_MATRIX;
+               && message.Transform != DrawingConstants.NON_TRANSFORM_MATRIX;
 
             using (var builder = new CanvasPathBuilder(_canvasRenderTarget))
             {
                 DrawFigure(builder, message.Points, shouldApplyTransform, message.Transform);
 
                 using (var geometry = CanvasGeometry.CreatePath(builder))
-                using (var drawingSession = _canvasRenderTarget.CreateDrawingSession())
                 {
                     if (message.ShouldClearBeforeRedraw)
                     {
