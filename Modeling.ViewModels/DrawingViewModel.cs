@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.UI;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using Modeling.Core.Abstractions;
 using Modeling.Core.Constants;
 using Modeling.Core.Drawing;
 using Modeling.Core.Drawing.Providers;
@@ -15,14 +16,21 @@ using Modeling.Core.Messages.Canvas.Drawing;
 using Modeling.Core.Messages.Canvas.Settings;
 using Modeling.Core.Messages.Parameters.Canvas;
 using Modeling.Core.Messages.Settings;
+using Modeling.ViewModels.Miscellaneous;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Modeling.ViewModels
 {
     public sealed partial class DrawingViewModel : ObservableObject
     {
+        const int USER_POINT_DRAWING_TIMEOUT_MILISECONDS = 100;
+
+        static readonly PointSingle START_DRAWING_POINT = new PointSingle(769, 35);
+
         readonly IDrawingSettingsProvider _drawingSettingsProvider;
 
         readonly List<PointSingle> _grid;
@@ -31,10 +39,13 @@ namespace Modeling.ViewModels
         readonly List<PointSingle> _horizontalAxisMarks;
         readonly List<PointSingle> _verticalAxisMarks;
         readonly List<PointSingle> _userPoint;
-        readonly List<PointSingle> _figure;
+        readonly List<List<PointSingle>> _figure;
 
+        bool _drawUserPoint;
         PointSingle _previousMovedPoint;
         Matrix3x3Single _transform;
+
+        CancellationTokenSource _mouseMovingCancellationSource;
 
         PointListTransformMessageParameter _gridWithAxisDrawingMessage;
 
@@ -75,48 +86,80 @@ namespace Modeling.ViewModels
         }
 
         [RelayCommand]
-        void CanvasPointerMoved(PointerRoutedEventArgs arguments)
+        async Task CanvasPointerMoved(PointSingle point)
         {
+            if (!_drawUserPoint)
+            {
+                return;
+            }
+
             try
             {
-                var pointerPoint = arguments.GetCurrentPoint(default);
-                var position = pointerPoint.Position;
+                await _mouseMovingCancellationSource.TryCancelAsync(shouldDispose: false);
 
-                var newPoint = new PointSingle((float)position.X, (float)position.Y);
+                _mouseMovingCancellationSource = default;
 
-                var thickness = _drawingSettingsProvider.Settings.DrawingThickness;
-
-                var rawBackgroundColor = _drawingSettingsProvider.Settings.BackgroundColor;
-                var backgroundColor = new DrawingColor(rawBackgroundColor);
-
-                var circleColor = _drawingSettingsProvider.Settings.VerticalAxisColor;
-                var circleDrawingColor = new DrawingColor(circleColor);
-
-                if (newPoint != _previousMovedPoint)
+                using (var cancellationTokenSource = new CancellationTokenSource())
                 {
-                    var circleTransform = _transform * MatrixExtensions.CreateTranslationTransform(
-                        _previousMovedPoint.X - newPoint.X,
-                        _previousMovedPoint.Y - newPoint.Y);
-
-                    var drawCircleMessageParameter = new PointListTransformMessageParameter(
-                        points: _userPoint,
-                        color: circleDrawingColor,
-                        transformMatrix: circleTransform,
-                        shouldFillGeometry: true,
-                        fillColor: new DrawingColor(_drawingSettingsProvider.Settings.HorizontalAxisColor),
-                        clearBeforeRedraw: false,
-                        backgroundColor: backgroundColor,
-                        thickness: thickness,
-                        parent: _gridWithAxisDrawingMessage);
-
-                    WeakReferenceMessenger.Default.Send(new TransformPointsMessage(this, drawCircleMessageParameter));
-
-                    _previousMovedPoint = newPoint;
+                    await CanvasPointerMovedCoreAsync(point, cancellationTokenSource);
                 }
             }
             catch (Exception ex)
             {
-                Logger.Exception(ex);
+                if (ex is not OperationCanceledException)
+                {
+                    Logger.Exception(ex);
+                }
+            }
+        }
+
+        async Task CanvasPointerMovedCoreAsync(PointSingle point, CancellationTokenSource cancellationTokenSource)
+        {
+            _mouseMovingCancellationSource = cancellationTokenSource;
+
+            await Task.Delay(USER_POINT_DRAWING_TIMEOUT_MILISECONDS, cancellationTokenSource.Token);
+
+            RedrawUserPoint(point);
+        }
+
+        void RedrawUserPoint(PointSingle point)
+        {
+            var canvasSize = _drawingSettingsProvider.Settings.CanvasSize;
+
+            var thickness = _drawingSettingsProvider.Settings.GridDrawingThickness;
+
+            var rawBackgroundColor = _drawingSettingsProvider.Settings.BackgroundColor;
+            var backgroundColor = new DrawingColor(rawBackgroundColor);
+
+            var circleColor = _drawingSettingsProvider.Settings.VerticalAxisColor;
+            var circleDrawingColor = new DrawingColor(circleColor);
+
+            if (point != _previousMovedPoint)
+            {
+                var centerX = canvasSize.Width / 2f;
+                var centerY = canvasSize.Height / 2f;
+
+                var offsetX = point.X - centerX;
+                var offsetY = point.Y - centerY;
+
+                var circleTransform = MatrixExtensions.CreateTranslationTransform(
+                    offsetX,
+                    offsetY);
+
+                var drawCircleMessageParameter = new PointListTransformMessageParameter(
+                    points: _userPoint,
+                    color: circleDrawingColor,
+                    transformMatrix: circleTransform,
+                    shouldFillGeometry: true,
+                    fillColor: new DrawingColor(_drawingSettingsProvider.Settings.HorizontalAxisColor),
+                    clearBeforeRedraw: false,
+                    backgroundColor: backgroundColor,
+                    thickness: thickness,
+                    parent: _gridWithAxisDrawingMessage);
+
+                WeakReferenceMessenger.Default.Send(new TransformPointsMessage(this, drawCircleMessageParameter));
+
+                _previousMovedPoint = point;
             }
         }
 
@@ -131,15 +174,13 @@ namespace Modeling.ViewModels
             _verticalAxisMarks.Clear();
 
             _userPoint.Clear();
+            _figure.Clear();
 
             InitializeGrid();
             InitializeAxis();
             InitializeMarksOnAxis();
             InitializeCircle();
-
-            var canvasSize = _drawingSettingsProvider.Settings.CanvasSize;
-
-            var verticalCenterPoint = canvasSize.Height / 2;
+            InitializeFigure();
 
             var rawBackgroundColor = _drawingSettingsProvider.Settings.BackgroundColor;
             var backgroundColor = new DrawingColor(rawBackgroundColor);
@@ -159,7 +200,7 @@ namespace Modeling.ViewModels
             var verticalAxisTicksColor = _drawingSettingsProvider.Settings.VerticalAxisTicksColor;
             var verticalAxisTicksDrawingColor = new DrawingColor(verticalAxisTicksColor);
 
-            var thickness = _drawingSettingsProvider.Settings.DrawingThickness;
+            var thickness = _drawingSettingsProvider.Settings.GridDrawingThickness;
             var axisThickness = _drawingSettingsProvider.Settings.AxisThickness;
             var axisTickThickness = _drawingSettingsProvider.Settings.AxisTickThickness;
 
@@ -215,9 +256,119 @@ namespace Modeling.ViewModels
                 thickness: axisTickThickness,
                 parent: drawHorizontalAxisMarksMessageParameter);
 
-            WeakReferenceMessenger.Default.Send(new TransformPointsMessage(this, drawVerticalAxisMarksMessageParameter));
+            var figureDrawingMessage = GetDrawingFigureMessage(drawVerticalAxisMarksMessageParameter);
+
+            WeakReferenceMessenger.Default.Send(new TransformPointsMessage(this, figureDrawingMessage));
 
             _gridWithAxisDrawingMessage = drawVerticalAxisMarksMessageParameter;
+        }
+
+        // accordig var 14
+        // assume that figure will be drawn at the second quarter of graphic
+        // canvas coords of second quarter approx x: 769 y: 35
+        // don't matter in this 'example' cause we will use transforms
+        //todo: take into account pixelsPerMillimeter 
+        private void InitializeFigure()
+        {
+            var pixelsPerCentimeter = _drawingSettingsProvider.Settings.PixelsPerCentimeter;
+            var pixelsPerMillimeter = pixelsPerCentimeter / 10f;
+
+            var distanceBetweenHalfCirclesAndLargeRectangleMillimeters = FirgureRelatedConstants.DISTANCE_BETWEEN_HALF_CIRCLES_AND_LARGE_RECTANGLE * pixelsPerMillimeter;
+
+            var halfCirclesDiameterMillimeters = FirgureRelatedConstants.HALF_CIRCLES_DIAMETER_PIXELS * pixelsPerMillimeter;
+            var innerHalfCirclesDiameterMillimeters = FirgureRelatedConstants.INNER_HALF_CIRCLES_DIAMETER_PIXELS * pixelsPerMillimeter;
+
+            var halfCirclesRadiusMillimeters = halfCirclesDiameterMillimeters / 2;
+
+            var leftHalfCirclesStartAngleDegrees = 90f;
+            var leftHalfCirclesEndAngleDegrees = 270f;
+
+            var rightHalfCirclesStartAngleDegrees = -90f;
+            var rightHalfCircleEndAngleDegrees = 90f;
+
+            var topLeftHalfCircleCenterPoint = START_DRAWING_POINT + halfCirclesDiameterMillimeters;
+
+            var topLeftHalfCircle = topLeftHalfCircleCenterPoint.GetCirclePoints(halfCirclesDiameterMillimeters,
+                leftHalfCirclesStartAngleDegrees,
+                leftHalfCirclesEndAngleDegrees);
+
+            _figure.Add([.. topLeftHalfCircle]);
+
+            var topLeftInnerCirclePoint = topLeftHalfCircleCenterPoint;
+
+            var topLeftInnerCircle = topLeftInnerCirclePoint.GetCirclePoints(innerHalfCirclesDiameterMillimeters);
+
+            _figure.Add([.. topLeftInnerCircle]);
+
+            var verticalHalfCircleOffset = FirgureRelatedConstants.VERTICAL_DISTANCE_BETWEEN_HALF_CIRCLES_PIXLES * pixelsPerMillimeter;
+
+            var bottomLeftHalfCircleCenterPoint = new PointSingle(
+                x: topLeftHalfCircleCenterPoint.X,
+                y: topLeftHalfCircleCenterPoint.Y + verticalHalfCircleOffset);
+
+            var bottomLeftHalfCircle = bottomLeftHalfCircleCenterPoint.GetCirclePoints(halfCirclesDiameterMillimeters * 2,
+                leftHalfCirclesStartAngleDegrees,
+                leftHalfCirclesEndAngleDegrees);
+
+            _figure.Add([.. bottomLeftHalfCircle]);
+
+            var bottomLeftInnerCirclePoint = new PointSingle(
+                x: topLeftInnerCirclePoint.X,
+                y: topLeftInnerCirclePoint.Y + verticalHalfCircleOffset);
+
+            var bottomLeftInnerCircle = bottomLeftInnerCirclePoint.GetCirclePoints(innerHalfCirclesDiameterMillimeters);
+
+            _figure.Add([.. bottomLeftInnerCircle]);
+
+            var topLeftHalfCircleTopLineFirstPoint = new PointSingle(
+                x: topLeftHalfCircleCenterPoint.X,
+                y: topLeftHalfCircleCenterPoint.Y + halfCirclesRadiusMillimeters);
+
+            var topLeftHalfCircleTopLineSecondPoint = new PointSingle(
+                 x: topLeftHalfCircleCenterPoint.X + distanceBetweenHalfCirclesAndLargeRectangleMillimeters,
+                 y: topLeftHalfCircleCenterPoint.Y - halfCirclesRadiusMillimeters);
+
+            _figure.Add([topLeftHalfCircleTopLineFirstPoint, topLeftHalfCircleTopLineSecondPoint]);
+        }
+
+        private PointListTransformMessageParameter GetDrawingFigureMessage(IObjectTree parentMessage)
+        {
+            var rawBackgroundColor = _drawingSettingsProvider.Settings.BackgroundColor;
+            var backgroundColor = new DrawingColor(rawBackgroundColor);
+
+            var rawDrawingColor = _drawingSettingsProvider.Settings.DrawingColor;
+            var drawingColor = new DrawingColor(rawDrawingColor);
+
+            var thickness = _drawingSettingsProvider.Settings.FigureDrawingThickness;
+
+            var parentFigureComponentDrawingMessage = new PointListTransformMessageParameter(
+                points: _figure[0],
+                color: drawingColor,
+                transformMatrix: _transform,
+                shouldFillGeometry: false,
+                fillColor: default,
+                clearBeforeRedraw: false,
+                backgroundColor: backgroundColor,
+                thickness: thickness,
+                parent: parentMessage);
+
+            foreach (var figureComponent in _figure.Skip(1))
+            {
+                var figureComponentDrawingMessage = parentFigureComponentDrawingMessage;
+
+                parentFigureComponentDrawingMessage = new PointListTransformMessageParameter(
+                    points: figureComponent,
+                    color: drawingColor,
+                    transformMatrix: _transform,
+                    shouldFillGeometry: false,
+                    fillColor: default,
+                    clearBeforeRedraw: false,
+                    backgroundColor: backgroundColor,
+                    thickness: thickness,
+                    parent: figureComponentDrawingMessage);
+            }
+
+            return parentFigureComponentDrawingMessage;
         }
 
         [RelayCommand]
@@ -464,22 +615,9 @@ namespace Modeling.ViewModels
             var canvasSize = _drawingSettingsProvider.Settings.CanvasSize;
             var pixelsPerCentimeter = (int)_drawingSettingsProvider.Settings.PixelsPerCentimeter;
 
-            var centerX = canvasSize.Width / 2f;
-            var centerY = canvasSize.Height / 2f;
-            var radius = 10;
+            var centerPoint = new PointSingle(canvasSize.Width / 2f, canvasSize.Height / 2f);
 
-            const float anglaDegrees = 1f;
-            const float angleRadians = anglaDegrees * (MathF.PI / 180f);
-            const int numSegments = 360;
-
-            for (var i = 0; i <= numSegments; i++)
-            {
-                var angle = i * 2 * MathF.PI / numSegments;
-                var x = centerX + radius * MathF.Cos(angle);
-                var y = centerY + radius * MathF.Sin(angle);
-
-                _userPoint.Add(new PointSingle(x, y));
-            }
+            _userPoint.AddRange(centerPoint.GetCirclePoints(radius: 5));
 
             _userPoint.Add(DrawingConstants.INVALID_POINT);
         }

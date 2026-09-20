@@ -51,13 +51,13 @@ namespace Modeling.UI.Resources.Controls.Canvas
 
         public static readonly DependencyProperty PointerMovedCommandProperty =
             DependencyProperty.Register(nameof(PointerMovedCommand),
-            typeof(IRelayCommand<PointerRoutedEventArgs>),
+            typeof(IRelayCommand<PointSingle>),
             typeof(Win2DCanvas),
             new PropertyMetadata(default));
 
-        public IRelayCommand PointerMovedCommand
+        public IRelayCommand<PointSingle> PointerMovedCommand
         {
-            get { return (IRelayCommand<PointerRoutedEventArgs>)GetValue(PointerMovedCommandProperty); }
+            get { return (IRelayCommand<PointSingle>)GetValue(PointerMovedCommandProperty); }
             set { SetValue(PointerMovedCommandProperty, value); }
         }
 
@@ -186,7 +186,7 @@ namespace Modeling.UI.Resources.Controls.Canvas
 
                 AnimatedCanvas.Draw -= OnCanvasAnimatedControlDraw;
                 AnimatedCanvas.Draw += OnCanvasAnimatedControlDraw;
-
+                
                 ScrollToCenter();
             }
         }
@@ -502,13 +502,16 @@ namespace Modeling.UI.Resources.Controls.Canvas
                     disableAnimation: false);
         }
 
-        private void OnAnimatedCanvasPointerMoved(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+        private void OnAnimatedCanvasPointerMoved(object sender, PointerRoutedEventArgs e)
         {
-            if (sender is CanvasAnimatedControl
+            if (sender is CanvasAnimatedControl canvasControl
                 && e is not null
                 && PointerMovedCommand is not null)
             {
-                PointerMovedCommand.Execute(e);
+                var pointerPoint = e.GetCurrentPoint(canvasControl);
+                var position = pointerPoint.Position;
+
+                PointerMovedCommand.Execute(new PointSingle((float)position.X, (float)position.Y));
             }
         }
     }

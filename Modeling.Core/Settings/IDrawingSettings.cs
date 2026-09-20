@@ -16,7 +16,8 @@ namespace Modeling.Core.Settings
         Color BackgroundColor { get; set; }
 
         Color DrawingColor { get; set; }
-        float DrawingThickness { get; set; }
+        float GridDrawingThickness { get; set; }
+        float FigureDrawingThickness { get; set; }
 
         float Scale { get; set; }
 

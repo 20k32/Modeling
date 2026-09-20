@@ -1,4 +1,5 @@
 ﻿using Modeling.Core.Drawing;
+using System;
 using System.Numerics;
 
 
@@ -34,6 +35,14 @@ namespace Modeling.Core.Extensions
         public static PointSingle FromSystemDrawingPoint(this System.Drawing.Point point)
         {
             return new(point.X, point.Y);
+        }
+
+        public static float CalculateDistance(this PointSingle point1, PointSingle point2)
+        {
+            var deltaX = point2.X - point1.X;
+            var deltaY = point2.Y - point1.Y;
+
+            return MathF.Sqrt(deltaX * deltaX + deltaY * deltaY);
         }
     }
 }

@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace Modeling.Core.Messages.Parameters.Canvas
 {
-    public class PointListMessageParameter(IReadOnlyList<PointSingle> points, DrawingColor color, bool shouldFillGeometry = false, DrawingColor fillColor = default, bool clearBeforeRedraw = false, DrawingColor backgroundColor = default, float thickness = DrawingConstants.DEFAULT_DRAWING_THICKNESS, IObjectTree parent = default)
+    public class PointListMessageParameter(IReadOnlyList<PointSingle> points, DrawingColor color, bool shouldFillGeometry = false, DrawingColor fillColor = default, bool clearBeforeRedraw = false, DrawingColor backgroundColor = default, float thickness = DrawingConstants.GRID_DRAWING_THICKNESS, IObjectTree parent = default)
         : IDefaultCheck, IObjectTree
     {
         public IObjectTree Parent { get; init; } = parent;

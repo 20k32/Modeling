@@ -112,7 +112,8 @@ namespace Modeling.ViewModels
             _drawingSettingsProvider.Settings.BackgroundColor = DrawingConstants.DEFAULT_BACKGROUND_COLOR;
 
             _drawingSettingsProvider.Settings.DrawingColor = DrawingConstants.DEFAULT_COLOR;
-            _drawingSettingsProvider.Settings.DrawingThickness = DrawingConstants.DEFAULT_DRAWING_THICKNESS;
+            _drawingSettingsProvider.Settings.GridDrawingThickness = DrawingConstants.GRID_DRAWING_THICKNESS;
+            _drawingSettingsProvider.Settings.FigureDrawingThickness = DrawingConstants.FIGURE_DRAWING_THICKNESS;
 
             _drawingSettingsProvider.Settings.Scale = DrawingConstants.DEFAULT_SCALE;
 

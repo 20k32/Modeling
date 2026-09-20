@@ -14,7 +14,8 @@ namespace Modeling.Core.Constants
         public static readonly PointSingle DEFAULT_POINT = new();
         public static readonly PointSingle INVALID_POINT = new(INVALID_POINT_COORDIATE);
 
-        public const float DEFAULT_DRAWING_THICKNESS = 1;
+        public const float GRID_DRAWING_THICKNESS = 1;
+        public const float FIGURE_DRAWING_THICKNESS = 2.5f;
         public const float DEFAULT_SCALE = 1;
 
         public static readonly Color DEFAULT_COLOR = Colors.Black;
