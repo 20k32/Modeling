@@ -16,6 +16,7 @@ using Modeling.Core.Messages.Canvas.Drawing;
 using Modeling.Core.Messages.Canvas.Settings;
 using Modeling.Core.Messages.Parameters.Canvas;
 using Modeling.Core.Messages.Settings;
+using Modeling.Models.Abstractions.Drawing.Figure;
 using Modeling.ViewModels.Miscellaneous;
 using System;
 using System.Collections.Generic;
@@ -39,7 +40,7 @@ namespace Modeling.ViewModels
         readonly List<PointSingle> _horizontalAxisMarks;
         readonly List<PointSingle> _verticalAxisMarks;
         readonly List<PointSingle> _userPoint;
-        readonly List<List<PointSingle>> _figure;
+        readonly IFigure _figure;
 
         bool _drawUserPoint;
         PointSingle _previousMovedPoint;
@@ -51,7 +52,7 @@ namespace Modeling.ViewModels
 
         public DrawingViewModel()
         {
-            _figure = [];
+            _figure = Ioc.Default.GetRequiredService<IFigure>();
             _grid = [];
 
             _horizontalAxis = [];
@@ -263,6 +264,13 @@ namespace Modeling.ViewModels
             _gridWithAxisDrawingMessage = drawVerticalAxisMarksMessageParameter;
         }
 
+        private void AddPointsToFigureAsSegment(IEnumerable<PointSingle> points)
+        {
+            var segment = Ioc.Default.GetRequiredService<IPointGeometry>();
+            segment.AddPointsRange(points);
+            _figure.AddSegment(segment);
+        }
+
         // accordig var 14
         // assume that figure will be drawn at the second quarter of graphic
         // canvas coords of second quarter approx x: 769 y: 35
@@ -273,12 +281,11 @@ namespace Modeling.ViewModels
             var pixelsPerCentimeter = _drawingSettingsProvider.Settings.PixelsPerCentimeter;
             var pixelsPerMillimeter = pixelsPerCentimeter / 10f;
 
-            var distanceBetweenHalfCirclesAndLargeRectangleMillimeters = FirgureRelatedConstants.DISTANCE_BETWEEN_HALF_CIRCLES_AND_LARGE_RECTANGLE * pixelsPerMillimeter;
-
-            var halfCirclesDiameterMillimeters = FirgureRelatedConstants.HALF_CIRCLES_DIAMETER_PIXELS * pixelsPerMillimeter;
-            var innerHalfCirclesDiameterMillimeters = FirgureRelatedConstants.INNER_HALF_CIRCLES_DIAMETER_PIXELS * pixelsPerMillimeter;
+            var halfCirclesDiameterMillimeters = FirgureRelatedConstants.HALF_CIRCLES_DIAMETER_MILLIMETERS * pixelsPerMillimeter;
+            var innerHalfCirclesDiameterMillimeters = FirgureRelatedConstants.INNER_HALF_CIRCLES_DIAMETER_MILLIMETERS * pixelsPerMillimeter;
 
             var halfCirclesRadiusMillimeters = halfCirclesDiameterMillimeters / 2;
+            var innerHalfCirclesRadiusMillimeters = innerHalfCirclesDiameterMillimeters / 2;
 
             var leftHalfCirclesStartAngleDegrees = 90f;
             var leftHalfCirclesEndAngleDegrees = 270f;
@@ -288,47 +295,97 @@ namespace Modeling.ViewModels
 
             var topLeftHalfCircleCenterPoint = START_DRAWING_POINT + halfCirclesDiameterMillimeters;
 
-            var topLeftHalfCircle = topLeftHalfCircleCenterPoint.GetCirclePoints(halfCirclesDiameterMillimeters,
+            var distanceBetweenHalfCirclesAndLargeRectangleMillimeters = FirgureRelatedConstants.DISTANCE_BETWEEN_HALF_CIRCLES_AND_LARGE_RECTANGLE * pixelsPerMillimeter;
+
+
+            var topLeftHalfCircle = topLeftHalfCircleCenterPoint.GetCirclePoints(halfCirclesRadiusMillimeters,
                 leftHalfCirclesStartAngleDegrees,
                 leftHalfCirclesEndAngleDegrees);
 
-            _figure.Add([.. topLeftHalfCircle]);
+            AddPointsToFigureAsSegment(topLeftHalfCircle);
 
             var topLeftInnerCirclePoint = topLeftHalfCircleCenterPoint;
 
-            var topLeftInnerCircle = topLeftInnerCirclePoint.GetCirclePoints(innerHalfCirclesDiameterMillimeters);
+            var topLeftInnerCircle = topLeftInnerCirclePoint.GetCirclePoints(innerHalfCirclesRadiusMillimeters);
 
-            _figure.Add([.. topLeftInnerCircle]);
+            AddPointsToFigureAsSegment(topLeftInnerCircle);
 
-            var verticalHalfCircleOffset = FirgureRelatedConstants.VERTICAL_DISTANCE_BETWEEN_HALF_CIRCLES_PIXLES * pixelsPerMillimeter;
+            var verticalHalfCircleOffset = FirgureRelatedConstants.VERTICAL_DISTANCE_BETWEEN_HALF_CIRCLES_MILLIMETERS * pixelsPerMillimeter;
 
             var bottomLeftHalfCircleCenterPoint = new PointSingle(
                 x: topLeftHalfCircleCenterPoint.X,
                 y: topLeftHalfCircleCenterPoint.Y + verticalHalfCircleOffset);
 
-            var bottomLeftHalfCircle = bottomLeftHalfCircleCenterPoint.GetCirclePoints(halfCirclesDiameterMillimeters * 2,
+            var bottomLeftHalfCircle = bottomLeftHalfCircleCenterPoint.GetCirclePoints(halfCirclesRadiusMillimeters,
                 leftHalfCirclesStartAngleDegrees,
                 leftHalfCirclesEndAngleDegrees);
 
-            _figure.Add([.. bottomLeftHalfCircle]);
+            AddPointsToFigureAsSegment(bottomLeftHalfCircle);
 
             var bottomLeftInnerCirclePoint = new PointSingle(
                 x: topLeftInnerCirclePoint.X,
                 y: topLeftInnerCirclePoint.Y + verticalHalfCircleOffset);
 
-            var bottomLeftInnerCircle = bottomLeftInnerCirclePoint.GetCirclePoints(innerHalfCirclesDiameterMillimeters);
+            var bottomLeftInnerCircle = bottomLeftInnerCirclePoint.GetCirclePoints(innerHalfCirclesRadiusMillimeters);
 
-            _figure.Add([.. bottomLeftInnerCircle]);
+            AddPointsToFigureAsSegment(bottomLeftInnerCircle);
 
             var topLeftHalfCircleTopLineFirstPoint = new PointSingle(
                 x: topLeftHalfCircleCenterPoint.X,
-                y: topLeftHalfCircleCenterPoint.Y + halfCirclesRadiusMillimeters);
+                y: topLeftHalfCircleCenterPoint.Y - halfCirclesRadiusMillimeters);
 
             var topLeftHalfCircleTopLineSecondPoint = new PointSingle(
                  x: topLeftHalfCircleCenterPoint.X + distanceBetweenHalfCirclesAndLargeRectangleMillimeters,
                  y: topLeftHalfCircleCenterPoint.Y - halfCirclesRadiusMillimeters);
 
-            _figure.Add([topLeftHalfCircleTopLineFirstPoint, topLeftHalfCircleTopLineSecondPoint]);
+            AddPointsToFigureAsSegment([topLeftHalfCircleTopLineFirstPoint, topLeftHalfCircleTopLineSecondPoint]);
+
+            var bottomLeftHalfCircleTopLineFirstPoint = new PointSingle(
+                x: topLeftHalfCircleCenterPoint.X,
+                y: topLeftHalfCircleCenterPoint.Y + halfCirclesRadiusMillimeters);
+
+            var bottomLeftHalfCircleTopLineSecondPoint = new PointSingle(
+                 x: topLeftHalfCircleCenterPoint.X + distanceBetweenHalfCirclesAndLargeRectangleMillimeters,
+                 y: topLeftHalfCircleCenterPoint.Y + halfCirclesRadiusMillimeters);
+
+            AddPointsToFigureAsSegment([bottomLeftHalfCircleTopLineFirstPoint, bottomLeftHalfCircleTopLineSecondPoint]);
+
+            var bottomTopLeftHalfCircleTopLineFirstPoint = new PointSingle(
+                x: bottomLeftHalfCircleCenterPoint.X,
+                y: bottomLeftHalfCircleCenterPoint.Y - halfCirclesRadiusMillimeters);
+
+            var bottomTopLeftHalfCircleTopLineSecondPoint = new PointSingle(
+                 x: bottomLeftHalfCircleCenterPoint.X + distanceBetweenHalfCirclesAndLargeRectangleMillimeters,
+                 y: bottomLeftHalfCircleCenterPoint.Y - halfCirclesRadiusMillimeters);
+
+            AddPointsToFigureAsSegment([bottomTopLeftHalfCircleTopLineFirstPoint, bottomTopLeftHalfCircleTopLineSecondPoint]);
+
+            var bottomBottomLeftHalfCircleTopLineFirstPoint = new PointSingle(
+                x: bottomLeftHalfCircleCenterPoint.X,
+                y: bottomLeftHalfCircleCenterPoint.Y + halfCirclesRadiusMillimeters);
+
+            var bottomBottomLeftHalfCircleTopLineSecondPoint = new PointSingle(
+                 x: bottomLeftHalfCircleCenterPoint.X + distanceBetweenHalfCirclesAndLargeRectangleMillimeters,
+                 y: bottomLeftHalfCircleCenterPoint.Y + halfCirclesRadiusMillimeters);
+
+            AddPointsToFigureAsSegment([bottomBottomLeftHalfCircleTopLineFirstPoint, bottomBottomLeftHalfCircleTopLineSecondPoint]);
+
+            var rectangleWidthMillimeters = FirgureRelatedConstants.LARGE_RECTANGLE_WIDTH_MILLIMETERS * pixelsPerCentimeter;
+
+            var topTopRightHalfCircleTopLineFirstPoint = new PointSingle(
+                x: topLeftHalfCircleTopLineFirstPoint.X + rectangleWidthMillimeters,
+                y: topLeftHalfCircleCenterPoint.Y - halfCirclesRadiusMillimeters);
+
+            var topTopRightHalfCircleTopLineSecondPoint = new PointSingle(
+                x: topTopRightHalfCircleTopLineFirstPoint.X + rectangleWidthMillimeters,
+                y: topLeftHalfCircleCenterPoint.Y - halfCirclesRadiusMillimeters);
+
+            AddPointsToFigureAsSegment([topTopRightHalfCircleTopLineFirstPoint, topTopRightHalfCircleTopLineSecondPoint]);
+            /*
+            var rectangleHeightMillimeters = topLeftHalfCircleTopLineSecondPoint.X - bottomLeftHalfCircleCenterPoint.X + distanceBetweenHalfCirclesAndLargeRectangleMillimeters;
+
+            var rectangleTopLeft = topLeftHalfCircleTopLineSecondPoint;
+            var rectangleBottomLeft = bottomBottomLeftHalfCircleTopLineSecondPoint;*/
         }
 
         private PointListTransformMessageParameter GetDrawingFigureMessage(IObjectTree parentMessage)
@@ -342,7 +399,7 @@ namespace Modeling.ViewModels
             var thickness = _drawingSettingsProvider.Settings.FigureDrawingThickness;
 
             var parentFigureComponentDrawingMessage = new PointListTransformMessageParameter(
-                points: _figure[0],
+                points: [.. _figure.First().Points],
                 color: drawingColor,
                 transformMatrix: _transform,
                 shouldFillGeometry: false,
@@ -357,7 +414,7 @@ namespace Modeling.ViewModels
                 var figureComponentDrawingMessage = parentFigureComponentDrawingMessage;
 
                 parentFigureComponentDrawingMessage = new PointListTransformMessageParameter(
-                    points: figureComponent,
+                    points: [.. figureComponent.Points],
                     color: drawingColor,
                     transformMatrix: _transform,
                     shouldFillGeometry: false,

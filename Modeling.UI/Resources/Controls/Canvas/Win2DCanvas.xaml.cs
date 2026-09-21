@@ -381,7 +381,7 @@ namespace Modeling.UI.Resources.Controls.Canvas
                         geometry,
                         message.FillColor.WindowsUIColor);
                     }
-
+                    
                     drawingSession.DrawGeometry(
                         geometry,
                         message.Color.WindowsUIColor,
