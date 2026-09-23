@@ -28,8 +28,6 @@ namespace Modeling.ViewModels
 {
     public sealed partial class DrawingViewModel : ObservableObject
     {
-        const int USER_POINT_DRAWING_TIMEOUT_MILISECONDS = 100;
-
         static readonly PointSingle START_DRAWING_POINT = new PointSingle(769, 35);
 
         readonly IDrawingSettingsProvider _drawingSettingsProvider;
@@ -42,11 +40,8 @@ namespace Modeling.ViewModels
         readonly List<PointSingle> _userPoint;
         readonly IFigure _figure;
 
-        bool _drawUserPoint;
         PointSingle _previousMovedPoint;
         Matrix3x3Single _transform;
-
-        CancellationTokenSource _mouseMovingCancellationSource;
 
         PointListTransformMessageParameter _gridWithAxisDrawingMessage;
 
@@ -89,20 +84,16 @@ namespace Modeling.ViewModels
         [RelayCommand]
         async Task CanvasPointerMoved(PointSingle point)
         {
-            if (!_drawUserPoint)
+            /*if (!_drawUserPoint)
             {
                 return;
-            }
+            }*/
 
             try
             {
-                await _mouseMovingCancellationSource.TryCancelAsync(shouldDispose: false);
-
-                _mouseMovingCancellationSource = default;
-
                 using (var cancellationTokenSource = new CancellationTokenSource())
                 {
-                    await CanvasPointerMovedCoreAsync(point, cancellationTokenSource);
+                    await CanvasPointerMovedCoreAsync(point);
                 }
             }
             catch (Exception ex)
@@ -114,12 +105,8 @@ namespace Modeling.ViewModels
             }
         }
 
-        async Task CanvasPointerMovedCoreAsync(PointSingle point, CancellationTokenSource cancellationTokenSource)
+        async Task CanvasPointerMovedCoreAsync(PointSingle point)
         {
-            _mouseMovingCancellationSource = cancellationTokenSource;
-
-            await Task.Delay(USER_POINT_DRAWING_TIMEOUT_MILISECONDS, cancellationTokenSource.Token);
-
             RedrawUserPoint(point);
         }
 

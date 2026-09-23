@@ -4,13 +4,9 @@ using System;
 
 namespace Modeling.Models.Drawing.DrawingPipeline
 {
-    public interface IDrawingPipeline : IAsyncDisposable
+    public interface IDrawingPipeline
     {
-        bool HasItems { get; }
-
         bool TryEnqueue(Message message);
-
-        void Initialize();
         event Action<DrawingMessageValue> MessageReceived;
     }
 }

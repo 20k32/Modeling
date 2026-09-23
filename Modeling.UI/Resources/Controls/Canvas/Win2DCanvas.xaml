@@ -8,8 +8,6 @@
              mc:Ignorable="d">
 
     <ScrollViewer x:Name="CanvasScrollViewer"
-                  MaxWidth="800"
-                  MaxHeight="600"
                   Margin="15"
                   HorizontalAlignment="Stretch"
                   VerticalAlignment="Stretch"

@@ -395,15 +395,11 @@ namespace Modeling.UI.Resources.Controls.Canvas
         {
             _drawingPipeline.MessageReceived -= OnDrawingPipelineMessageReceived;
             _drawingPipeline.MessageReceived += OnDrawingPipelineMessageReceived;
-
-            await Task.Run(_drawingPipeline.Initialize).ConfigureAwait(false);
         }
 
         async Task DisposeDrawingPipelineAsync()
         {
             _drawingPipeline.MessageReceived -= OnDrawingPipelineMessageReceived;
-
-            await _drawingPipeline.DisposeAsync();
         }
 
         void OnDrawingPipelineMessageReceived(DrawingMessageValue value)
