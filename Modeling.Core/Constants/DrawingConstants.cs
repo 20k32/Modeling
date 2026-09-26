@@ -1,19 +1,21 @@
 ﻿using Microsoft.UI;
 using Modeling.Core.Drawing;
 using System;
+using Windows.Graphics;
 using Windows.UI;
 
 namespace Modeling.Core.Constants
 {
     public static class DrawingConstants
     {
-        public const float INVALID_POINT_COORDIATE = float.PositiveInfinity;
+        public const float INVALID_POINT_COORDIATE = float.NaN;
         public const float DEFAULT_POINT_COORDINATE = 0;
 
         public static readonly PointSingle DEFAULT_POINT = new();
         public static readonly PointSingle INVALID_POINT = new(INVALID_POINT_COORDIATE);
 
-        public const float DEFAULT_DRAWING_THICKNESS = 1;
+        public const float GRID_DRAWING_THICKNESS = 1;
+        public const float FIGURE_DRAWING_THICKNESS = 2.5f;
         public const float DEFAULT_SCALE = 1;
 
         public static readonly Color DEFAULT_COLOR = Colors.Black;
@@ -51,5 +53,22 @@ namespace Modeling.Core.Constants
             M32 = 0,
             M33 = 1
         };
+
+        public const int PIXELS_PER_CENTIMETER = 35;
+        public static readonly SizeInt32 CANVAS_SIZE = new(3990, 3990);
+        public const float START_POINT_DRAWING_COORDINATE_X_Y = 1;
+        public const float START_POINT_DRAWING_AXIST_COORDINATE_X_Y = PIXELS_PER_CENTIMETER * 2;
+        public static readonly PointSingle START_DRAWING_POINT = new(START_POINT_DRAWING_COORDINATE_X_Y, START_POINT_DRAWING_COORDINATE_X_Y);
+
+        public static readonly Color X_AXIS_COLOR = Colors.Red;
+        public static readonly Color Y_AXIS_COLOR = Colors.Green;
+
+        public static readonly Color X_AXIS_TICKS_COLOR = Colors.Blue;
+        public static readonly Color Y_AXIS_TICKS_COLOR = Colors.Blue;
+        public static readonly Color FIGURE_BOUNDS_COLOR = Colors.Magenta;
+
+        public const float X_Y_AXIS_THICKNESS = 3;
+        public const float X_Y_AXIS_TICKS_LENGTH_PIXELS = 15;
+        public const float X_Y_AXIST_TICKS_THICKNESS = 5;
     }
 }

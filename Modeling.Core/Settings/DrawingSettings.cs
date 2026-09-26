@@ -1,6 +1,7 @@
 ﻿using Modeling.Core.Drawing;
 using System;
 using System.Collections.Generic;
+using Windows.Graphics;
 using Windows.UI;
 
 namespace Modeling.Core.Settings
@@ -15,7 +16,8 @@ namespace Modeling.Core.Settings
         public Color BackgroundColor { get; set; }
 
         public Color DrawingColor { get; set; }
-        public float DrawingThickness { get; set; }
+        public float GridDrawingThickness { get; set; }
+        public float FigureDrawingThickness { get; set; }
 
         public float Scale { get; set; }
 
@@ -30,5 +32,23 @@ namespace Modeling.Core.Settings
         public bool DisplayAxis { get; set; }
 
         public TimeSpan RefreshRate { get; set; }
+
+        public int PixelsPerCentimeter { get; set; }
+        public SizeInt32 CanvasSize { get; set; }
+
+        public Color HorizontalAxisColor { get; set; }
+        public Color VerticalAxisColor { get; set; }
+
+        public ICollection<PointSingle> HorizontalAxis { get; set; }
+        public ICollection<PointSingle> VerticalAxis { get; set; }
+        public Color VerticalAxisTicksColor { get; set; }
+        public Color HorizontalAxisTicksColor { get; set; }
+
+        public Color FigureBoundsColor { get; set; }
+        public Color FigureCenterPointColor { get; set; }
+
+        public float AxisTickLength { get; set; }
+        public float AxisThickness { get; set; }
+        public float AxisTickThickness { get; set; }
     }
 }

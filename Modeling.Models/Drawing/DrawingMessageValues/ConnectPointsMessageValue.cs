@@ -1,38 +1,23 @@
-﻿using Modeling.Core.Drawing;
+﻿using Modeling.Models.Drawing.DrawingMessageValues.Points;
 using Modeling.Models.Enums;
-using System.Collections.Generic;
 
 namespace Modeling.Models.Drawing.DrawingMessageValues
 {
     public sealed class ConnectPointsMessageValue : DrawingMessageValue
     {
-        public IReadOnlyList<PointSingle> Points { get; init; }
-        public float Thickness { get; init; }
-        public DrawingColor BackgroundColor { get; init; }
-        public bool ShouldClearBeforeRedraw { get; init; }
+        public ConnectPointsMessageValue() : base(DrawingMessageType.Draw)
+        { }
 
-        ConnectPointsMessageValue(DrawingColor color, float thickness, bool shouldClearCanvas, DrawingColor backgroundColor) : base(color)
+        public override void AddDrawingParameter(DrawMessageValue value)
         {
-            MessageType = DrawingMessageType.Draw;
-            ShouldClearBeforeRedraw = shouldClearCanvas;
-            BackgroundColor = backgroundColor;
-            Thickness = thickness;
+            var actualPointMessageValue = (DrawPointsMessageValue)value;
+
+            if (ValidateDrawingParameter(actualPointMessageValue))
+            {
+                pointMessages.Enqueue(actualPointMessageValue);
+            }
         }
 
-        public ConnectPointsMessageValue(DrawingColor color, float thickness, bool shouldClearCanvas, DrawingColor backgroundColor, params PointSingle[] points)
-            : this(color, thickness, shouldClearCanvas, backgroundColor)
-        {
-            Points = points ?? [];
-        }
-
-        public ConnectPointsMessageValue(DrawingColor color, float thickness, bool shouldClearCanvas, DrawingColor backgroundColor, IReadOnlyList<PointSingle> points)
-            : this(color, thickness, shouldClearCanvas, backgroundColor)
-        {
-            Points = points ?? [];
-        }
-
-        public override bool IsDefault() => base.IsDefault() 
-            || (Points?.Count ?? 0) == 0 
-            || (ShouldClearBeforeRedraw && (BackgroundColor?.IsDefault() ?? true));
+        public override bool IsDefault() => base.IsDefault();
     }
 }

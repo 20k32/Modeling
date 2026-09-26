@@ -1,42 +1,24 @@
 ﻿using Modeling.Core.Drawing;
+using Modeling.Models.Drawing.DrawingMessageValues.Points;
 using Modeling.Models.Enums;
-using System.Collections.Generic;
 
 namespace Modeling.Models.Drawing.DrawingMessageValues
 {
     public class TransformPointsMessageValue : DrawingMessageValue
     {
-        public IReadOnlyList<PointSingle> Points { get; init; }
-        public float Thickness { get; init; }
-        public Matrix3x3Single Transform { get; init; }
-        public DrawingColor BackgroundColor { get; init; }
-        public bool ShouldClearBeforeRedraw { get; init; }
+        public override bool IsDefault() => base.IsDefault();
 
-        TransformPointsMessageValue(DrawingColor color, float thickness, bool shouldClearCanvas, DrawingColor backgroundColor) : base(color)
+        public TransformPointsMessageValue() : base(DrawingMessageType.Transform)
+        { }
+
+        public override void AddDrawingParameter(DrawMessageValue value)
         {
-            MessageType = DrawingMessageType.Transform;
-            Thickness = thickness;
-            ShouldClearBeforeRedraw = shouldClearCanvas;
-            BackgroundColor = backgroundColor;
-        }
+            var actualPointMessageValue = (Points.DrawTransformedPointsMessageValue)value;
 
-        public TransformPointsMessageValue(DrawingColor color, float thickness, Matrix3x3Single transform, bool shouldClearCanvas, DrawingColor backgroundColor, params PointSingle[] points)
-            : this(color, thickness, shouldClearCanvas, backgroundColor)
-        {
-            Points = points ?? [];
-            Transform = transform;
+            if (ValidateDrawingParameter(actualPointMessageValue))
+            {
+                pointMessages.Enqueue(actualPointMessageValue);
+            }
         }
-
-        public TransformPointsMessageValue(DrawingColor color, float thickness, Matrix3x3Single transform, bool shouldClearCanvas, DrawingColor backgroundColor, IReadOnlyList<PointSingle> points)
-            : this(color, thickness, shouldClearCanvas, backgroundColor)
-        {
-            Points = points ?? [];
-            Transform = transform;
-        }
-
-        public override bool IsDefault() =>
-            base.IsDefault()
-            || (Points?.Count ?? 0) == 0
-            || (ShouldClearBeforeRedraw && (BackgroundColor?.IsDefault() ?? true));
     }
 }

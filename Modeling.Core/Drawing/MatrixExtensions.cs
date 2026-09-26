@@ -62,5 +62,113 @@ namespace Modeling.Core.Drawing
             M32 = 0,
             M33 = 1
         };
+
+        public static Matrix3x3Single CreateHorizontalFlipTransform() => new()
+        {
+            M11 = -1,
+            M12 = 0,
+            M13 = 0,
+
+            M21 = 0,
+            M22 = 1,
+            M23 = 0,
+
+            M31 = 0,
+            M32 = 0,
+            M33 = 1
+        };
+
+        public static Matrix3x3Single CreateHorizontalFlipTransform(float centerX) => new()
+        {
+            M11 = -1,
+            M12 = 0,
+            M13 = 2 * centerX,
+
+            M21 = 0,
+            M22 = 1,
+            M23 = 0,
+
+            M31 = 0,
+            M32 = 0,
+            M33 = 1
+        };
+
+        public static Matrix3x3Single CreateVerticalFlipTransform() => new()
+        {
+            M11 = 1,
+            M12 = 0,
+            M13 = 0,
+
+            M21 = 0,
+            M22 = -1,
+            M23 = 0,
+
+            M31 = 0,
+            M32 = 0,
+            M33 = 1
+        };
+
+        public static Matrix3x3Single CreateVerticalFlipTransform(float centerY) => new()
+        {
+            M11 = 1,
+            M12 = 0,
+            M13 = 0,
+
+            M21 = 0,
+            M22 = -1,
+            M23 = 2 * centerY,
+
+            M31 = 0,
+            M32 = 0,
+            M33 = 1
+        };
+
+        public static Matrix3x3Single CreateDiagonalFlipTransform() => new()
+        {
+            M11 = 0,
+            M12 = 1,
+            M13 = 0,
+
+            M21 = 1,
+            M22 = 0,
+            M23 = 0,
+
+            M31 = 0,
+            M32 = 0,
+            M33 = 1
+        };
+
+        public static Matrix3x3Single CreateAntiDiagonalFlipTransform() => new()
+        {
+            M11 = 0,
+            M12 = -1,
+            M13 = 0,
+
+            M21 = -1,
+            M22 = 0,
+            M23 = 0,
+
+            M31 = 0,
+            M32 = 0,
+            M33 = 1
+        };
+
+        public static Matrix3x3Single CreateSymmetricTransform(PointSingle centerPoint, SymmetryType symmetryType) =>
+            symmetryType switch
+            {
+                SymmetryType.Horizontal => CreateHorizontalFlipTransform(centerPoint.X),
+                SymmetryType.Vertical => CreateVerticalFlipTransform(centerPoint.Y),
+                SymmetryType.Diagonal => CreateDiagonalFlipTransform(),
+                SymmetryType.AntiDiagonal => CreateAntiDiagonalFlipTransform(),
+                _ => new Matrix3x3Single()
+            };
+    }
+
+    public enum SymmetryType
+    {
+        Horizontal,
+        Vertical,
+        Diagonal,
+        AntiDiagonal
     }
 }

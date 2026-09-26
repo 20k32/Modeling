@@ -1,6 +1,6 @@
 ﻿using Modeling.Core.Abstractions;
 
-namespace Modeling.Core.Messages.Parameters.Canvas
+namespace Modeling.Core.Messages.Parameters.Canvas.Settings
 {
     public sealed class RedrawStatusParameter(bool paused) : IDefaultCheck
     {

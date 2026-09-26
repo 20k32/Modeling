@@ -9,6 +9,7 @@ using Modeling.Core.Drawing.Providers;
 using Modeling.Core.Abstractions.Providers;
 using Modeling.Core.Constants;
 using Modeling.Core.Miscellaneous;
+using System.Reflection.Metadata;
 
 namespace Modeling.ViewModels
 {
@@ -17,10 +18,20 @@ namespace Modeling.ViewModels
         readonly IApplicationSettingsProvider _applicationSettingsProvider;
         readonly IDrawingSettingsProvider _drawingSettingsProvider;
 
+        [ObservableProperty]
+        double _canvasHeight;
+
+        [ObservableProperty]
+        double _canvasWidth;
+
+
         bool _initialized;
 
         public SettingsViewModel()
         {
+            _canvasHeight = DrawingConstants.CANVAS_SIZE.Height;
+            _canvasWidth = DrawingConstants.CANVAS_SIZE.Width;
+
             _drawingSettingsProvider = Ioc.Default.GetService<IDrawingSettingsProvider>();
             _applicationSettingsProvider = Ioc.Default.GetService<IApplicationSettingsProvider>();
         }
@@ -92,6 +103,8 @@ namespace Modeling.ViewModels
                 await SaveSettingsAsync();
             }
 
+            ApplySettings();
+
             return Unit.Default;
         }
 
@@ -100,6 +113,12 @@ namespace Modeling.ViewModels
             await _drawingSettingsProvider.SaveSettingsAsync();
 
             return Unit.Default;
+        }
+
+        void ApplySettings()
+        {
+            CanvasHeight = _drawingSettingsProvider.Settings.CanvasSize.Height;
+            CanvasWidth = _drawingSettingsProvider.Settings.CanvasSize.Width;
         }
 
         void SetDefaultSettings()
@@ -112,7 +131,8 @@ namespace Modeling.ViewModels
             _drawingSettingsProvider.Settings.BackgroundColor = DrawingConstants.DEFAULT_BACKGROUND_COLOR;
 
             _drawingSettingsProvider.Settings.DrawingColor = DrawingConstants.DEFAULT_COLOR;
-            _drawingSettingsProvider.Settings.DrawingThickness = DrawingConstants.DEFAULT_DRAWING_THICKNESS;
+            _drawingSettingsProvider.Settings.GridDrawingThickness = DrawingConstants.GRID_DRAWING_THICKNESS;
+            _drawingSettingsProvider.Settings.FigureDrawingThickness = DrawingConstants.FIGURE_DRAWING_THICKNESS;
 
             _drawingSettingsProvider.Settings.Scale = DrawingConstants.DEFAULT_SCALE;
 
@@ -120,12 +140,31 @@ namespace Modeling.ViewModels
             _drawingSettingsProvider.Settings.RotatePointPosition = DrawingConstants.DEFAULT_ROTATE_POINT_POSITION;
 
             _drawingSettingsProvider.Settings.Figure = [];
+            _drawingSettingsProvider.Settings.HorizontalAxis = [];
+            _drawingSettingsProvider.Settings.VerticalAxis = [];
 
             _drawingSettingsProvider.Settings.DisplayMarkInCanvasCenter = DrawingConstants.DISPLAY_MARK_IN_CANVAS_CENTER_BY_DEFAULT;
             _drawingSettingsProvider.Settings.DisplayAxis = DrawingConstants.DISPLAY_AXIS_BY_DEFAULT;
             _drawingSettingsProvider.Settings.DisplayGrid = DrawingConstants.DISPLAY_GRID_BY_DEFAULT;
 
             _drawingSettingsProvider.Settings.RefreshRate = DrawingConstants.DEFAULT_REFRESH_RATE;
+
+            _drawingSettingsProvider.Settings.PixelsPerCentimeter = DrawingConstants.PIXELS_PER_CENTIMETER;
+            _drawingSettingsProvider.Settings.CanvasSize = DrawingConstants.CANVAS_SIZE;
+
+            _drawingSettingsProvider.Settings.HorizontalAxisColor = DrawingConstants.X_AXIS_COLOR;
+            _drawingSettingsProvider.Settings.VerticalAxisColor = DrawingConstants.Y_AXIS_COLOR;
+
+            _drawingSettingsProvider.Settings.HorizontalAxisTicksColor = DrawingConstants.X_AXIS_TICKS_COLOR;
+            _drawingSettingsProvider.Settings.VerticalAxisTicksColor = DrawingConstants.Y_AXIS_TICKS_COLOR;
+
+            _drawingSettingsProvider.Settings.AxisTickLength = DrawingConstants.X_Y_AXIS_TICKS_LENGTH_PIXELS;
+
+            _drawingSettingsProvider.Settings.AxisThickness = DrawingConstants.X_Y_AXIS_THICKNESS;
+            _drawingSettingsProvider.Settings.AxisTickThickness = DrawingConstants.X_Y_AXIST_TICKS_THICKNESS;
+
+            _drawingSettingsProvider.Settings.FigureBoundsColor = DrawingConstants.FIGURE_BOUNDS_COLOR;
+            _drawingSettingsProvider.Settings.FigureCenterPointColor = DrawingConstants.FIGURE_BOUNDS_COLOR;
         }
     }
 }

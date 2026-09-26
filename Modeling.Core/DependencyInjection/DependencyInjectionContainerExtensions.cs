@@ -4,7 +4,9 @@ using Modeling.Core.Drawing.Providers;
 using Modeling.Core.Logging;
 using Modeling.Core.Logging.Formatting;
 using Modeling.Core.Serializer;
+using Modeling.Core.Serializer.NewtonSoft;
 using Modeling.Core.Settings;
+using Newtonsoft.Json;
 using Serilog;
 
 namespace Modeling.Core.DependencyInjection
@@ -15,7 +17,9 @@ namespace Modeling.Core.DependencyInjection
         {
             LoggerInitializer.Initialize();
 
-            return services.AddTransient<IDrawingSettings, DrawingSettings>()
+            return services.AddTransient<DrawingSettingsJsonConverter>()
+                .AddTransient<NewtonSoftSerializerContractResolver>()
+                .AddTransient<IDrawingSettings, DrawingSettings>()
                 .AddSingleton<IDrawingSettingsProvider, DrawingSettingsProvider>()
                 .AddSingleton<ISerializer, NewtonSoftSerializer>()
                 .AddSingleton<IUserInterfaceThreadContext, UserInterfaceThreadContext>()

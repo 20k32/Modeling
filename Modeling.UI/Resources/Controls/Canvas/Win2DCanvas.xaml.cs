@@ -6,8 +6,11 @@ using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Geometry;
 using Microsoft.Graphics.Canvas.UI;
 using Microsoft.Graphics.Canvas.UI.Xaml;
+using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using Modeling.Core.Constants;
 using Modeling.Core.Drawing;
 using Modeling.Core.Extensions;
@@ -15,11 +18,15 @@ using Modeling.Core.Logging;
 using Modeling.Core.Messages.Canvas.Drawing;
 using Modeling.Core.Messages.Canvas.Settings;
 using Modeling.Models.Drawing.DrawingMessageValues;
+using Modeling.Models.Drawing.DrawingMessageValues.Points;
 using Modeling.Models.Drawing.DrawingPipeline;
 using Modeling.Models.Enums;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Windows.System;
+using Windows.UI.Core;
 
 
 namespace Modeling.UI.Resources.Controls.Canvas
@@ -42,6 +49,18 @@ namespace Modeling.UI.Resources.Controls.Canvas
             set { SetValue(InitializeProperty, value); }
         }
 
+        public static readonly DependencyProperty PointerMovedCommandProperty =
+            DependencyProperty.Register(nameof(PointerMovedCommand),
+            typeof(IRelayCommand<PointSingle>),
+            typeof(Win2DCanvas),
+            new PropertyMetadata(default));
+
+        public IRelayCommand<PointSingle> PointerMovedCommand
+        {
+            get { return (IRelayCommand<PointSingle>)GetValue(PointerMovedCommandProperty); }
+            set { SetValue(PointerMovedCommandProperty, value); }
+        }
+
         public Win2DCanvas()
         {
             InitializeComponent();
@@ -56,7 +75,6 @@ namespace Modeling.UI.Resources.Controls.Canvas
         {
             WeakReferenceMessenger.Default.Register<InitializeDrawingSessionMessage>(this, OnWin2DCanvasInitializeDrawingSessionMessage);
             WeakReferenceMessenger.Default.Register<EndDrawingSessionMessage>(this, OnWin2DCanvasEndDrawingSessionMessage);
-            WeakReferenceMessenger.Default.Register<ConnectTwoPointsMessage>(this, OnWin2DCanvasReceivedDrawingMessage);
             WeakReferenceMessenger.Default.Register<ClearCanvasMessage>(this, OnWin2DCanvasReceivedDrawingMessage);
             WeakReferenceMessenger.Default.Register<ConnectPointsMessage>(this, OnWin2DCanvasReceivedDrawingMessage);
             WeakReferenceMessenger.Default.Register<TransformPointsMessage>(this, OnWin2DCanvasReceivedDrawingMessage);
@@ -68,7 +86,6 @@ namespace Modeling.UI.Resources.Controls.Canvas
         {
             WeakReferenceMessenger.Default.Unregister<InitializeDrawingSessionMessage>(this);
             WeakReferenceMessenger.Default.Unregister<EndDrawingSessionMessage>(this);
-            WeakReferenceMessenger.Default.Unregister<ConnectTwoPointsMessage>(this);
             WeakReferenceMessenger.Default.Unregister<ClearCanvasMessage>(this);
             WeakReferenceMessenger.Default.Unregister<ConnectPointsMessage>(this);
             WeakReferenceMessenger.Default.Unregister<TransformPointsMessage>(this);
@@ -102,6 +119,9 @@ namespace Modeling.UI.Resources.Controls.Canvas
                 await DisposeDrawingPipelineAsync();
 
                 UnregisterMessages();
+
+                AnimatedCanvas.PointerWheelChanged -= OnAnimatedCanvasPointerWheelChanged;
+                AnimatedCanvas.PointerMoved -= OnAnimatedCanvasPointerMoved;
             }
         }
 
@@ -114,6 +134,9 @@ namespace Modeling.UI.Resources.Controls.Canvas
                 _isControlInitialized = true;
 
                 RegisterMessages();
+
+                AnimatedCanvas.PointerWheelChanged += OnAnimatedCanvasPointerWheelChanged;
+                AnimatedCanvas.PointerMoved += OnAnimatedCanvasPointerMoved;
 
                 _ = InitializeDrawingPipelineAsync();
             }
@@ -163,7 +186,18 @@ namespace Modeling.UI.Resources.Controls.Canvas
 
                 AnimatedCanvas.Draw -= OnCanvasAnimatedControlDraw;
                 AnimatedCanvas.Draw += OnCanvasAnimatedControlDraw;
+                
+                ScrollToCenter();
             }
+        }
+
+        void ScrollToCenter()
+        {
+            var canvasHorizontalCenter = (AnimatedCanvas.Width - CanvasScrollViewer.ActualWidth) / 2;
+            var canvasVerticalCenter = (AnimatedCanvas.Height - CanvasScrollViewer.ActualHeight) / 2;
+
+            CanvasScrollViewer.ScrollToHorizontalOffset(Math.Max(0, canvasHorizontalCenter));
+            CanvasScrollViewer.ScrollToVerticalOffset(Math.Max(0, canvasVerticalCenter));
         }
 
         async void OnCanvasAnimatedControlCreateResources(CanvasAnimatedControl sender, CanvasCreateResourcesEventArgs args)
@@ -213,77 +247,146 @@ namespace Modeling.UI.Resources.Controls.Canvas
             }
         }
 
-        private void HandleTransformPointsCanvasMessage(TransformPointsMessageValue message)
-        {
-            var shouldApplyTransform = message.Transform != default 
-                && message.Transform != DrawingConstants.NON_TRANSFORM_MATRIX;
-
-            using (var builder = new CanvasPathBuilder(_canvasRenderTarget))
-            {
-                var firstPoint = message.Points.First();
-                var firstPointTransformed = shouldApplyTransform ? message.Transform * firstPoint : firstPoint;
-
-                builder.BeginFigure(firstPointTransformed.ToVector2());
-
-                for (int i = 1; i < message.Points.Count; i++)
-                {
-                    var point = message.Points[i];
-                    var transformedPoint = shouldApplyTransform ? message.Transform * point : point;
-
-                    builder.AddLine(transformedPoint.ToVector2());
-                }
-
-                builder.EndFigure(CanvasFigureLoop.Open);
-
-                using (var geometry = CanvasGeometry.CreatePath(builder))
-                using (var drawingSession = _canvasRenderTarget.CreateDrawingSession())
-                {
-                    if (message.ShouldClearBeforeRedraw)
-                    {
-                        drawingSession.Clear(message.BackgroundColor.WindowsUIColor);
-                    }
-
-                    drawingSession.DrawGeometry(
-                        geometry,
-                        message.Color.WindowsUIColor,
-                        message.Thickness);
-                }
-            }
-        }
-
         void HandleClearCanvasMessage(ClearCanvasMessageValue message)
         {
             using (var drawingSession = _canvasRenderTarget.CreateDrawingSession())
             {
-                drawingSession.Clear(message.Color.WindowsUIColor);
+                foreach (var drawingParameter in message.DrawingParameters.Where(parameter => parameter.ShouldClearBeforeRedraw))
+                {
+                    drawingSession.Clear(drawingParameter.BackgroundColor.WindowsUIColor);
+                }
+            }
+        }
+
+        static void DrawFigure(CanvasPathBuilder builder, IReadOnlyList<PointSingle> points, bool applyTransform, Matrix3x3Single transform)
+        {
+            bool figureStarted = false;
+
+            for (int i = 0; i < points.Count; i++)
+            {
+                var point = points[i];
+
+                if (float.IsNaN(point.X) || float.IsNaN(point.Y))
+                {
+                    if (figureStarted)
+                    {
+                        builder.EndFigure(CanvasFigureLoop.Open);
+                        figureStarted = false;
+                    }
+
+                    continue;
+                }
+
+                var transformedPoint = applyTransform ? transform * point : point;
+
+                if (!figureStarted)
+                {
+                    builder.BeginFigure(transformedPoint.ToVector2());
+                    figureStarted = true;
+                }
+                else
+                {
+                    builder.AddLine(transformedPoint.ToVector2());
+                }
+            }
+
+            if (figureStarted)
+            {
+                builder.EndFigure(CanvasFigureLoop.Open);
             }
         }
 
         void HandleConnectPointsCanvasMessage(ConnectPointsMessageValue message)
         {
+            using (var drawingSession = _canvasRenderTarget.CreateDrawingSession())
+            {
+                foreach (var drawingParameter in message.DrawingParameters.OfType<DrawPointsMessageValue>())
+                {
+                    HandleConnectPointsCanvasMessageCore(drawingSession, drawingParameter);
+                }
+            }
+        }
+
+        void HandleConnectPointsCanvasMessageCore(CanvasDrawingSession drawingSession, DrawPointsMessageValue message)
+        {
+            if (message.ShouldClearBeforeRedraw)
+            {
+                drawingSession.Clear(message.BackgroundColor.WindowsUIColor);
+            }
+
             using (var builder = new CanvasPathBuilder(_canvasRenderTarget))
             {
-                builder.BeginFigure(message.Points.First().ToVector2());
-
-                for (int i = 1; i < message.Points.Count; i++)
-                {
-                    builder.AddLine(message.Points[i].ToVector2());
-                }
-
-                builder.EndFigure(CanvasFigureLoop.Open);
+                DrawFigure(builder, message.Points, applyTransform: false, DrawingConstants.NON_TRANSFORM_MATRIX);
 
                 using (var geometry = CanvasGeometry.CreatePath(builder))
-                using (var drawingSession = _canvasRenderTarget.CreateDrawingSession())
+                using (var strokeStyle = new CanvasStrokeStyle
+                {
+                    LineJoin = CanvasLineJoin.Round,
+                    StartCap = CanvasCapStyle.Round,
+                    EndCap = CanvasCapStyle.Round
+                })
+                {
+                    if (message.ShouldFillGeometry)
+                    {
+                        drawingSession.FillGeometry(
+                        geometry,
+                        message.FillColor.WindowsUIColor);
+                    }
+
+                    drawingSession.DrawGeometry(
+                        geometry,
+                        message.Color.WindowsUIColor,
+                        message.Thickness,
+                        strokeStyle);
+                }
+            }
+        }
+
+        void HandleTransformPointsCanvasMessage(TransformPointsMessageValue message)
+        {
+            using (var drawingSession = _canvasRenderTarget.CreateDrawingSession())
+            {
+                foreach (var drawingParameter in message.DrawingParameters.OfType<DrawTransformedPointsMessageValue>())
+                {
+                    HandleTransformPointsCanvasMessageCore(drawingSession, drawingParameter);
+                }
+            }
+        }
+
+        void HandleTransformPointsCanvasMessageCore(CanvasDrawingSession drawingSession, DrawTransformedPointsMessageValue message)
+        {
+            var shouldApplyTransform = message.Transform != default
+                && message.Transform != DrawingConstants.NON_TRANSFORM_MATRIX;
+
+            using (var builder = new CanvasPathBuilder(_canvasRenderTarget))
+            {
+                DrawFigure(builder, message.Points, shouldApplyTransform, message.Transform);
+
+                using (var geometry = CanvasGeometry.CreatePath(builder))
+                using (var strokeStyle = new CanvasStrokeStyle
+                {
+                    LineJoin = CanvasLineJoin.Round,
+                    StartCap = CanvasCapStyle.Round,
+                    EndCap = CanvasCapStyle.Round
+                })
                 {
                     if (message.ShouldClearBeforeRedraw)
                     {
                         drawingSession.Clear(message.BackgroundColor.WindowsUIColor);
                     }
 
+                    if (message.ShouldFillGeometry)
+                    {
+                        drawingSession.FillGeometry(
+                        geometry,
+                        message.FillColor.WindowsUIColor);
+                    }
+                    
                     drawingSession.DrawGeometry(
                         geometry,
                         message.Color.WindowsUIColor,
-                        message.Thickness);
+                        message.Thickness,
+                        strokeStyle);
                 }
             }
         }
@@ -292,15 +395,11 @@ namespace Modeling.UI.Resources.Controls.Canvas
         {
             _drawingPipeline.MessageReceived -= OnDrawingPipelineMessageReceived;
             _drawingPipeline.MessageReceived += OnDrawingPipelineMessageReceived;
-
-            await Task.Run(_drawingPipeline.Initialize);
         }
 
         async Task DisposeDrawingPipelineAsync()
         {
             _drawingPipeline.MessageReceived -= OnDrawingPipelineMessageReceived;
-
-            await _drawingPipeline.DisposeAsync();
         }
 
         void OnDrawingPipelineMessageReceived(DrawingMessageValue value)
@@ -362,6 +461,53 @@ namespace Modeling.UI.Resources.Controls.Canvas
             catch (Exception ex)
             {
                 Logger.Exception(ex);
+            }
+        }
+
+        private void OnAnimatedCanvasPointerWheelChanged(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            var scrollViewer = CanvasScrollViewer;
+
+            var point = e.GetCurrentPoint(scrollViewer);
+            var delta = point.Properties.MouseWheelDelta;
+
+            e.Handled = true;
+
+            var offsetX = default(double?);
+            var offsetY = default(double?);
+
+            if (InputKeyboardSource.GetKeyStateForCurrentThread(
+                    VirtualKey.Shift)
+                .HasFlag(CoreVirtualKeyStates.Down))
+            {
+                var offset = scrollViewer.HorizontalOffset;
+
+                offsetX = offset - delta;
+            }
+            else
+            {
+                var offset = scrollViewer.VerticalOffset;
+
+                offsetY = offset - delta;
+            }
+
+            scrollViewer.ChangeView(
+                    offsetX,
+                    offsetY,
+                    null,
+                    disableAnimation: false);
+        }
+
+        private void OnAnimatedCanvasPointerMoved(object sender, PointerRoutedEventArgs e)
+        {
+            if (sender is CanvasAnimatedControl canvasControl
+                && e is not null
+                && PointerMovedCommand is not null)
+            {
+                var pointerPoint = e.GetCurrentPoint(canvasControl);
+                var position = pointerPoint.Position;
+
+                PointerMovedCommand.Execute(new PointSingle((float)position.X, (float)position.Y));
             }
         }
     }
