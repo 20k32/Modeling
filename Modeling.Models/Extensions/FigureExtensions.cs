@@ -1,13 +1,17 @@
 ﻿using Modeling.Core.Constants;
 using Modeling.Core.Drawing;
+using Modeling.Core.Extensions;
+using Modeling.Models.Abstractions.Drawing.Figure;
+using Modeling.Models.Drawing.Figures;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using Windows.Graphics;
 
 namespace Modeling.Models.Extensions
 {
     public static class FigureExtensions
     {
-        public static IEnumerable<PointSingle> InitializeGrid(SizeInt32 canvasSize, int pixelsPerCentimeter)
+        public static IEnumerable<PointSingle> CreateGrid(SizeInt32 canvasSize, int pixelsPerCentimeter)
         {
             for (var y = DrawingConstants.START_POINT_DRAWING_COORDINATE_X_Y;
                 y <= canvasSize.Height; y += (int)pixelsPerCentimeter)
@@ -40,7 +44,7 @@ namespace Modeling.Models.Extensions
             }
         }
 
-        public static IEnumerable<PointSingle> InitializeAxisLine(int dimensionSize, int pixelsPerCentimeter, float centerX, float centerY, bool isVertical)
+        public static IEnumerable<PointSingle> CreateAxisLine(int dimensionSize, int pixelsPerCentimeter, float centerX, float centerY, bool isVertical)
         {
             if (isVertical)
             {
@@ -69,7 +73,7 @@ namespace Modeling.Models.Extensions
             yield return DrawingConstants.INVALID_POINT;
         }
 
-        public static IEnumerable<PointSingle> InitializeArrowHead(PointSingle endPoint, bool isVertical, float arrowHeadSize, bool pointingLeft = false, bool pointingUp = false)
+        public static IEnumerable<PointSingle> CreateArrowHead(PointSingle endPoint, bool isVertical, float arrowHeadSize, bool pointingLeft = false, bool pointingUp = false)
         {
             yield return DrawingConstants.INVALID_POINT;
 
@@ -120,7 +124,7 @@ namespace Modeling.Models.Extensions
             yield return DrawingConstants.INVALID_POINT;
         }
 
-        public static IEnumerable<PointSingle> InitializeAxisMarks(int dimensionSize, int pixelsPerCentimeter, float tickStart, float tickEnd, float centerX, float centerY, bool isVertical)
+        public static IEnumerable<PointSingle> CreateAxisMarks(int dimensionSize, int pixelsPerCentimeter, float tickStart, float tickEnd, float centerX, float centerY, bool isVertical)
         {
             if (isVertical)
             {
@@ -174,6 +178,306 @@ namespace Modeling.Models.Extensions
             }
 
             yield return DrawingConstants.INVALID_POINT;
+        }
+
+        public static IEnumerable<IPointGeometry> CreateCustomShape(PointSingle startDrawingPoint,
+            int pixelsPerCentimeter,
+            float halfCirclesDiameterMillimeters,
+            float innerHalfCirclesDiameterMillimeters,
+            float distanceBetweenHalfCirclesAndLargeRectangleMillimeters,
+            float verticalDistanceBetweenHalfCirclesMillimeters,
+            float largeRectangleWidthMillimeters,
+            float smallSquaresDimensionSizeMillimeters,
+            float largeCircleDiameterMillimeters,
+            float smallCircleDiameterMillimeters)
+        {
+            var pixelsPerMillimeter = pixelsPerCentimeter / 10f;
+
+            var halfCirclesDiameterPixels = halfCirclesDiameterMillimeters * pixelsPerMillimeter;
+            var innerHalfCirclesDiameterPixels = innerHalfCirclesDiameterMillimeters * pixelsPerMillimeter;
+
+            var halfCirclesRadiusPixels = halfCirclesDiameterPixels / 2;
+            var innerHalfCirclesRadiusPixels = innerHalfCirclesDiameterPixels / 2;
+
+            var leftHalfCirclesStartAngleDegrees = 90f;
+            var leftHalfCirclesEndAngleDegrees = 270f;
+
+            var rightHalfCirclesStartAngleDegrees = -90f;
+            var rightHalfCircleEndAngleDegrees = 90f;
+
+            var topLeftHalfCircleCenterPoint = startDrawingPoint + halfCirclesDiameterPixels;
+
+            var distanceBetweenHalfCirclesAndLargeRectanglePixels = distanceBetweenHalfCirclesAndLargeRectangleMillimeters * pixelsPerMillimeter;
+
+            var topLeftHalfCircle = topLeftHalfCircleCenterPoint.GetCirclePoints(halfCirclesRadiusPixels,
+                leftHalfCirclesStartAngleDegrees,
+                leftHalfCirclesEndAngleDegrees);
+
+            yield return topLeftHalfCircle.ToPointGeometry();
+
+            var topLeftInnerCirclePoint = topLeftHalfCircleCenterPoint;
+
+            var topLeftInnerCircle = topLeftInnerCirclePoint.GetCirclePoints(innerHalfCirclesRadiusPixels);
+
+            yield return topLeftInnerCircle.ToPointGeometry();
+
+            var verticalDistanceBetweenHalfCirclesPixels = verticalDistanceBetweenHalfCirclesMillimeters * pixelsPerMillimeter;
+
+            var bottomLeftHalfCircleCenterPoint = new PointSingle(
+                x: topLeftHalfCircleCenterPoint.X,
+                y: topLeftHalfCircleCenterPoint.Y + verticalDistanceBetweenHalfCirclesPixels);
+
+            var bottomLeftHalfCircle = bottomLeftHalfCircleCenterPoint.GetCirclePoints(halfCirclesRadiusPixels,
+                leftHalfCirclesStartAngleDegrees,
+                leftHalfCirclesEndAngleDegrees);
+
+            yield return bottomLeftHalfCircle.ToPointGeometry();
+
+            var bottomLeftInnerCirclePoint = new PointSingle(
+                x: topLeftInnerCirclePoint.X,
+                y: topLeftInnerCirclePoint.Y + verticalDistanceBetweenHalfCirclesPixels);
+
+            var bottomLeftInnerCircle = bottomLeftInnerCirclePoint.GetCirclePoints(innerHalfCirclesRadiusPixels);
+
+            yield return bottomLeftInnerCircle.ToPointGeometry();
+
+            var topLeftHalfCircleTopLineFirstPoint = new PointSingle(
+                x: topLeftHalfCircleCenterPoint.X,
+                y: topLeftHalfCircleCenterPoint.Y - halfCirclesRadiusPixels);
+
+            var topLeftHalfCircleTopLineSecondPoint = new PointSingle(
+                 x: topLeftHalfCircleCenterPoint.X + distanceBetweenHalfCirclesAndLargeRectanglePixels,
+                 y: topLeftHalfCircleCenterPoint.Y - halfCirclesRadiusPixels);
+
+            yield return ((ICollection<PointSingle>)[topLeftHalfCircleTopLineFirstPoint, topLeftHalfCircleTopLineSecondPoint])
+                .ToPointGeometry();
+
+            var bottomLeftHalfCircleTopLineFirstPoint = new PointSingle(
+                x: topLeftHalfCircleCenterPoint.X,
+                y: topLeftHalfCircleCenterPoint.Y + halfCirclesRadiusPixels);
+
+            var bottomLeftHalfCircleTopLineSecondPoint = new PointSingle(
+                 x: topLeftHalfCircleCenterPoint.X + distanceBetweenHalfCirclesAndLargeRectanglePixels,
+                 y: topLeftHalfCircleCenterPoint.Y + halfCirclesRadiusPixels);
+
+            yield return ((ICollection<PointSingle>)[bottomLeftHalfCircleTopLineFirstPoint, bottomLeftHalfCircleTopLineSecondPoint])
+                .ToPointGeometry();
+
+            var bottomTopLeftHalfCircleTopLineFirstPoint = new PointSingle(
+                x: bottomLeftHalfCircleCenterPoint.X,
+                y: bottomLeftHalfCircleCenterPoint.Y - halfCirclesRadiusPixels);
+
+            var bottomTopLeftHalfCircleTopLineSecondPoint = new PointSingle(
+                 x: bottomLeftHalfCircleCenterPoint.X + distanceBetweenHalfCirclesAndLargeRectanglePixels,
+                 y: bottomLeftHalfCircleCenterPoint.Y - halfCirclesRadiusPixels);
+
+            yield return ((ICollection<PointSingle>)[bottomTopLeftHalfCircleTopLineFirstPoint, bottomTopLeftHalfCircleTopLineSecondPoint])
+                .ToPointGeometry();
+
+            var bottomBottomLeftHalfCircleTopLineFirstPoint = new PointSingle(
+                x: bottomLeftHalfCircleCenterPoint.X,
+                y: bottomLeftHalfCircleCenterPoint.Y + halfCirclesRadiusPixels);
+
+            var bottomBottomLeftHalfCircleTopLineSecondPoint = new PointSingle(
+                 x: bottomLeftHalfCircleCenterPoint.X + distanceBetweenHalfCirclesAndLargeRectanglePixels,
+                 y: bottomLeftHalfCircleCenterPoint.Y + halfCirclesRadiusPixels);
+
+            yield return ((ICollection<PointSingle>)[bottomBottomLeftHalfCircleTopLineFirstPoint, bottomBottomLeftHalfCircleTopLineSecondPoint])
+                .ToPointGeometry();
+
+            var rectangleWidthPixels = largeRectangleWidthMillimeters * pixelsPerMillimeter;
+
+            var topTopRightHalfCircleTopLineSecondPoint = new PointSingle(
+                x: topLeftHalfCircleTopLineSecondPoint.X + rectangleWidthPixels,
+                y: topLeftHalfCircleTopLineSecondPoint.Y);
+
+            yield return ((ICollection<PointSingle>)[topLeftHalfCircleTopLineSecondPoint, topTopRightHalfCircleTopLineSecondPoint])
+                .ToPointGeometry();
+
+            var bottomBottomRightHalfCircleTopLineFirstPoint = new PointSingle(
+                x: bottomBottomLeftHalfCircleTopLineSecondPoint.X,
+                y: bottomBottomLeftHalfCircleTopLineSecondPoint.Y);
+
+            var bottomBottomRightHalfCircleTopLineSecondPoint = new PointSingle(
+                x: bottomBottomLeftHalfCircleTopLineSecondPoint.X + rectangleWidthPixels,
+                y: bottomBottomLeftHalfCircleTopLineSecondPoint.Y);
+
+            yield return ((ICollection<PointSingle>)[bottomBottomRightHalfCircleTopLineFirstPoint, bottomBottomRightHalfCircleTopLineSecondPoint])
+                .ToPointGeometry();
+
+            yield return ((ICollection<PointSingle>)[topLeftHalfCircleTopLineSecondPoint, bottomLeftHalfCircleTopLineSecondPoint])
+                .ToPointGeometry();
+
+            yield return ((ICollection<PointSingle>)[bottomTopLeftHalfCircleTopLineSecondPoint, bottomBottomLeftHalfCircleTopLineSecondPoint])
+                .ToPointGeometry();
+
+            yield return ((ICollection<PointSingle>)[bottomLeftHalfCircleTopLineSecondPoint, bottomTopLeftHalfCircleTopLineSecondPoint])
+                .ToPointGeometry();
+
+            var smallCircleDiameterPixels = smallCircleDiameterMillimeters * pixelsPerMillimeter;
+            var smallCircleRadiusPixels = smallCircleDiameterPixels / 2;
+
+            var largeCircleDiameterPixels = largeCircleDiameterMillimeters * pixelsPerMillimeter;
+            var largeCircleRadiusPixels = largeCircleDiameterPixels / 2;
+
+            var smallSquaresDimensionSizePixels = smallSquaresDimensionSizeMillimeters * pixelsPerMillimeter;
+
+            var horizontalMarginBetweenLeftRectangleBorderAndCenter =
+                (rectangleWidthPixels - smallSquaresDimensionSizePixels * 2 - largeCircleDiameterPixels) / 2;
+
+            var overallFigureHeightPixels = 60 * pixelsPerMillimeter;
+
+            var halfDistanceBetweenHalfCircles = overallFigureHeightPixels / 2;
+
+            var halfDistanceBetweenCenterAndSmallSquareCenter
+                = halfDistanceBetweenHalfCircles - smallSquaresDimensionSizePixels / 2;
+
+            var topLeftSmallSquareStartPoint = new PointSingle(
+                x: topLeftHalfCircleTopLineSecondPoint.X + horizontalMarginBetweenLeftRectangleBorderAndCenter,
+                y: halfDistanceBetweenCenterAndSmallSquareCenter + smallSquaresDimensionSizePixels);
+
+            var bottomLeftSmallSquareEndPoint = new PointSingle(
+                x: topLeftSmallSquareStartPoint.X,
+                y: topLeftSmallSquareStartPoint.Y + smallSquaresDimensionSizePixels);
+
+            yield return ((ICollection<PointSingle>)[topLeftSmallSquareStartPoint, bottomLeftSmallSquareEndPoint])
+                .ToPointGeometry();
+
+            var topRightLeftSmallSquareEndPoint = new PointSingle(
+                x: topLeftSmallSquareStartPoint.X + smallSquaresDimensionSizePixels,
+                y: topLeftSmallSquareStartPoint.Y);
+
+            yield return ((ICollection<PointSingle>)[topLeftSmallSquareStartPoint, topRightLeftSmallSquareEndPoint])
+                .ToPointGeometry();
+
+            var bottomRightLeftSmallSquareEndPoint = new PointSingle(
+                x: bottomLeftSmallSquareEndPoint.X + smallSquaresDimensionSizePixels,
+                y: bottomLeftSmallSquareEndPoint.Y);
+
+            yield return ((ICollection<PointSingle>)[bottomLeftSmallSquareEndPoint, bottomRightLeftSmallSquareEndPoint])
+                .ToPointGeometry();
+
+            var largeCircleCenterPoint = new PointSingle(
+                x: topLeftHalfCircleTopLineSecondPoint.X + horizontalMarginBetweenLeftRectangleBorderAndCenter
+                    + smallSquaresDimensionSizePixels + largeCircleRadiusPixels,
+                y: halfDistanceBetweenHalfCircles + largeCircleRadiusPixels / 2);
+
+            var largeCircle = largeCircleCenterPoint.GetCirclePoints(radius: largeCircleRadiusPixels);
+
+            yield return largeCircle.ToPointGeometry();
+
+            var smallCircle = largeCircleCenterPoint.GetCirclePoints(radius: smallCircleRadiusPixels);
+
+            yield return smallCircle.ToPointGeometry();
+
+            var topLeftRightSmallSquareStartPoint = new PointSingle(
+                x: topRightLeftSmallSquareEndPoint.X + largeCircleDiameterPixels,
+                y: topRightLeftSmallSquareEndPoint.Y);
+
+            var topLeftRightSmallSquareEndPoint = new PointSingle(
+                x: topLeftRightSmallSquareStartPoint.X + smallSquaresDimensionSizePixels,
+                y: topLeftRightSmallSquareStartPoint.Y);
+
+            var bottomRightSmallSquareEndPoint = new PointSingle(
+                x: topLeftRightSmallSquareEndPoint.X,
+                y: topLeftRightSmallSquareEndPoint.Y + smallSquaresDimensionSizePixels);
+
+            var bottomLeftRightSmallSquareEndPoint = new PointSingle(
+                x: topLeftRightSmallSquareStartPoint.X,
+                y: topLeftRightSmallSquareStartPoint.Y + smallSquaresDimensionSizePixels);
+
+            yield return ((ICollection<PointSingle>)[topLeftRightSmallSquareStartPoint,
+                topLeftRightSmallSquareEndPoint,
+                bottomRightSmallSquareEndPoint,
+                bottomLeftRightSmallSquareEndPoint])
+                .ToPointGeometry();
+
+            var topRightHalfCircleConnectionLineEndPoint = new PointSingle(
+                x: topTopRightHalfCircleTopLineSecondPoint.X + distanceBetweenHalfCirclesAndLargeRectanglePixels,
+                y: topTopRightHalfCircleTopLineSecondPoint.Y);
+
+            yield return ((ICollection<PointSingle>)[topTopRightHalfCircleTopLineSecondPoint,
+                topRightHalfCircleConnectionLineEndPoint])
+                .ToPointGeometry();
+
+            var topBottomRightHalfCircleConnectionLineStartPoint = new PointSingle(
+                x: topTopRightHalfCircleTopLineSecondPoint.X,
+                y: topTopRightHalfCircleTopLineSecondPoint.Y + halfCirclesDiameterPixels);
+
+            var topBottomRightHalfCircleConnectionLineEndPoint = new PointSingle(
+                x: topTopRightHalfCircleTopLineSecondPoint.X + distanceBetweenHalfCirclesAndLargeRectanglePixels,
+                y: topTopRightHalfCircleTopLineSecondPoint.Y + halfCirclesDiameterPixels);
+
+            yield return ((ICollection<PointSingle>)[topBottomRightHalfCircleConnectionLineStartPoint,
+                topBottomRightHalfCircleConnectionLineEndPoint])
+                .ToPointGeometry();
+
+            var topRightHalfCircleCenterPoint = new PointSingle(
+                x: topRightHalfCircleConnectionLineEndPoint.X,
+                y: topLeftHalfCircleCenterPoint.Y);
+
+            var topRightHalfCircle = topRightHalfCircleCenterPoint.GetCirclePoints(halfCirclesRadiusPixels,
+                rightHalfCirclesStartAngleDegrees,
+                rightHalfCircleEndAngleDegrees);
+
+            yield return topRightHalfCircle.ToPointGeometry();
+
+            var topRightInnerCircle = topRightHalfCircleCenterPoint.GetCirclePoints(innerHalfCirclesRadiusPixels);
+
+            yield return topRightInnerCircle.ToPointGeometry();
+
+            yield return ((ICollection<PointSingle>)[topTopRightHalfCircleTopLineSecondPoint,
+                topBottomRightHalfCircleConnectionLineStartPoint])
+                .ToPointGeometry();
+
+            var rightBorderEndPoint = new PointSingle(
+                x: topTopRightHalfCircleTopLineSecondPoint.X,
+                y: topTopRightHalfCircleTopLineSecondPoint.Y + verticalDistanceBetweenHalfCirclesPixels);
+
+            yield return ((ICollection<PointSingle>)[topBottomRightHalfCircleConnectionLineStartPoint,
+                rightBorderEndPoint])
+                .ToPointGeometry();
+
+            var bottomRightHalfCircleConnectionLineTopEndPoint = new PointSingle(
+                x: rightBorderEndPoint.X + distanceBetweenHalfCirclesAndLargeRectanglePixels,
+                y: rightBorderEndPoint.Y);
+
+            yield return ((ICollection<PointSingle>)[rightBorderEndPoint,
+                bottomRightHalfCircleConnectionLineTopEndPoint])
+                .ToPointGeometry();
+
+            var bottomRightHalfCircleConnectionLineBottomStartPoint = new PointSingle(
+                x: rightBorderEndPoint.X,
+                y: rightBorderEndPoint.Y + halfCirclesDiameterPixels);
+
+            var bottomRightHalfCircleConnectionLineBottomEndPoint = new PointSingle(
+                x: bottomRightHalfCircleConnectionLineBottomStartPoint.X + distanceBetweenHalfCirclesAndLargeRectanglePixels,
+                y: bottomRightHalfCircleConnectionLineBottomStartPoint.Y);
+
+            yield return ((ICollection<PointSingle>)[bottomRightHalfCircleConnectionLineBottomStartPoint,
+                bottomRightHalfCircleConnectionLineBottomEndPoint])
+                .ToPointGeometry();
+
+            var bottomConnectionLineEndPoint = new PointSingle(
+                x: rightBorderEndPoint.X,
+                y: rightBorderEndPoint.Y + halfCirclesDiameterPixels);
+
+            yield return ((ICollection<PointSingle>)[rightBorderEndPoint,
+                bottomConnectionLineEndPoint])
+                .ToPointGeometry();
+
+            var bottomRightHalfCircleCenterPoint = new PointSingle(
+                x: bottomRightHalfCircleConnectionLineTopEndPoint.X,
+                y: bottomRightHalfCircleConnectionLineTopEndPoint.Y + halfCirclesRadiusPixels);
+
+            var bottomRightHalfCircle = bottomRightHalfCircleCenterPoint.GetCirclePoints(halfCirclesRadiusPixels, rightHalfCirclesStartAngleDegrees,
+                rightHalfCircleEndAngleDegrees);
+
+            yield return bottomRightHalfCircle.ToPointGeometry();
+
+            var bottomRightInnerCircle = bottomRightHalfCircleCenterPoint.GetCirclePoints(innerHalfCirclesRadiusPixels);
+
+            yield return bottomRightInnerCircle.ToPointGeometry();
         }
     }
 }

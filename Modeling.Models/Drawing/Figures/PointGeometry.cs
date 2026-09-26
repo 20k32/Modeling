@@ -6,7 +6,7 @@ namespace Modeling.Models.Drawing.Figures
 {
     public sealed class PointGeometry : IPointGeometry
     {
-        public HashSet<PointSingle> Points { get; private set; } = [];
+        public HashSet<PointSingle> Points { get; } = [];
 
         public bool TryAddPoint(PointSingle point) => Points.Add(point);
         public void AddPointsRange(IEnumerable<PointSingle> points)

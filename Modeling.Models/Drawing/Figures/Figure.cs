@@ -15,6 +15,14 @@ namespace Modeling.Models.Drawing.Figures
 
         public void AddSegment(IPointGeometry segment) => Segments.AddLast(segment);
 
+        public void AddSegments(IEnumerable<IPointGeometry> segments)
+        {
+            foreach (var segment in segments)
+            {
+                AddSegment(segment);
+            }
+        }
+
         public IEnumerator<IPointGeometry> GetEnumerator()
         {
             foreach (var segment in Segments)

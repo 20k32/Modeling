@@ -252,129 +252,23 @@ namespace Modeling.ViewModels
 
             _gridWithAxisDrawingMessage = drawVerticalAxisMarksMessageParameter;
         }
-
-        private void AddPointsToFigureAsSegment(IEnumerable<PointSingle> points)
-        {
-            var segment = Ioc.Default.GetRequiredService<IPointGeometry>();
-            segment.AddPointsRange(points);
-            _figure.AddSegment(segment);
-        }
-
-        // accordig var 14
-        // assume that figure will be drawn at the second quarter of graphic
-        // canvas coords of second quarter approx x: 769 y: 35
-        // don't matter in this 'example' cause we will use transforms
-        //todo: take into account pixelsPerMillimeter 
+        
         private void InitializeFigure()
         {
             var pixelsPerCentimeter = _drawingSettingsProvider.Settings.PixelsPerCentimeter;
             var pixelsPerMillimeter = pixelsPerCentimeter / 10f;
 
-            var halfCirclesDiameterMillimeters = FirgureRelatedConstants.HALF_CIRCLES_DIAMETER_MILLIMETERS * pixelsPerMillimeter;
-            var innerHalfCirclesDiameterMillimeters = FirgureRelatedConstants.INNER_HALF_CIRCLES_DIAMETER_MILLIMETERS * pixelsPerMillimeter;
-
-            var halfCirclesRadiusMillimeters = halfCirclesDiameterMillimeters / 2;
-            var innerHalfCirclesRadiusMillimeters = innerHalfCirclesDiameterMillimeters / 2;
-
-            var leftHalfCirclesStartAngleDegrees = 90f;
-            var leftHalfCirclesEndAngleDegrees = 270f;
-
-            var rightHalfCirclesStartAngleDegrees = -90f;
-            var rightHalfCircleEndAngleDegrees = 90f;
-
-            var topLeftHalfCircleCenterPoint = START_DRAWING_POINT + halfCirclesDiameterMillimeters;
-
-            var distanceBetweenHalfCirclesAndLargeRectangleMillimeters = FirgureRelatedConstants.DISTANCE_BETWEEN_HALF_CIRCLES_AND_LARGE_RECTANGLE * pixelsPerMillimeter;
-
-
-            var topLeftHalfCircle = topLeftHalfCircleCenterPoint.GetCirclePoints(halfCirclesRadiusMillimeters,
-                leftHalfCirclesStartAngleDegrees,
-                leftHalfCirclesEndAngleDegrees);
-
-            AddPointsToFigureAsSegment(topLeftHalfCircle);
-
-            var topLeftInnerCirclePoint = topLeftHalfCircleCenterPoint;
-
-            var topLeftInnerCircle = topLeftInnerCirclePoint.GetCirclePoints(innerHalfCirclesRadiusMillimeters);
-
-            AddPointsToFigureAsSegment(topLeftInnerCircle);
-
-            var verticalHalfCircleOffset = FirgureRelatedConstants.VERTICAL_DISTANCE_BETWEEN_HALF_CIRCLES_MILLIMETERS * pixelsPerMillimeter;
-
-            var bottomLeftHalfCircleCenterPoint = new PointSingle(
-                x: topLeftHalfCircleCenterPoint.X,
-                y: topLeftHalfCircleCenterPoint.Y + verticalHalfCircleOffset);
-
-            var bottomLeftHalfCircle = bottomLeftHalfCircleCenterPoint.GetCirclePoints(halfCirclesRadiusMillimeters,
-                leftHalfCirclesStartAngleDegrees,
-                leftHalfCirclesEndAngleDegrees);
-
-            AddPointsToFigureAsSegment(bottomLeftHalfCircle);
-
-            var bottomLeftInnerCirclePoint = new PointSingle(
-                x: topLeftInnerCirclePoint.X,
-                y: topLeftInnerCirclePoint.Y + verticalHalfCircleOffset);
-
-            var bottomLeftInnerCircle = bottomLeftInnerCirclePoint.GetCirclePoints(innerHalfCirclesRadiusMillimeters);
-
-            AddPointsToFigureAsSegment(bottomLeftInnerCircle);
-
-            var topLeftHalfCircleTopLineFirstPoint = new PointSingle(
-                x: topLeftHalfCircleCenterPoint.X,
-                y: topLeftHalfCircleCenterPoint.Y - halfCirclesRadiusMillimeters);
-
-            var topLeftHalfCircleTopLineSecondPoint = new PointSingle(
-                 x: topLeftHalfCircleCenterPoint.X + distanceBetweenHalfCirclesAndLargeRectangleMillimeters,
-                 y: topLeftHalfCircleCenterPoint.Y - halfCirclesRadiusMillimeters);
-
-            AddPointsToFigureAsSegment([topLeftHalfCircleTopLineFirstPoint, topLeftHalfCircleTopLineSecondPoint]);
-
-            var bottomLeftHalfCircleTopLineFirstPoint = new PointSingle(
-                x: topLeftHalfCircleCenterPoint.X,
-                y: topLeftHalfCircleCenterPoint.Y + halfCirclesRadiusMillimeters);
-
-            var bottomLeftHalfCircleTopLineSecondPoint = new PointSingle(
-                 x: topLeftHalfCircleCenterPoint.X + distanceBetweenHalfCirclesAndLargeRectangleMillimeters,
-                 y: topLeftHalfCircleCenterPoint.Y + halfCirclesRadiusMillimeters);
-
-            AddPointsToFigureAsSegment([bottomLeftHalfCircleTopLineFirstPoint, bottomLeftHalfCircleTopLineSecondPoint]);
-
-            var bottomTopLeftHalfCircleTopLineFirstPoint = new PointSingle(
-                x: bottomLeftHalfCircleCenterPoint.X,
-                y: bottomLeftHalfCircleCenterPoint.Y - halfCirclesRadiusMillimeters);
-
-            var bottomTopLeftHalfCircleTopLineSecondPoint = new PointSingle(
-                 x: bottomLeftHalfCircleCenterPoint.X + distanceBetweenHalfCirclesAndLargeRectangleMillimeters,
-                 y: bottomLeftHalfCircleCenterPoint.Y - halfCirclesRadiusMillimeters);
-
-            AddPointsToFigureAsSegment([bottomTopLeftHalfCircleTopLineFirstPoint, bottomTopLeftHalfCircleTopLineSecondPoint]);
-
-            var bottomBottomLeftHalfCircleTopLineFirstPoint = new PointSingle(
-                x: bottomLeftHalfCircleCenterPoint.X,
-                y: bottomLeftHalfCircleCenterPoint.Y + halfCirclesRadiusMillimeters);
-
-            var bottomBottomLeftHalfCircleTopLineSecondPoint = new PointSingle(
-                 x: bottomLeftHalfCircleCenterPoint.X + distanceBetweenHalfCirclesAndLargeRectangleMillimeters,
-                 y: bottomLeftHalfCircleCenterPoint.Y + halfCirclesRadiusMillimeters);
-
-            AddPointsToFigureAsSegment([bottomBottomLeftHalfCircleTopLineFirstPoint, bottomBottomLeftHalfCircleTopLineSecondPoint]);
-
-            var rectangleWidthMillimeters = FirgureRelatedConstants.LARGE_RECTANGLE_WIDTH_MILLIMETERS * pixelsPerCentimeter;
-
-            var topTopRightHalfCircleTopLineFirstPoint = new PointSingle(
-                x: topLeftHalfCircleTopLineFirstPoint.X + rectangleWidthMillimeters,
-                y: topLeftHalfCircleCenterPoint.Y - halfCirclesRadiusMillimeters);
-
-            var topTopRightHalfCircleTopLineSecondPoint = new PointSingle(
-                x: topTopRightHalfCircleTopLineFirstPoint.X + rectangleWidthMillimeters,
-                y: topLeftHalfCircleCenterPoint.Y - halfCirclesRadiusMillimeters);
-
-            AddPointsToFigureAsSegment([topTopRightHalfCircleTopLineFirstPoint, topTopRightHalfCircleTopLineSecondPoint]);
-            /*
-            var rectangleHeightMillimeters = topLeftHalfCircleTopLineSecondPoint.X - bottomLeftHalfCircleCenterPoint.X + distanceBetweenHalfCirclesAndLargeRectangleMillimeters;
-
-            var rectangleTopLeft = topLeftHalfCircleTopLineSecondPoint;
-            var rectangleBottomLeft = bottomBottomLeftHalfCircleTopLineSecondPoint;*/
+            _figure.AddSegments(
+                FigureExtensions.CreateCustomShape(START_DRAWING_POINT,
+                pixelsPerCentimeter,
+                FigureRelatedConstants.HALF_CIRCLES_DIAMETER_MILLIMETERS,
+                FigureRelatedConstants.INNER_HALF_CIRCLES_DIAMETER_MILLIMETERS,
+                FigureRelatedConstants.DISTANCE_BETWEEN_HALF_CIRCLES_AND_LARGE_RECTANGLE,
+                FigureRelatedConstants.VERTICAL_DISTANCE_BETWEEN_HALF_CIRCLES_MILLIMETERS,
+                FigureRelatedConstants.LARGE_RECTANGLE_WIDTH_MILLIMETERS,
+                FigureRelatedConstants.SMALL_SQUARES_DIMENSION_SIZE_MILLIMETERS,
+                FigureRelatedConstants.LARGE_CIRCLE_DIAMETER_MILLIMETERS,
+                FigureRelatedConstants.SMALL_CIRCLE_DIAMETER_MILLIMETERS));
         }
 
         private PointListTransformMessageParameter GetDrawingFigureMessage(IObjectTree parentMessage)
@@ -434,7 +328,7 @@ namespace Modeling.ViewModels
             var canvasSize = _drawingSettingsProvider.Settings.CanvasSize;
             var pixelsPerCentimeter = _drawingSettingsProvider.Settings.PixelsPerCentimeter;
 
-            _grid.AddRange(FigureExtensions.InitializeGrid(canvasSize, pixelsPerCentimeter));
+            _grid.AddRange(FigureExtensions.CreateGrid(canvasSize, pixelsPerCentimeter));
         }
 
         void InitializeAxis()
@@ -446,13 +340,13 @@ namespace Modeling.ViewModels
             var centerX = canvasSize.Width / 2f;
             var centerY = canvasSize.Height / 2f;
 
-            _horizontalAxis.AddRange(FigureExtensions.InitializeAxisLine(canvasSize.Width, pixelsPerCentimeter, centerX, centerY, isVertical: false));
-            _horizontalAxis.AddRange(FigureExtensions.InitializeArrowHead(new PointSingle(canvasSize.Width, centerY), isVertical: false, arrowHeadSize));
-            _horizontalAxis.AddRange(FigureExtensions.InitializeArrowHead(new PointSingle(0, centerY), isVertical: false, arrowHeadSize, pointingLeft: true));
+            _horizontalAxis.AddRange(FigureExtensions.CreateAxisLine(canvasSize.Width, pixelsPerCentimeter, centerX, centerY, isVertical: false));
+            _horizontalAxis.AddRange(FigureExtensions.CreateArrowHead(new PointSingle(canvasSize.Width, centerY), isVertical: false, arrowHeadSize));
+            _horizontalAxis.AddRange(FigureExtensions.CreateArrowHead(new PointSingle(0, centerY), isVertical: false, arrowHeadSize, pointingLeft: true));
 
-            _verticalAxis.AddRange(FigureExtensions.InitializeAxisLine(canvasSize.Height, pixelsPerCentimeter, centerX, centerY, isVertical: true));
-            _verticalAxis.AddRange(FigureExtensions.InitializeArrowHead(new PointSingle(centerX, canvasSize.Height), isVertical: true, arrowHeadSize));
-            _verticalAxis.AddRange(FigureExtensions.InitializeArrowHead(new PointSingle(centerX, 0), isVertical: true, arrowHeadSize, pointingUp: true));
+            _verticalAxis.AddRange(FigureExtensions.CreateAxisLine(canvasSize.Height, pixelsPerCentimeter, centerX, centerY, isVertical: true));
+            _verticalAxis.AddRange(FigureExtensions.CreateArrowHead(new PointSingle(centerX, canvasSize.Height), isVertical: true, arrowHeadSize));
+            _verticalAxis.AddRange(FigureExtensions.CreateArrowHead(new PointSingle(centerX, 0), isVertical: true, arrowHeadSize, pointingUp: true));
         }
 
         void InitializeMarksOnAxis()
@@ -465,7 +359,7 @@ namespace Modeling.ViewModels
             var centerY = canvasSize.Height / 2f;
 
 
-            _horizontalAxisMarks.AddRange(FigureExtensions.InitializeAxisMarks(
+            _horizontalAxisMarks.AddRange(FigureExtensions.CreateAxisMarks(
                 canvasSize.Width,
                 pixelsPerCentimeter,
                 DrawingConstants.START_POINT_DRAWING_COORDINATE_X_Y,
@@ -474,7 +368,7 @@ namespace Modeling.ViewModels
                 centerY - axisTickLength / 2,
                 isVertical: false));
 
-            _verticalAxisMarks.AddRange(FigureExtensions.InitializeAxisMarks(
+            _verticalAxisMarks.AddRange(FigureExtensions.CreateAxisMarks(
                 canvasSize.Height,
                 pixelsPerCentimeter,
                 DrawingConstants.START_POINT_DRAWING_COORDINATE_X_Y,
