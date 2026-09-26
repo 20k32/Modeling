@@ -4,7 +4,7 @@ using Windows.UI;
 
 namespace Modeling.Core.Drawing
 {
-    public class DrawingColor : IDefaultCheck
+    public readonly struct DrawingColor : IDefaultCheck
     {
         public Color WindowsUIColor { get; init; }
         public string ColorHex => WindowsUIColor.ToString();

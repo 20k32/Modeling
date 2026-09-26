@@ -19,10 +19,10 @@ namespace Modeling.Core.Messages.Parameters.Canvas
         public bool ShouldFillGeometry { get; init; } = shouldFillGeometry;
         public DrawingColor FillColor { get; init; } = fillColor;
 
-        public bool IsDefault() => (Color?.IsDefault() ?? true)
+        public bool IsDefault() => Color.IsDefault()
             || Points is null
             || Points.All(point => point == DrawingConstants.DEFAULT_POINT)
-            || (ShouldClearBeforeRedraw && (BackgroundColor?.IsDefault() ?? true))
-            || (ShouldFillGeometry && (FillColor?.IsDefault() ?? true));
+            || (ShouldClearBeforeRedraw && BackgroundColor.IsDefault())
+            || (ShouldFillGeometry && FillColor.IsDefault());
     }
 }

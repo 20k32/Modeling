@@ -43,6 +43,8 @@ namespace Modeling.Core.Settings
         public Color VerticalAxisColor { get; set; }
         public Color VerticalAxisTicksColor { get; set; }
         public Color HorizontalAxisTicksColor { get; set; }
+        public Color FigureBoundsColor { get; set; }
+        public Color FigureCenterPointColor { get; set; }
 
         float AxisThickness { get; set; }
         float AxisTickThickness { get; set; }

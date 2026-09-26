@@ -65,6 +65,7 @@ namespace Modeling.Core.Constants
 
         public static readonly Color X_AXIS_TICKS_COLOR = Colors.Blue;
         public static readonly Color Y_AXIS_TICKS_COLOR = Colors.Blue;
+        public static readonly Color FIGURE_BOUNDS_COLOR = Colors.Magenta;
 
         public const float X_Y_AXIS_THICKNESS = 3;
         public const float X_Y_AXIS_TICKS_LENGTH_PIXELS = 15;

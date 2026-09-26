@@ -30,7 +30,7 @@ namespace Modeling.ViewModels
 {
     public sealed partial class DrawingViewModel : ObservableObject
     {
-        static readonly PointSingle START_DRAWING_POINT = new PointSingle(769, 35);
+        static readonly PointSingle START_DRAWING_POINT = new PointSingle(0, 0);
 
         readonly IDrawingSettingsProvider _drawingSettingsProvider;
 
@@ -252,15 +252,12 @@ namespace Modeling.ViewModels
 
             _gridWithAxisDrawingMessage = drawVerticalAxisMarksMessageParameter;
         }
-        
+
         private void InitializeFigure()
         {
-            var pixelsPerCentimeter = _drawingSettingsProvider.Settings.PixelsPerCentimeter;
-            var pixelsPerMillimeter = pixelsPerCentimeter / 10f;
-
             _figure.AddSegments(
                 FigureExtensions.CreateCustomShape(START_DRAWING_POINT,
-                pixelsPerCentimeter,
+                _drawingSettingsProvider.Settings.PixelsPerCentimeter,
                 FigureRelatedConstants.HALF_CIRCLES_DIAMETER_MILLIMETERS,
                 FigureRelatedConstants.INNER_HALF_CIRCLES_DIAMETER_MILLIMETERS,
                 FigureRelatedConstants.DISTANCE_BETWEEN_HALF_CIRCLES_AND_LARGE_RECTANGLE,
@@ -269,6 +266,8 @@ namespace Modeling.ViewModels
                 FigureRelatedConstants.SMALL_SQUARES_DIMENSION_SIZE_MILLIMETERS,
                 FigureRelatedConstants.LARGE_CIRCLE_DIAMETER_MILLIMETERS,
                 FigureRelatedConstants.SMALL_CIRCLE_DIAMETER_MILLIMETERS));
+
+            _figure.SetPropertiesFromSegments();
         }
 
         private PointListTransformMessageParameter GetDrawingFigureMessage(IObjectTree parentMessage)
@@ -308,7 +307,18 @@ namespace Modeling.ViewModels
                     parent: figureComponentDrawingMessage);
             }
 
-            return parentFigureComponentDrawingMessage;
+            var boundsDrawingMessage = new PointListTransformMessageParameter(
+                    points: [.. _figure.Bounds.GetPointsFromBounds()],
+                    color: new(_drawingSettingsProvider.Settings.FigureBoundsColor),
+                    transformMatrix: _transform,
+                    shouldFillGeometry: false,
+                    fillColor: default,
+                    clearBeforeRedraw: false,
+                    backgroundColor: backgroundColor,
+                    thickness: thickness,
+                    parent: parentFigureComponentDrawingMessage);
+
+            return boundsDrawingMessage;
         }
 
         [RelayCommand]

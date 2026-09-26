@@ -5,13 +5,20 @@ using Modeling.Models.Miscellaneous;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Modeling.Models.Drawing.Figures
 {
     public sealed class Figure : IFigure
     {
+        PointSingle _centerPoint;
+        RectangleSingle _bounds;
+
         public LinkedList<IPointGeometry> Segments { get; private set; } = [];
+
+        public PointSingle CenterPoint => _centerPoint;
+        public RectangleSingle Bounds => _bounds;
 
         public void AddSegment(IPointGeometry segment) => Segments.AddLast(segment);
 
@@ -92,5 +99,32 @@ namespace Modeling.Models.Drawing.Figures
         }
 
         public void Clear() => Segments.Clear();
+
+        public void SetPropertiesFromSegments()
+        {
+            var firstPoint = Segments.First().Points.First();
+
+            var left = float.MaxValue;
+            var top = float.MaxValue;
+            var width = float.MinValue;
+            var height = float.MinValue;
+
+            foreach (var segment in Segments)
+            {
+                foreach (var point in segment.Points)
+                {
+                    left = MathF.Min(left, point.X);
+                    top = MathF.Min(top, point.Y);
+                    width = MathF.Max(width, point.X);
+                    height = MathF.Max(height, point.Y);
+                }
+            }
+
+            _centerPoint = new PointSingle(
+                x: width / 2,
+                y: height / 2);
+
+            _bounds = new RectangleSingle(top, left, width, height);
+        }
     }
 }

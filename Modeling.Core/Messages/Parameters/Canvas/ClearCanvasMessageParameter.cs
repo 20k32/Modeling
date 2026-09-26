@@ -12,6 +12,6 @@ namespace Modeling.Core.Messages.Parameters.Canvas
         public DrawingColor Color { get; init; } = color;
         public bool ClearBeforeRedraw { get; init; } = clearBeforeRedraw;
 
-        public bool IsDefault() => Color?.IsDefault() ?? true;
+        public bool IsDefault() => Color.IsDefault();
     }
 }

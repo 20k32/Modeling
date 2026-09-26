@@ -8,6 +8,6 @@ namespace Modeling.Models.Drawing.DrawingMessageValues.Points
         public DrawingColor BackgroundColor { get; init; } = backgroundColor;
         public bool ShouldClearBeforeRedraw { get; init; } = shouldClearBeforeRedraw;
 
-        public bool IsDefault() => BackgroundColor?.IsDefault() ?? true;
+        public bool IsDefault() => BackgroundColor.IsDefault();
     }
 }
