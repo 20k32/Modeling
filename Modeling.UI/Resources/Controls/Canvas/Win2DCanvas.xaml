@@ -15,7 +15,7 @@
                   VerticalScrollBarVisibility="Auto">
 
         <canvas:CanvasAnimatedControl x:Name="AnimatedCanvas"
-                                      Width="1366"
-                                      Height="768" />
+                                      Width="{Binding SettingsViewModel.CanvasWidth, Source={StaticResource ServiceLocator}}"
+                                      Height="{Binding SettingsViewModel.CanvasHeight, Source={StaticResource ServiceLocator}}" />
     </ScrollViewer>
 </UserControl>

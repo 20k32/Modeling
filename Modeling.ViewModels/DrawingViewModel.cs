@@ -16,7 +16,9 @@ using Modeling.Core.Messages.Canvas.Drawing;
 using Modeling.Core.Messages.Canvas.Settings;
 using Modeling.Core.Messages.Parameters.Canvas;
 using Modeling.Core.Messages.Settings;
+using Modeling.Core.Miscellaneous;
 using Modeling.Models.Abstractions.Drawing.Figure;
+using Modeling.Models.Extensions;
 using Modeling.ViewModels.Miscellaneous;
 using System;
 using System.Collections.Generic;
@@ -40,6 +42,7 @@ namespace Modeling.ViewModels
         readonly List<PointSingle> _userPoint;
         readonly IFigure _figure;
 
+        UserPointDrawingAction _drawingAction;
         PointSingle _previousMovedPoint;
         Matrix3x3Single _transform;
 
@@ -47,6 +50,8 @@ namespace Modeling.ViewModels
 
         public DrawingViewModel()
         {
+            _drawingAction = UserPointDrawingAction.None;
+
             _figure = Ioc.Default.GetRequiredService<IFigure>();
             _grid = [];
 
@@ -82,19 +87,21 @@ namespace Modeling.ViewModels
         }
 
         [RelayCommand]
-        async Task CanvasPointerMoved(PointSingle point)
+        void CanvasPointerMoved(PointSingle point)
         {
-            /*if (!_drawUserPoint)
+            switch (_drawingAction)
             {
-                return;
-            }*/
+                case UserPointDrawingAction.AxisPointSelection: RedrawUserPoint(point); break;
+                case UserPointDrawingAction.FigurePointSelection: break;
+                default: break;
+            }
+        }
 
+        void RedrawUserPoint(PointSingle point)
+        {
             try
             {
-                using (var cancellationTokenSource = new CancellationTokenSource())
-                {
-                    await CanvasPointerMovedCoreAsync(point);
-                }
+                RedrawUserPointCore(point);
             }
             catch (Exception ex)
             {
@@ -105,12 +112,7 @@ namespace Modeling.ViewModels
             }
         }
 
-        async Task CanvasPointerMovedCoreAsync(PointSingle point)
-        {
-            RedrawUserPoint(point);
-        }
-
-        void RedrawUserPoint(PointSingle point)
+        void RedrawUserPointCore(PointSingle point)
         {
             var canvasSize = _drawingSettingsProvider.Settings.CanvasSize;
 
@@ -432,35 +434,7 @@ namespace Modeling.ViewModels
             var canvasSize = _drawingSettingsProvider.Settings.CanvasSize;
             var pixelsPerCentimeter = _drawingSettingsProvider.Settings.PixelsPerCentimeter;
 
-            for (var y = DrawingConstants.START_POINT_DRAWING_COORDINATE_X_Y;
-                y <= canvasSize.Height; y += (int)pixelsPerCentimeter)
-            {
-                for (var x = DrawingConstants.START_POINT_DRAWING_COORDINATE_X_Y;
-                    x <= canvasSize.Width; x += (int)pixelsPerCentimeter)
-                {
-                    _grid.Add(new PointSingle(x, y));
-                }
-
-                if (y < canvasSize.Height)
-                {
-                    _grid.Add(DrawingConstants.INVALID_POINT);
-                }
-            }
-
-            for (var x = DrawingConstants.START_POINT_DRAWING_COORDINATE_X_Y;
-                x <= canvasSize.Width; x += (int)pixelsPerCentimeter)
-            {
-                for (var y = DrawingConstants.START_POINT_DRAWING_COORDINATE_X_Y;
-                    y <= canvasSize.Height + pixelsPerCentimeter; y += (int)pixelsPerCentimeter)
-                {
-                    _grid.Add(new PointSingle(x, y));
-                }
-
-                if (x < canvasSize.Width)
-                {
-                    _grid.Add(DrawingConstants.INVALID_POINT);
-                }
-            }
+            _grid.AddRange(FigureExtensions.InitializeGrid(canvasSize, pixelsPerCentimeter));
         }
 
         void InitializeAxis()
@@ -472,67 +446,13 @@ namespace Modeling.ViewModels
             var centerX = canvasSize.Width / 2f;
             var centerY = canvasSize.Height / 2f;
 
-            InitializeAxisLine(_horizontalAxis, canvasSize.Width, pixelsPerCentimeter, centerX, centerY, isVertical: false);
-            AddArrowHead(_horizontalAxis, new PointSingle(canvasSize.Width, centerY), isVertical: false, arrowHeadSize);
-            AddArrowHead(_horizontalAxis, new PointSingle(0, centerY), isVertical: false, arrowHeadSize, pointingLeft: true);
+            _horizontalAxis.AddRange(FigureExtensions.InitializeAxisLine(canvasSize.Width, pixelsPerCentimeter, centerX, centerY, isVertical: false));
+            _horizontalAxis.AddRange(FigureExtensions.InitializeArrowHead(new PointSingle(canvasSize.Width, centerY), isVertical: false, arrowHeadSize));
+            _horizontalAxis.AddRange(FigureExtensions.InitializeArrowHead(new PointSingle(0, centerY), isVertical: false, arrowHeadSize, pointingLeft: true));
 
-            InitializeAxisLine(_verticalAxis, canvasSize.Height, pixelsPerCentimeter, centerX, centerY, isVertical: true);
-            AddArrowHead(_verticalAxis, new PointSingle(centerX, canvasSize.Height), isVertical: true, arrowHeadSize);
-            AddArrowHead(_verticalAxis, new PointSingle(centerX, 0), isVertical: true, arrowHeadSize, pointingUp: true);
-        }
-
-        void AddArrowHead(List<PointSingle> axis, PointSingle endPoint, bool isVertical, float arrowHeadSize, bool pointingLeft = false, bool pointingUp = false)
-        {
-            axis.Add(DrawingConstants.INVALID_POINT);
-
-            if (isVertical)
-            {
-                var tipX = endPoint.X;
-                var tipY = endPoint.Y;
-
-                axis.Add(new PointSingle(tipX, tipY));
-
-                if (pointingUp)
-                {
-                    axis.Add(new PointSingle(tipX - arrowHeadSize / 2, tipY + arrowHeadSize));
-                    axis.Add(new PointSingle(tipX, tipY));
-                    axis.Add(new PointSingle(tipX + arrowHeadSize / 2, tipY + arrowHeadSize));
-                }
-                else
-                {
-                    axis.Add(new PointSingle(tipX - arrowHeadSize / 2, tipY - arrowHeadSize));
-                    axis.Add(new PointSingle(tipX, tipY));
-                    axis.Add(new PointSingle(tipX + arrowHeadSize / 2, tipY - arrowHeadSize));
-                }
-
-                axis.Add(new PointSingle(tipX, tipY));
-            }
-            else
-            {
-                var tipX = endPoint.X;
-                var tipY = endPoint.Y;
-
-                // Main arrow point (tip)
-                axis.Add(new PointSingle(tipX, tipY));
-
-                if (pointingLeft)
-                {
-                    // Horizontal arrow pointing left
-                    axis.Add(new PointSingle(tipX + arrowHeadSize, tipY - arrowHeadSize / 2));
-                    axis.Add(new PointSingle(tipX, tipY));
-                    axis.Add(new PointSingle(tipX + arrowHeadSize, tipY + arrowHeadSize / 2));
-                }
-                else
-                {
-                    // Horizontal arrow pointing right
-                    axis.Add(new PointSingle(tipX - arrowHeadSize, tipY - arrowHeadSize / 2));
-                    axis.Add(new PointSingle(tipX, tipY));
-                    axis.Add(new PointSingle(tipX - arrowHeadSize, tipY + arrowHeadSize / 2));
-                }
-                axis.Add(new PointSingle(tipX, tipY));
-            }
-
-            axis.Add(DrawingConstants.INVALID_POINT);
+            _verticalAxis.AddRange(FigureExtensions.InitializeAxisLine(canvasSize.Height, pixelsPerCentimeter, centerX, centerY, isVertical: true));
+            _verticalAxis.AddRange(FigureExtensions.InitializeArrowHead(new PointSingle(centerX, canvasSize.Height), isVertical: true, arrowHeadSize));
+            _verticalAxis.AddRange(FigureExtensions.InitializeArrowHead(new PointSingle(centerX, 0), isVertical: true, arrowHeadSize, pointingUp: true));
         }
 
         void InitializeMarksOnAxis()
@@ -540,118 +460,28 @@ namespace Modeling.ViewModels
             var axisTickLength = _drawingSettingsProvider.Settings.AxisTickLength;
             var canvasSize = _drawingSettingsProvider.Settings.CanvasSize;
             var pixelsPerCentimeter = (int)_drawingSettingsProvider.Settings.PixelsPerCentimeter;
-            var tickRange = (DrawingConstants.START_POINT_DRAWING_COORDINATE_X_Y, DrawingConstants.START_POINT_DRAWING_COORDINATE_X_Y + axisTickLength);
 
             var centerX = canvasSize.Width / 2f;
             var centerY = canvasSize.Height / 2f;
 
-            InitializeAxisMarks(_horizontalAxisMarks,
+
+            _horizontalAxisMarks.AddRange(FigureExtensions.InitializeAxisMarks(
                 canvasSize.Width,
                 pixelsPerCentimeter,
-                tickRange,
+                DrawingConstants.START_POINT_DRAWING_COORDINATE_X_Y,
+                DrawingConstants.START_POINT_DRAWING_COORDINATE_X_Y + axisTickLength,
                 centerX,
                 centerY - axisTickLength / 2,
-                isVertical: false);
+                isVertical: false));
 
-            InitializeAxisMarks(_verticalAxisMarks,
+            _verticalAxisMarks.AddRange(FigureExtensions.InitializeAxisMarks(
                 canvasSize.Height,
                 pixelsPerCentimeter,
-                tickRange,
+                DrawingConstants.START_POINT_DRAWING_COORDINATE_X_Y,
+                DrawingConstants.START_POINT_DRAWING_COORDINATE_X_Y + axisTickLength,
                 centerX - axisTickLength / 2,
                 centerY,
-                isVertical: true);
-        }
-
-        void InitializeAxisLine(List<PointSingle> axis, int dimensionSize, int pixelsPerCentimeter, float centerX, float centerY, bool isVertical)
-        {
-            if (isVertical)
-            {
-                for (var position = centerY - pixelsPerCentimeter; position <= dimensionSize + pixelsPerCentimeter; position += pixelsPerCentimeter)
-                {
-                    axis.Add(new PointSingle(centerX, position));
-                }
-            }
-            else
-            {
-                for (var position = centerX; position <= dimensionSize + pixelsPerCentimeter; position += pixelsPerCentimeter)
-                {
-                    axis.Add(new PointSingle(position, centerY));
-                }
-            }
-
-            axis.Add(DrawingConstants.INVALID_POINT);
-
-            if (isVertical)
-            {
-                for (var position = centerY - pixelsPerCentimeter; position >= -pixelsPerCentimeter; position -= pixelsPerCentimeter)
-                {
-                    axis.Add(new PointSingle(centerX, position));
-                }
-            }
-            else
-            {
-                for (var position = centerX; position >= -pixelsPerCentimeter; position -= pixelsPerCentimeter)
-                {
-                    axis.Add(new PointSingle(position, centerY));
-                }
-            }
-
-            axis.Add(DrawingConstants.INVALID_POINT);
-        }
-
-        void InitializeAxisMarks(List<PointSingle> axisMarks, int dimensionSize, int pixelsPerCentimeter, (float start, float end) tickRange, float centerX, float centerY, bool isVertical)
-        {
-            var (tickStart, tickEnd) = tickRange;
-
-            if (isVertical)
-            {
-                for (var axisPosition = centerY; axisPosition < dimensionSize; axisPosition += pixelsPerCentimeter)
-                {
-                    for (var tickOffset = tickStart; tickOffset <= tickEnd; tickOffset++)
-                    {
-                        axisMarks.Add(new PointSingle(centerX + tickOffset, axisPosition));
-                    }
-                    axisMarks.Add(DrawingConstants.INVALID_POINT);
-                }
-            }
-            else
-            {
-                for (var axisPosition = centerX; axisPosition < dimensionSize; axisPosition += pixelsPerCentimeter)
-                {
-                    for (var tickOffset = tickStart; tickOffset <= tickEnd; tickOffset++)
-                    {
-                        axisMarks.Add(new PointSingle(axisPosition, centerY + tickOffset));
-                    }
-                    axisMarks.Add(DrawingConstants.INVALID_POINT);
-                }
-            }
-
-            axisMarks.Add(DrawingConstants.INVALID_POINT);
-
-            if (isVertical)
-            {
-                for (var axisPosition = centerY - pixelsPerCentimeter; axisPosition >= 0; axisPosition -= pixelsPerCentimeter)
-                {
-                    for (var tickOffset = tickStart; tickOffset <= tickEnd; tickOffset++)
-                    {
-                        axisMarks.Add(new PointSingle(centerX + tickOffset, axisPosition));
-                    }
-                    axisMarks.Add(DrawingConstants.INVALID_POINT);
-                }
-            }
-            else
-            {
-                for (var axisPosition = centerX - pixelsPerCentimeter; axisPosition >= 0; axisPosition -= pixelsPerCentimeter)
-                {
-                    for (var tickOffset = tickStart; tickOffset <= tickEnd; tickOffset++)
-                    {
-                        axisMarks.Add(new PointSingle(axisPosition, centerY + tickOffset));
-                    }
-                    axisMarks.Add(DrawingConstants.INVALID_POINT);
-                }
-            }
-
-            axisMarks.Add(DrawingConstants.INVALID_POINT);
+                isVertical: true));
         }
 
         void InitializeCircle()

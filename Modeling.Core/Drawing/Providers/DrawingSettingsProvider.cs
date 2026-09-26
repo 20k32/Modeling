@@ -29,13 +29,13 @@ namespace Modeling.Core.Drawing.Providers
         public async Task LoadSettingsAsync()
         {
             var fileContent = await _storageItemProvider.LoadContentAsync();
-            Settings = _serializer.DeserializeFromString<IDrawingSettings>(fileContent) 
+            Settings = _serializer.DeserializeFromString<IDrawingSettings>(fileContent, useSerializerSettings: false)
                 ?? Ioc.Default.GetRequiredService<IDrawingSettings>();
         }
 
         public async Task SaveSettingsAsync()
         {
-            var serializedContent = _serializer.Serialize(Settings);
+            var serializedContent = _serializer.Serialize(Settings, useSerializerSettings: false);
             await _storageItemProvider.SaveContentAsync(serializedContent);
         }
 

@@ -9,6 +9,7 @@ using Modeling.Core.Drawing.Providers;
 using Modeling.Core.Abstractions.Providers;
 using Modeling.Core.Constants;
 using Modeling.Core.Miscellaneous;
+using System.Reflection.Metadata;
 
 namespace Modeling.ViewModels
 {
@@ -17,10 +18,20 @@ namespace Modeling.ViewModels
         readonly IApplicationSettingsProvider _applicationSettingsProvider;
         readonly IDrawingSettingsProvider _drawingSettingsProvider;
 
+        [ObservableProperty]
+        double _canvasHeight;
+
+        [ObservableProperty]
+        double _canvasWidth;
+
+
         bool _initialized;
 
         public SettingsViewModel()
         {
+            _canvasHeight = DrawingConstants.CANVAS_SIZE.Height;
+            _canvasWidth = DrawingConstants.CANVAS_SIZE.Width;
+
             _drawingSettingsProvider = Ioc.Default.GetService<IDrawingSettingsProvider>();
             _applicationSettingsProvider = Ioc.Default.GetService<IApplicationSettingsProvider>();
         }
@@ -92,6 +103,8 @@ namespace Modeling.ViewModels
                 await SaveSettingsAsync();
             }
 
+            ApplySettings();
+
             return Unit.Default;
         }
 
@@ -100,6 +113,12 @@ namespace Modeling.ViewModels
             await _drawingSettingsProvider.SaveSettingsAsync();
 
             return Unit.Default;
+        }
+
+        void ApplySettings()
+        {
+            CanvasHeight = _drawingSettingsProvider.Settings.CanvasSize.Height;
+            CanvasWidth = _drawingSettingsProvider.Settings.CanvasSize.Width;
         }
 
         void SetDefaultSettings()
