@@ -1,7 +1,7 @@
 ﻿using Modeling.Core.Abstractions;
 using System;
 
-namespace Modeling.Core.Messages.Parameters.Canvas
+namespace Modeling.Core.Messages.Parameters.Canvas.Settings
 {
     public sealed class RefreshRateParameter(TimeSpan refreshRate) : IDefaultCheck
     {

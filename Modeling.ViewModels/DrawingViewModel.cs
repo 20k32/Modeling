@@ -14,7 +14,7 @@ using Modeling.Core.Logging;
 using Modeling.Core.Messages.Base.SynchronousMessages;
 using Modeling.Core.Messages.Canvas.Drawing;
 using Modeling.Core.Messages.Canvas.Settings;
-using Modeling.Core.Messages.Parameters.Canvas;
+using Modeling.Core.Messages.Parameters.Canvas.Drawing;
 using Modeling.Core.Messages.Settings;
 using Modeling.Core.Miscellaneous;
 using Modeling.Models.Abstractions.Drawing.Figure;
@@ -46,7 +46,7 @@ namespace Modeling.ViewModels
         PointSingle _previousMovedPoint;
         Matrix3x3Single _transform;
 
-        PointListTransformMessageParameter _gridWithAxisDrawingMessage;
+        DrawingMessageParameter _gridWithAxisDrawingMessage;
 
         public DrawingViewModel()
         {
@@ -202,55 +202,23 @@ namespace Modeling.ViewModels
                 backgroundColor: backgroundColor,
                 thickness: thickness);
 
-            var drawHorizontalAxisMessageParameter = new PointListTransformMessageParameter(
-                points: _horizontalAxis,
-                color: horizontalAxisDrawingColor,
-                transformMatrix: _transform,
-                shouldFillGeometry: false,
-                fillColor: default,
-                clearBeforeRedraw: false,
-                backgroundColor: backgroundColor,
-                thickness: axisThickness,
-                parent: drawGridMessageParameter);
+            var drawGridWithAxisMessageParameter = drawGridMessageParameter
+                .With(points: _horizontalAxis,
+                      color: horizontalAxisDrawingColor,
+                      clearBeforeRedraw: false,
+                      thickness: axisThickness)
+                .With(points: _verticalAxis,
+                      color: verticalAxisDrawingColor)
+                .With(points: _horizontalAxisMarks,
+                      color: horizontalAxisTicksDrawingColor,
+                      thickness: axisTickThickness)
+                .With(points: _verticalAxisMarks);
 
-            var drawVerticalAxisMessageParameter = new PointListTransformMessageParameter(
-                points: _verticalAxis,
-                color: verticalAxisDrawingColor,
-                transformMatrix: _transform,
-                shouldFillGeometry: false,
-                fillColor: default,
-                clearBeforeRedraw: false,
-                backgroundColor: backgroundColor,
-                thickness: axisThickness,
-                parent: drawHorizontalAxisMessageParameter);
-
-            var drawHorizontalAxisMarksMessageParameter = new PointListTransformMessageParameter(
-                points: _horizontalAxisMarks,
-                color: horizontalAxisTicksDrawingColor,
-                transformMatrix: _transform,
-                shouldFillGeometry: false,
-                fillColor: default,
-                clearBeforeRedraw: false,
-                backgroundColor: backgroundColor,
-                thickness: axisTickThickness,
-                parent: drawVerticalAxisMessageParameter);
-
-            var drawVerticalAxisMarksMessageParameter = new PointListTransformMessageParameter(
-                points: _verticalAxisMarks,
-                color: verticalAxisTicksDrawingColor,
-                transformMatrix: _transform,
-                shouldFillGeometry: false,
-                fillColor: default,
-                clearBeforeRedraw: false,
-                backgroundColor: backgroundColor,
-                thickness: axisTickThickness,
-                parent: drawHorizontalAxisMarksMessageParameter);
-
-            var figureDrawingMessage = GetDrawingFigureMessage(drawVerticalAxisMarksMessageParameter);
+            var figureDrawingMessage = GetDrawingFigureMessage(drawGridWithAxisMessageParameter);
 
             WeakReferenceMessenger.Default.Send(new TransformPointsMessage(this, figureDrawingMessage));
 
-            _gridWithAxisDrawingMessage = drawVerticalAxisMarksMessageParameter;
+            _gridWithAxisDrawingMessage = drawGridWithAxisMessageParameter;
         }
 
         private void InitializeFigure()
@@ -270,7 +238,7 @@ namespace Modeling.ViewModels
             _figure.SetPropertiesFromSegments();
         }
 
-        private PointListTransformMessageParameter GetDrawingFigureMessage(IObjectTree parentMessage)
+        private PointListTransformMessageParameter GetDrawingFigureMessage(PointListTransformMessageParameter parentMessage)
         {
             var rawBackgroundColor = _drawingSettingsProvider.Settings.BackgroundColor;
             var backgroundColor = new DrawingColor(rawBackgroundColor);
@@ -280,43 +248,20 @@ namespace Modeling.ViewModels
 
             var thickness = _drawingSettingsProvider.Settings.FigureDrawingThickness;
 
-            var parentFigureComponentDrawingMessage = new PointListTransformMessageParameter(
-                points: [.. _figure.First().Points],
-                color: drawingColor,
-                transformMatrix: _transform,
-                shouldFillGeometry: false,
-                fillColor: default,
-                clearBeforeRedraw: false,
-                backgroundColor: backgroundColor,
-                thickness: thickness,
-                parent: parentMessage);
+            var parentFigureComponentDrawingMessage = parentMessage
+                .With(points: [.. _figure.First().Points],
+                      color: drawingColor,
+                      thickness: thickness);
 
             foreach (var figureComponent in _figure.Skip(1))
             {
-                var figureComponentDrawingMessage = parentFigureComponentDrawingMessage;
-
-                parentFigureComponentDrawingMessage = new PointListTransformMessageParameter(
-                    points: [.. figureComponent.Points],
-                    color: drawingColor,
-                    transformMatrix: _transform,
-                    shouldFillGeometry: false,
-                    fillColor: default,
-                    clearBeforeRedraw: false,
-                    backgroundColor: backgroundColor,
-                    thickness: thickness,
-                    parent: figureComponentDrawingMessage);
+                parentFigureComponentDrawingMessage =
+                    parentFigureComponentDrawingMessage.With(points: [.. figureComponent.Points]);
             }
 
-            var boundsDrawingMessage = new PointListTransformMessageParameter(
-                    points: [.. _figure.Bounds.GetPointsFromBounds()],
-                    color: new(_drawingSettingsProvider.Settings.FigureBoundsColor),
-                    transformMatrix: _transform,
-                    shouldFillGeometry: false,
-                    fillColor: default,
-                    clearBeforeRedraw: false,
-                    backgroundColor: backgroundColor,
-                    thickness: thickness,
-                    parent: parentFigureComponentDrawingMessage);
+            var boundsDrawingMessage = parentFigureComponentDrawingMessage.With(
+                points: [.. _figure.Bounds.GetPointsFromBounds()],
+                color: new(_drawingSettingsProvider.Settings.FigureBoundsColor));
 
             return boundsDrawingMessage;
         }

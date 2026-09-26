@@ -3,7 +3,7 @@ using Modeling.Core.Messages.Canvas.Drawing;
 using Modeling.Models.Drawing.DrawingMessageValues;
 using Modeling.Core.Extensions;
 using Modeling.Models.Drawing.DrawingMessageValues.Points;
-using Modeling.Core.Messages.Parameters.Canvas;
+using Modeling.Core.Messages.Parameters.Canvas.Drawing;
 
 namespace Modeling.Models.Drawing.DrawingMessageInterpreter
 {
@@ -38,7 +38,7 @@ namespace Modeling.Models.Drawing.DrawingMessageInterpreter
                 var drawingParameter = new DrawPointsMessageValue(
                     connectPointsParameter.Color,
                     connectPointsParameter.Thickness,
-                    connectPointsParameter.ShouldClearBeforeRedraw,
+                    connectPointsParameter.ClearBeforeRedraw,
                     connectPointsParameter.BackgroundColor,
                     connectPointsParameter.ShouldFillGeometry,
                     connectPointsParameter.FillColor,
@@ -61,7 +61,7 @@ namespace Modeling.Models.Drawing.DrawingMessageInterpreter
                 var drawingParameter = new DrawTransformedPointsMessageValue(
                     connectPointsParameter.Color,
                     connectPointsParameter.Thickness,
-                    connectPointsParameter.ShouldClearBeforeRedraw,
+                    connectPointsParameter.ClearBeforeRedraw,
                     connectPointsParameter.BackgroundColor,
                     connectPointsParameter.ShouldFillGeometry,
                     connectPointsParameter.FillColor,

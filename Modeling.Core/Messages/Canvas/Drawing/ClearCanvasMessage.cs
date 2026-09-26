@@ -1,6 +1,6 @@
 ﻿using Modeling.Core.Drawing;
 using Modeling.Core.Messages.Base.SynchronousMessages;
-using Modeling.Core.Messages.Parameters.Canvas;
+using Modeling.Core.Messages.Parameters.Canvas.Drawing;
 
 namespace Modeling.Core.Messages.Canvas.Drawing
 {
