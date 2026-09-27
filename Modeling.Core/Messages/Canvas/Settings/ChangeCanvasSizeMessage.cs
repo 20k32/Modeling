@@ -4,6 +4,6 @@ using Windows.Foundation;
 
 namespace Modeling.Core.Messages.Canvas.Settings
 {
-    public sealed class ChangeCanvasSizeMessage(object sender, CanvasSizeParameter value) : ParametrizedMessage<CanvasSizeParameter>(sender, value)
+    public sealed class ChangeCanvasSizeMessage(object sender, UpdateDrawingsParameter value) : ParametrizedMessage<UpdateDrawingsParameter>(sender, value)
     { }
 }

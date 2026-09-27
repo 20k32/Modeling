@@ -66,18 +66,21 @@ namespace Modeling.ViewModels
             _drawingSettingsProvider = Ioc.Default.GetRequiredService<IDrawingSettingsProvider>();
             _drawingSettingsProvider.SettingsChanged += OnDrawingSettingsProviderSettingsChanged;
 
-            WeakReferenceMessenger.Default.Register<ChangeCanvasSizeSettingMessage>(this, OnChangeCanvasSizeSettingMessage);
+            WeakReferenceMessenger.Default.Register<ChangeCanvasSettingsMessage>(this, OnChangeCanvasSettingsMessage);
         }
 
-        private void OnChangeCanvasSizeSettingMessage(object recipient, ChangeCanvasSizeSettingMessage message)
+        private void OnChangeCanvasSettingsMessage(object recipient, ChangeCanvasSettingsMessage message)
         {
             if (message.ApplyBasicMessageValidation(recipient))
             {
-                var changeCanvasSizeMessage = new ChangeCanvasSizeMessage(this, message.Value);
-                WeakReferenceMessenger.Default.Send(changeCanvasSizeMessage);
+                if (message.Value.ShouldUpdateCanvasSize)
+                {
+                    var changeCanvasSizeMessage = new ChangeCanvasSizeMessage(this, message.Value);
+                    WeakReferenceMessenger.Default.Send(changeCanvasSizeMessage);
+                }
 
                 ClearDrawingElements();
-                InitializeDrawingElements(message.Value.Size);
+                InitializeDrawingElements(message.Value.Size, message.Value.PixelsPerCentimeter);
             }
         }
 
@@ -248,7 +251,7 @@ namespace Modeling.ViewModels
                       thickness: axisTickThickness)
                 .With(points: _verticalAxisMarks);
             }
-            ;
+
 
             currentDrawingMessage = GetDrawingFigureMessage(currentDrawingMessage);
 
@@ -257,9 +260,8 @@ namespace Modeling.ViewModels
             _lastDrawingMessage = currentDrawingMessage;
         }
 
-        private void InitializeFigure(SizeSingle canvasSize)
+        private void InitializeFigure(SizeSingle canvasSize, float pixelsPerCentimeter)
         {
-            var pixelsPerCentimeter = _drawingSettingsProvider.Settings.PixelsPerCentimeter;
             var pixelsPerMillimeter = pixelsPerCentimeter / 10;
 
             var figureWidthPixels = FigureRelatedConstants.FIGURE_WIDTH_MILLIMETERS * pixelsPerMillimeter;
@@ -338,16 +340,13 @@ namespace Modeling.ViewModels
             RedrawFigure();
         }
 
-        void InitializeGrid(SizeSingle canvasSize)
+        void InitializeGrid(SizeSingle canvasSize, float pixelsPerCentimeter)
         {
-            var pixelsPerCentimeter = _drawingSettingsProvider.Settings.PixelsPerCentimeter;
-
             _grid.AddRange(FigureExtensions.CreateGrid(canvasSize, pixelsPerCentimeter));
         }
 
-        void InitializeAxis(SizeSingle canvasSize)
+        void InitializeAxis(SizeSingle canvasSize, float pixelsPerCentimeter)
         {
-            var pixelsPerCentimeter = (int)_drawingSettingsProvider.Settings.PixelsPerCentimeter;
             var arrowHeadSize = DrawingConstants.X_Y_AXIS_TICKS_LENGTH_PIXELS;
 
             var centerX = canvasSize.Width / 2f;
@@ -362,10 +361,9 @@ namespace Modeling.ViewModels
             _verticalAxisArrows.AddRange(FigureExtensions.CreateArrowHead(new PointSingle(centerX, 0), isVertical: true, arrowHeadSize, pointingUp: true));
         }
 
-        void InitializeMarksOnAxis(SizeSingle canvasSize)
+        void InitializeMarksOnAxis(SizeSingle canvasSize, float pixelsPerCentimeter)
         {
             var axisTickLength = _drawingSettingsProvider.Settings.AxisTickLength;
-            var pixelsPerCentimeter = (int)_drawingSettingsProvider.Settings.PixelsPerCentimeter;
 
             var centerX = canvasSize.Width / 2f;
             var centerY = canvasSize.Height / 2f;
@@ -392,8 +390,6 @@ namespace Modeling.ViewModels
 
         void InitializeCircle(SizeSingle canvasSize)
         {
-            var pixelsPerCentimeter = (int)_drawingSettingsProvider.Settings.PixelsPerCentimeter;
-
             var centerPoint = new PointSingle(canvasSize.Width / 2f, canvasSize.Height / 2f);
 
             _userPoint.AddRange(centerPoint.GetCirclePoints(radius: 5));
@@ -441,13 +437,13 @@ namespace Modeling.ViewModels
             _figure.Segments.Clear();
         }
 
-        void InitializeDrawingElements(SizeSingle canvasSize)
+        void InitializeDrawingElements(SizeSingle canvasSize, float pixelsPerCentimeter)
         {
-            InitializeGrid(canvasSize);
-            InitializeAxis(canvasSize);
-            InitializeMarksOnAxis(canvasSize);
+            InitializeGrid(canvasSize, pixelsPerCentimeter);
+            InitializeAxis(canvasSize, pixelsPerCentimeter);
+            InitializeMarksOnAxis(canvasSize, pixelsPerCentimeter);
             InitializeCircle(canvasSize);
-            InitializeFigure(canvasSize);
+            InitializeFigure(canvasSize, pixelsPerCentimeter);
         }
 
         async Task LoadSettingsAsync()

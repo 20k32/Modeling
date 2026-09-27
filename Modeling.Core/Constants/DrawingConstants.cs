@@ -71,6 +71,9 @@ namespace Modeling.Core.Constants
         public const float X_Y_AXIS_TICKS_LENGTH_PIXELS = 15;
         public const float X_Y_AXIST_TICKS_THICKNESS = 5;
 
+        public const float MINIMUM_CANVAS_SIZE_PIXELS = 500;
         public const float MAXIMUM_CANVAS_SIZE_PIXELS = 3000;
+        public const float MAXIMUM_CANVAS_PIXELS_PER_CENTIMETER = 400;
+        public const float MINIMUM_CANVAS_PIXELS_PER_CENTIMETER = 1;
     }
 }

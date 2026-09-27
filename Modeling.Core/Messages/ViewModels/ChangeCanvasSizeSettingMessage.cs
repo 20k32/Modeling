@@ -6,6 +6,6 @@ using System.Text;
 
 namespace Modeling.Core.Messages.ViewModels
 {
-    public sealed class ChangeCanvasSizeSettingMessage(object sender, CanvasSizeParameter value) : ParametrizedMessage<CanvasSizeParameter>(sender, value)
+    public sealed class ChangeCanvasSettingsMessage(object sender, UpdateDrawingsParameter value) : ParametrizedMessage<UpdateDrawingsParameter>(sender, value)
     { }
 }

@@ -25,7 +25,7 @@
             <Button HorizontalAlignment="Right"
                     VerticalAlignment="Top"
                     Command="{x:Bind CloseDialogCommand}"
-                    Content="Close" />
+                    Content="x" />
 
             <Grid HorizontalAlignment="Center"
                   VerticalAlignment="Center"
@@ -142,9 +142,21 @@
                            Style="{StaticResource ApplicationTextBlockStyle}"
                            Text="Canvas height" />
                 <TextBox Grid.Row="8"
+                         Margin="0,5"
                          Grid.Column="1"
                          HorizontalAlignment="Stretch"
                          Text="{Binding CanvasHeight, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                <TextBlock Grid.Row="9"
+                           Grid.Column="0"
+                           HorizontalAlignment="Right"
+                           VerticalAlignment="Center"
+                           Style="{StaticResource ApplicationTextBlockStyle}"
+                           Text="Pixels per centimeter" />
+                <TextBox Grid.Row="9"
+                         Grid.Column="1"
+                         HorizontalAlignment="Stretch"
+                         Text="{Binding PixelsPerCentimeter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
             </Grid>
         </Grid>
     </Grid>

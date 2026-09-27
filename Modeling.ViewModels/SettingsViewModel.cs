@@ -19,6 +19,7 @@ using System;
 using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
+using Windows.Security.Cryptography.Certificates;
 
 namespace Modeling.ViewModels
 {
@@ -62,7 +63,6 @@ namespace Modeling.ViewModels
         [ObservableProperty]
         float _pixelsPerCentimeter;
 
-
         public SettingsViewModel()
         {
             _applyingChangesLock = new SemaphoreSlim(1, 1);
@@ -100,6 +100,40 @@ namespace Modeling.ViewModels
             }
         }
 
+        async partial void OnPixelsPerCentimeterChanged(float value)
+        {
+            if (value > DrawingConstants.MAXIMUM_CANVAS_PIXELS_PER_CENTIMETER)
+            {
+                value = DrawingConstants.MAXIMUM_CANVAS_PIXELS_PER_CENTIMETER;
+                _pixelsPerCentimeter = value;
+                OnPropertyChanged(nameof(PixelsPerCentimeter));
+            }
+
+            if (value < DrawingConstants.MINIMUM_CANVAS_PIXELS_PER_CENTIMETER)
+            {
+                value = DrawingConstants.MINIMUM_CANVAS_PIXELS_PER_CENTIMETER;
+                _pixelsPerCentimeter = value;
+                OnPropertyChanged(nameof(PixelsPerCentimeter));
+            }
+
+            if (value != _drawingSettingsProvider.Settings.PixelsPerCentimeter)
+            {
+                await WaitBeforeExecutionAsync(() =>
+                {
+                    if (value != _drawingSettingsProvider.Settings.PixelsPerCentimeter)
+                    {
+                        var settingsParameter = new UpdateDrawingsParameter(shouldUpdateCanvasSize: false,
+                            new((float)CanvasWidth,
+                            (float)CanvasHeight), PixelsPerCentimeter);
+
+                        WeakReferenceMessenger.Default.Send(new ChangeCanvasSettingsMessage(this, settingsParameter));
+
+                        _drawingSettingsProvider.Settings.PixelsPerCentimeter = (float)value;
+                    }
+                });
+            }
+        }
+
         async partial void OnCanvasHeightChanged(double value)
         {
             if (value > DrawingConstants.MAXIMUM_CANVAS_SIZE_PIXELS)
@@ -108,6 +142,14 @@ namespace Modeling.ViewModels
                 _canvasHeight = value;
                 OnPropertyChanged(nameof(CanvasHeight));
             }
+
+            if (value < DrawingConstants.MINIMUM_CANVAS_SIZE_PIXELS)
+            {
+                value = DrawingConstants.MINIMUM_CANVAS_SIZE_PIXELS;
+                _canvasHeight = value;
+                OnPropertyChanged(nameof(CanvasHeight));
+            }
+
 
             var newSize = new Windows.Graphics.SizeInt32(
                     _drawingSettingsProvider.Settings.CanvasSize.Width,
@@ -119,12 +161,14 @@ namespace Modeling.ViewModels
                 {
                     if (newSize != _drawingSettingsProvider.Settings.CanvasSize)
                     {
+                        var settingsParameter = new UpdateDrawingsParameter(shouldUpdateCanvasSize: true,
+                            new((float)CanvasWidth, (float)CanvasHeight),
+                            PixelsPerCentimeter);
 
+                        WeakReferenceMessenger.Default.Send(new ChangeCanvasSettingsMessage(this, settingsParameter));
+
+                        _drawingSettingsProvider.Settings.CanvasSize = newSize;
                     }
-                    var sizeParameter = new CanvasSizeParameter(new((float)CanvasWidth, (float)CanvasHeight));
-                    WeakReferenceMessenger.Default.Send(new ChangeCanvasSizeSettingMessage(this, sizeParameter));
-
-                    _drawingSettingsProvider.Settings.CanvasSize = newSize;
                 });
             }
         }
@@ -134,6 +178,13 @@ namespace Modeling.ViewModels
             if (value > DrawingConstants.MAXIMUM_CANVAS_SIZE_PIXELS)
             {
                 value = DrawingConstants.MAXIMUM_CANVAS_SIZE_PIXELS;
+                _canvasWidth = value;
+                OnPropertyChanged(nameof(CanvasWidth));
+            }
+
+            if (value < DrawingConstants.MINIMUM_CANVAS_SIZE_PIXELS)
+            {
+                value = DrawingConstants.MINIMUM_CANVAS_SIZE_PIXELS;
                 _canvasWidth = value;
                 OnPropertyChanged(nameof(CanvasWidth));
             }
@@ -148,8 +199,12 @@ namespace Modeling.ViewModels
                 {
                     if (newSize != _drawingSettingsProvider.Settings.CanvasSize)
                     {
-                        var sizeParameter = new CanvasSizeParameter(new((float)CanvasWidth, (float)CanvasHeight));
-                        WeakReferenceMessenger.Default.Send(new ChangeCanvasSizeSettingMessage(this, sizeParameter));
+                        var updateDrawingsParameter = new UpdateDrawingsParameter(shouldUpdateCanvasSize: true,
+                            new((float)CanvasWidth, (float)CanvasHeight),
+                            PixelsPerCentimeter);
+
+                        WeakReferenceMessenger.Default.Send(new ChangeCanvasSettingsMessage(this, updateDrawingsParameter));
+
                         _drawingSettingsProvider.Settings.CanvasSize = newSize;
                     }
                 });
@@ -349,6 +404,7 @@ namespace Modeling.ViewModels
             _drawAxisArrows = _drawingSettingsProvider.Settings.DrawAxisArrows;
             _drawGrid = _drawingSettingsProvider.Settings.DrawGrid;
             _attachGridToFigure = _drawingSettingsProvider.Settings.AttachGridToFigure;
+            _pixelsPerCentimeter = _drawingSettingsProvider.Settings.PixelsPerCentimeter;
 
             OnPropertyChanged(nameof(DrawFigureBounds));
             OnPropertyChanged(nameof(DrawFigureShapeBounds));
@@ -359,9 +415,13 @@ namespace Modeling.ViewModels
             OnPropertyChanged(nameof(AttachGridToFigure));
             OnPropertyChanged(nameof(CanvasWidth));
             OnPropertyChanged(nameof(CanvasHeight));
+            OnPropertyChanged(nameof(PixelsPerCentimeter));
 
-            var sizeParameter = new CanvasSizeParameter(new((float)CanvasWidth, (float)CanvasHeight));
-            WeakReferenceMessenger.Default.Send(new ChangeCanvasSizeSettingMessage(this, sizeParameter));
+            var updateDrawingsParameter = new UpdateDrawingsParameter(shouldUpdateCanvasSize: true,
+                new((float)CanvasWidth, (float)CanvasHeight),
+                PixelsPerCentimeter);
+
+            WeakReferenceMessenger.Default.Send(new ChangeCanvasSettingsMessage(this, updateDrawingsParameter));
         }
 
         [RelayCommand]
