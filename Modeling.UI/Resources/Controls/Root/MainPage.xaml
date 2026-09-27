@@ -28,15 +28,15 @@
         <NavigationView Grid.Row="1"
                         Grid.ColumnSpan="2"
                         IsBackButtonVisible="Collapsed"
-                        IsSettingsVisible="True"
-                        PaneDisplayMode="Top">
-
-            <NavigationView.MenuItems>
-                <NavigationViewItem Content="Menu Item1" Tag="SamplePage1" />
-                <NavigationViewItem Content="Menu Item2" Tag="SamplePage2" />
-                <NavigationViewItem Content="Menu Item3" Tag="SamplePage3" />
-                <NavigationViewItem Content="Menu Item4" Tag="SamplePage4" />
-            </NavigationView.MenuItems>
+                        IsSettingsVisible="False"
+                        MenuItemsSource="{Binding NavigationViewModel.NavigationItems, Source={StaticResource ServiceLocator}}"
+                        PaneDisplayMode="Top"
+                        SelectedItem="{Binding NavigationViewModel.SelectedNavigationItem, Source={StaticResource ServiceLocator}, Mode=TwoWay}">
+            <NavigationView.MenuItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding ItemName}" />
+                </DataTemplate>
+            </NavigationView.MenuItemTemplate>
         </NavigationView>
 
         <controls:Win2DCanvas Grid.Row="2"
