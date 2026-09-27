@@ -5,6 +5,7 @@
              xmlns:canvas="using:Microsoft.Graphics.Canvas.UI.Xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:media="using:CommunityToolkit.WinUI.Media"
              mc:Ignorable="d">
 
     <ScrollViewer x:Name="CanvasScrollViewer"
@@ -13,7 +14,6 @@
                   VerticalAlignment="Stretch"
                   HorizontalScrollBarVisibility="Auto"
                   VerticalScrollBarVisibility="Auto">
-
         <canvas:CanvasAnimatedControl x:Name="AnimatedCanvas"
                                       Width="{Binding SettingsViewModel.CanvasWidth, Source={StaticResource ServiceLocator}}"
                                       Height="{Binding SettingsViewModel.CanvasHeight, Source={StaticResource ServiceLocator}}" />

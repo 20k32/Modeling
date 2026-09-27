@@ -2,28 +2,21 @@
 using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.UI;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Modeling.Core.Abstractions;
 using Modeling.Core.Constants;
 using Modeling.Core.Drawing;
 using Modeling.Core.Drawing.Providers;
 using Modeling.Core.Extensions;
 using Modeling.Core.Logging;
-using Modeling.Core.Messages.Base.SynchronousMessages;
 using Modeling.Core.Messages.Canvas.Drawing;
 using Modeling.Core.Messages.Canvas.Settings;
 using Modeling.Core.Messages.Parameters.Canvas.Drawing;
 using Modeling.Core.Messages.Settings;
-using Modeling.Core.Miscellaneous;
 using Modeling.Models.Abstractions.Drawing.Figure;
 using Modeling.Models.Extensions;
 using Modeling.ViewModels.Miscellaneous;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Modeling.ViewModels
@@ -263,6 +256,12 @@ namespace Modeling.ViewModels
                 points: [.. _figure.Bounds.GetPointsFromBounds()],
                 color: new(_drawingSettingsProvider.Settings.FigureBoundsColor));
 
+            foreach (var segment in _figure.Segments)
+            {
+                boundsDrawingMessage = boundsDrawingMessage
+                    .With(points: [.. segment.Bounds.GetPointsFromBounds()]);
+            }
+
             return boundsDrawingMessage;
         }
 
@@ -342,7 +341,7 @@ namespace Modeling.ViewModels
 
             _userPoint.AddRange(centerPoint.GetCirclePoints(radius: 5));
 
-            _userPoint.Add(DrawingConstants.INVALID_POINT);
+            _userPoint.Add(DrawingConstants.BREAK_POINT);
         }
 
         void LoadCanvasState()

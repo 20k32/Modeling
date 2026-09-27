@@ -1,10 +1,7 @@
-﻿using Modeling.Core.Abstractions;
-using Modeling.Core.Constants;
+﻿using Modeling.Core.Constants;
 using Modeling.Core.Drawing;
 using Modeling.Core.Messages.Parameters.Canvas.Drawing;
-using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Modeling.Core.Extensions
 {

@@ -1,7 +1,6 @@
 ﻿using Modeling.Core.Abstractions;
 using Modeling.Models.Drawing.DrawingMessageValues.Points;
 using Modeling.Models.Enums;
-using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 
 namespace Modeling.Models.Drawing.DrawingMessageValues

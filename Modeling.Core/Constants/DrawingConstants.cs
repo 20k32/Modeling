@@ -8,11 +8,11 @@ namespace Modeling.Core.Constants
 {
     public static class DrawingConstants
     {
-        public const float INVALID_POINT_COORDIATE = float.NaN;
+        public const float BREAK_POINT_COORDIATE = float.NaN;
         public const float DEFAULT_POINT_COORDINATE = 0;
 
         public static readonly PointSingle DEFAULT_POINT = new();
-        public static readonly PointSingle INVALID_POINT = new(INVALID_POINT_COORDIATE);
+        public static readonly PointSingle BREAK_POINT = new(BREAK_POINT_COORDIATE);
 
         public const float GRID_DRAWING_THICKNESS = 1;
         public const float FIGURE_DRAWING_THICKNESS = 2.5f;
@@ -26,8 +26,8 @@ namespace Modeling.Core.Constants
 
         public static readonly DrawingColor TRANSPARENT_DRAWING_COLOR = new(Colors.Transparent);
 
-        public static readonly PointSingle DEFAULT_CENTER_CANVAS_POSITION = INVALID_POINT;
-        public static readonly PointSingle DEFAULT_ROTATE_POINT_POSITION = INVALID_POINT;
+        public static readonly PointSingle DEFAULT_CENTER_CANVAS_POSITION = BREAK_POINT;
+        public static readonly PointSingle DEFAULT_ROTATE_POINT_POSITION = BREAK_POINT;
 
         public const bool DISPLAY_MARK_IN_CANVAS_CENTER_BY_DEFAULT = false;
         public const bool DISPLAY_AXIS_BY_DEFAULT = true;

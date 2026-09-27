@@ -3,9 +3,11 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:media="using:CommunityToolkit.WinUI.Media">
     <media:BackdropBlurBrush x:Key="ApplicationBackdropBrush" Amount="10" />
-    <media:AcrylicBrush x:Key="ApplicationAcrylicBrush"
-                        BlurAmount="10"
-                        FallbackColor="LightBlue"
-                        TintColor="LightBlue"
-                        TintOpacity="0" />
+
+    <CornerRadius x:Key="DialogBordersCornerRadius">8</CornerRadius>
+    <Thickness x:Key="DialogBordersThickness">1</Thickness>
+    <Thickness x:Key="DialogTitleBarMargins">5,38</Thickness>
+    <!--  todo: themeresources  -->
+    <Color x:Key="SolidBackgroundColor">#2C2C2C</Color>
+    <Color x:Key="DialogBordersColor">LightGray</Color>
 </ResourceDictionary>

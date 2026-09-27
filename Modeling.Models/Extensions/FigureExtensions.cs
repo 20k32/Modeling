@@ -2,10 +2,8 @@
 using Modeling.Core.Drawing;
 using Modeling.Core.Extensions;
 using Modeling.Models.Abstractions.Drawing.Figure;
-using Modeling.Models.Drawing.Figures;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using Windows.Graphics;
 
 namespace Modeling.Models.Extensions
@@ -25,7 +23,7 @@ namespace Modeling.Models.Extensions
 
                 if (y < canvasSize.Height)
                 {
-                    yield return DrawingConstants.INVALID_POINT;
+                    yield return DrawingConstants.BREAK_POINT;
                 }
             }
 
@@ -40,7 +38,7 @@ namespace Modeling.Models.Extensions
 
                 if (x < canvasSize.Width)
                 {
-                    yield return DrawingConstants.INVALID_POINT;
+                    yield return DrawingConstants.BREAK_POINT;
                 }
             }
         }
@@ -58,7 +56,7 @@ namespace Modeling.Models.Extensions
                 yield return new PointSingle(dimensionSize + pixelsPerCentimeter, centerY);
             }
 
-            yield return DrawingConstants.INVALID_POINT;
+            yield return DrawingConstants.BREAK_POINT;
 
             if (isVertical)
             {
@@ -71,12 +69,12 @@ namespace Modeling.Models.Extensions
                 yield return new PointSingle(0, centerY);
             }
 
-            yield return DrawingConstants.INVALID_POINT;
+            yield return DrawingConstants.BREAK_POINT;
         }
 
         public static IEnumerable<PointSingle> CreateArrowHead(PointSingle endPoint, bool isVertical, float arrowHeadSize, bool pointingLeft = false, bool pointingUp = false)
         {
-            yield return DrawingConstants.INVALID_POINT;
+            yield return DrawingConstants.BREAK_POINT;
 
             if (isVertical)
             {
@@ -122,7 +120,7 @@ namespace Modeling.Models.Extensions
                 yield return new PointSingle(tipX, tipY);
             }
 
-            yield return DrawingConstants.INVALID_POINT;
+            yield return DrawingConstants.BREAK_POINT;
         }
 
         public static IEnumerable<PointSingle> CreateAxisMarks(int dimensionSize, int pixelsPerCentimeter, float tickStart, float tickEnd, float centerX, float centerY, bool isVertical)
@@ -136,7 +134,7 @@ namespace Modeling.Models.Extensions
                         yield return new PointSingle(centerX + tickOffset, axisPosition);
                     }
 
-                    yield return DrawingConstants.INVALID_POINT;
+                    yield return DrawingConstants.BREAK_POINT;
                 }
             }
             else
@@ -148,11 +146,11 @@ namespace Modeling.Models.Extensions
                         yield return new PointSingle(axisPosition, centerY + tickOffset);
                     }
 
-                    yield return DrawingConstants.INVALID_POINT;
+                    yield return DrawingConstants.BREAK_POINT;
                 }
             }
 
-            yield return DrawingConstants.INVALID_POINT;
+            yield return DrawingConstants.BREAK_POINT;
 
             if (isVertical)
             {
@@ -163,7 +161,7 @@ namespace Modeling.Models.Extensions
                         yield return new PointSingle(centerX + tickOffset, axisPosition);
                     }
 
-                    yield return DrawingConstants.INVALID_POINT;
+                    yield return DrawingConstants.BREAK_POINT;
                 }
             }
             else
@@ -174,23 +172,23 @@ namespace Modeling.Models.Extensions
                     {
                         yield return new PointSingle(axisPosition, centerY + tickOffset);
                     }
-                    yield return DrawingConstants.INVALID_POINT;
+                    yield return DrawingConstants.BREAK_POINT;
                 }
             }
 
-            yield return DrawingConstants.INVALID_POINT;
+            yield return DrawingConstants.BREAK_POINT;
         }
 
         public static IEnumerable<IPointGeometry> CreateCustomShape(PointSingle startDrawingPoint,
-    int pixelsPerCentimeter,
-    float halfCirclesDiameterMillimeters,
-    float innerHalfCirclesDiameterMillimeters,
-    float distanceBetweenHalfCirclesAndLargeRectangleMillimeters,
-    float verticalDistanceBetweenHalfCirclesMillimeters,
-    float largeRectangleWidthMillimeters,
-    float smallSquaresDimensionSizeMillimeters,
-    float largeCircleDiameterMillimeters,
-    float smallCircleDiameterMillimeters)
+                                                                    int pixelsPerCentimeter,
+                                                                    float halfCirclesDiameterMillimeters,
+                                                                    float innerHalfCirclesDiameterMillimeters,
+                                                                    float distanceBetweenHalfCirclesAndLargeRectangleMillimeters,
+                                                                    float verticalDistanceBetweenHalfCirclesMillimeters,
+                                                                    float largeRectangleWidthMillimeters,
+                                                                    float smallSquaresDimensionSizeMillimeters,
+                                                                    float largeCircleDiameterMillimeters,
+                                                                    float smallCircleDiameterMillimeters)
         {
             var pixelsPerMillimeter = pixelsPerCentimeter / 10f;
 

@@ -9,7 +9,8 @@ using Modeling.Core.Drawing.Providers;
 using Modeling.Core.Abstractions.Providers;
 using Modeling.Core.Constants;
 using Modeling.Core.Miscellaneous;
-using System.Reflection.Metadata;
+using Modeling.Models.Abstractions.Dialogs;
+using System.ComponentModel;
 
 namespace Modeling.ViewModels
 {
@@ -18,14 +19,34 @@ namespace Modeling.ViewModels
         readonly IApplicationSettingsProvider _applicationSettingsProvider;
         readonly IDrawingSettingsProvider _drawingSettingsProvider;
 
+        bool _initialized;
+
         [ObservableProperty]
         double _canvasHeight;
 
         [ObservableProperty]
         double _canvasWidth;
 
+        [ObservableProperty]
+        bool _drawFigureBounds;
 
-        bool _initialized;
+        [ObservableProperty]
+        bool _drawFigureShapeBounds;
+
+        [ObservableProperty]
+        bool _drawAxis;
+
+        [ObservableProperty]
+        bool _drawAxisMarks;
+
+        [ObservableProperty]
+        bool _drawAxisArrows;
+
+        [ObservableProperty]
+        bool _drawGrid;
+
+        [ObservableProperty]
+        bool _attachGridToFigure;
 
         public SettingsViewModel()
         {
@@ -36,6 +57,41 @@ namespace Modeling.ViewModels
             _applicationSettingsProvider = Ioc.Default.GetService<IApplicationSettingsProvider>();
         }
 
+        partial void OnAttachGridToFigureChanged(bool value)
+        {
+            _drawingSettingsProvider.Settings.AttachGridToFigure = value;
+        }
+
+        partial void OnDrawGridChanged(bool value)
+        {
+            _drawingSettingsProvider.Settings.DrawGrid = value;
+        }
+
+        partial void OnDrawAxisChanged(bool value)
+        {
+            _drawingSettingsProvider.Settings.DrawAxis = value;
+        }
+
+        partial void OnDrawAxisMarksChanged(bool value)
+        {
+            _drawingSettingsProvider.Settings.DrawAxisMarks = value;
+        }
+
+        partial void OnDrawAxisArrowsChanged(bool value)
+        {
+            _drawingSettingsProvider.Settings.DrawAxisArrows = value;
+        }
+
+        partial void OnDrawFigureShapeBoundsChanged(bool value)
+        {
+            _drawingSettingsProvider.Settings.DrawFigureShapeBounds = value;
+        }
+
+        partial void OnDrawFigureBoundsChanged(bool value)
+        {
+            _drawingSettingsProvider.Settings.DrawFigureBounds = value;
+        }
+        
         [RelayCommand]
         void Initialize()
         {
@@ -165,6 +221,13 @@ namespace Modeling.ViewModels
 
             _drawingSettingsProvider.Settings.FigureBoundsColor = DrawingConstants.FIGURE_BOUNDS_COLOR;
             _drawingSettingsProvider.Settings.FigureCenterPointColor = DrawingConstants.FIGURE_BOUNDS_COLOR;
+        }
+
+        [RelayCommand]
+        void ShowSettingsDialog()
+        {
+            var settingsDialog = Ioc.Default.GetRequiredService<ISettingsDialog>();
+            settingsDialog.Show();
         }
     }
 }

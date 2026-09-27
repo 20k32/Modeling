@@ -1,4 +1,3 @@
-using ABI.Microsoft.UI.Xaml.Media;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -10,7 +9,6 @@ using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
 using Modeling.Core.Constants;
 using Modeling.Core.Drawing;
 using Modeling.Core.Extensions;
@@ -249,12 +247,10 @@ namespace Modeling.UI.Resources.Controls.Canvas
 
         void HandleClearCanvasMessage(ClearCanvasMessageValue message)
         {
-            using (var drawingSession = _canvasRenderTarget.CreateDrawingSession())
+            using var drawingSession = _canvasRenderTarget.CreateDrawingSession();
+            foreach (var drawingParameter in message.DrawingParameters.Where(parameter => parameter.ShouldClearBeforeRedraw))
             {
-                foreach (var drawingParameter in message.DrawingParameters.Where(parameter => parameter.ShouldClearBeforeRedraw))
-                {
-                    drawingSession.Clear(drawingParameter.BackgroundColor.WindowsUIColor);
-                }
+                drawingSession.Clear(drawingParameter.BackgroundColor.WindowsUIColor);
             }
         }
 
@@ -298,12 +294,10 @@ namespace Modeling.UI.Resources.Controls.Canvas
 
         void HandleConnectPointsCanvasMessage(ConnectPointsMessageValue message)
         {
-            using (var drawingSession = _canvasRenderTarget.CreateDrawingSession())
+            using var drawingSession = _canvasRenderTarget.CreateDrawingSession();
+            foreach (var drawingParameter in message.DrawingParameters.OfType<DrawPointsMessageValue>())
             {
-                foreach (var drawingParameter in message.DrawingParameters.OfType<DrawPointsMessageValue>())
-                {
-                    HandleConnectPointsCanvasMessageCore(drawingSession, drawingParameter);
-                }
+                HandleConnectPointsCanvasMessageCore(drawingSession, drawingParameter);
             }
         }
 
@@ -314,42 +308,36 @@ namespace Modeling.UI.Resources.Controls.Canvas
                 drawingSession.Clear(message.BackgroundColor.WindowsUIColor);
             }
 
-            using (var builder = new CanvasPathBuilder(_canvasRenderTarget))
+            using var builder = new CanvasPathBuilder(_canvasRenderTarget);
+            DrawFigure(builder, message.Points, applyTransform: false, DrawingConstants.NON_TRANSFORM_MATRIX);
+
+            using var geometry = CanvasGeometry.CreatePath(builder);
+            using var strokeStyle = new CanvasStrokeStyle
             {
-                DrawFigure(builder, message.Points, applyTransform: false, DrawingConstants.NON_TRANSFORM_MATRIX);
-
-                using (var geometry = CanvasGeometry.CreatePath(builder))
-                using (var strokeStyle = new CanvasStrokeStyle
-                {
-                    LineJoin = CanvasLineJoin.Round,
-                    StartCap = CanvasCapStyle.Round,
-                    EndCap = CanvasCapStyle.Round
-                })
-                {
-                    if (message.ShouldFillGeometry)
-                    {
-                        drawingSession.FillGeometry(
-                        geometry,
-                        message.FillColor.WindowsUIColor);
-                    }
-
-                    drawingSession.DrawGeometry(
-                        geometry,
-                        message.Color.WindowsUIColor,
-                        message.Thickness,
-                        strokeStyle);
-                }
+                LineJoin = CanvasLineJoin.Round,
+                StartCap = CanvasCapStyle.Round,
+                EndCap = CanvasCapStyle.Round
+            };
+            if (message.ShouldFillGeometry)
+            {
+                drawingSession.FillGeometry(
+                geometry,
+                message.FillColor.WindowsUIColor);
             }
+
+            drawingSession.DrawGeometry(
+                geometry,
+                message.Color.WindowsUIColor,
+                message.Thickness,
+                strokeStyle);
         }
 
         void HandleTransformPointsCanvasMessage(TransformPointsMessageValue message)
         {
-            using (var drawingSession = _canvasRenderTarget.CreateDrawingSession())
+            using var drawingSession = _canvasRenderTarget.CreateDrawingSession();
+            foreach (var drawingParameter in message.DrawingParameters.OfType<DrawTransformedPointsMessageValue>())
             {
-                foreach (var drawingParameter in message.DrawingParameters.OfType<DrawTransformedPointsMessageValue>())
-                {
-                    HandleTransformPointsCanvasMessageCore(drawingSession, drawingParameter);
-                }
+                HandleTransformPointsCanvasMessageCore(drawingSession, drawingParameter);
             }
         }
 
@@ -358,37 +346,33 @@ namespace Modeling.UI.Resources.Controls.Canvas
             var shouldApplyTransform = message.Transform != default
                 && message.Transform != DrawingConstants.NON_TRANSFORM_MATRIX;
 
-            using (var builder = new CanvasPathBuilder(_canvasRenderTarget))
+            using var builder = new CanvasPathBuilder(_canvasRenderTarget);
+            DrawFigure(builder, message.Points, shouldApplyTransform, message.Transform);
+
+            using var geometry = CanvasGeometry.CreatePath(builder);
+            using var strokeStyle = new CanvasStrokeStyle
             {
-                DrawFigure(builder, message.Points, shouldApplyTransform, message.Transform);
-
-                using (var geometry = CanvasGeometry.CreatePath(builder))
-                using (var strokeStyle = new CanvasStrokeStyle
-                {
-                    LineJoin = CanvasLineJoin.Round,
-                    StartCap = CanvasCapStyle.Round,
-                    EndCap = CanvasCapStyle.Round
-                })
-                {
-                    if (message.ShouldClearBeforeRedraw)
-                    {
-                        drawingSession.Clear(message.BackgroundColor.WindowsUIColor);
-                    }
-
-                    if (message.ShouldFillGeometry)
-                    {
-                        drawingSession.FillGeometry(
-                        geometry,
-                        message.FillColor.WindowsUIColor);
-                    }
-                    
-                    drawingSession.DrawGeometry(
-                        geometry,
-                        message.Color.WindowsUIColor,
-                        message.Thickness,
-                        strokeStyle);
-                }
+                LineJoin = CanvasLineJoin.Round,
+                StartCap = CanvasCapStyle.Round,
+                EndCap = CanvasCapStyle.Round
+            };
+            if (message.ShouldClearBeforeRedraw)
+            {
+                drawingSession.Clear(message.BackgroundColor.WindowsUIColor);
             }
+
+            if (message.ShouldFillGeometry)
+            {
+                drawingSession.FillGeometry(
+                geometry,
+                message.FillColor.WindowsUIColor);
+            }
+
+            drawingSession.DrawGeometry(
+                geometry,
+                message.Color.WindowsUIColor,
+                message.Thickness,
+                strokeStyle);
         }
 
         async Task InitializeDrawingPipelineAsync()

@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<local:OnTopDialog x:Class="Modeling.UI.Resources.Dialogs.SettingsDialog"
+                   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                   xmlns:local="using:Modeling.UI.Resources.Dialogs"
+                   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                   xmlns:media="using:CommunityToolkit.WinUI.Media"
+                   DataContext="{Binding SettingsViewModel, Source={StaticResource ServiceLocator}}"
+                   mc:Ignorable="d">
+
+    <Grid HorizontalAlignment="Stretch"
+          VerticalAlignment="Stretch"
+          Background="{StaticResource SolidBackgroundColor}">
+        <Grid MaxWidth="600"
+              MaxHeight="600"
+              Margin="{StaticResource DialogTitleBarMargins}"
+              HorizontalAlignment="Stretch"
+              VerticalAlignment="Stretch"
+              BorderBrush="{StaticResource DialogBordersColor}"
+              BorderThickness="{StaticResource DialogBordersThickness}"
+              CornerRadius="{StaticResource DialogBordersCornerRadius}">
+
+            <Button HorizontalAlignment="Right"
+                    VerticalAlignment="Top"
+                    Command="{x:Bind CloseDialogCommand}"
+                    Content="Close" />
+
+            <Grid HorizontalAlignment="Center"
+                  VerticalAlignment="Center"
+                  ColumnSpacing="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="10*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Row="0"
+                           Grid.Column="0"
+                           HorizontalAlignment="Right"
+                           VerticalAlignment="Center"
+                           Text="Draw figure bounds" />
+                <CheckBox Grid.Row="0"
+                          Grid.Column="1"
+                          HorizontalAlignment="Left"
+                          IsChecked="{Binding DrawFigureBounds, Mode=TwoWay}" />
+
+                <TextBlock Grid.Row="1"
+                           Grid.Column="0"
+                           HorizontalAlignment="Right"
+                           VerticalAlignment="Center"
+                           Text="Draw shape bounds" />
+                <CheckBox Grid.Row="1"
+                          Grid.Column="1"
+                          HorizontalAlignment="Left"
+                          IsChecked="{Binding DrawFigureShapeBounds, Mode=TwoWay}" />
+
+                <TextBlock Grid.Row="2"
+                           Grid.Column="0"
+                           HorizontalAlignment="Right"
+                           VerticalAlignment="Center"
+                           Text="Draw axis" />
+                <CheckBox Grid.Row="2"
+                          Grid.Column="1"
+                          HorizontalAlignment="Left"
+                          IsChecked="{Binding DrawAxis, Mode=TwoWay}" />
+
+                <TextBlock Grid.Row="3"
+                           Grid.Column="0"
+                           HorizontalAlignment="Right"
+                           VerticalAlignment="Center"
+                           Text="Draw axis marks" />
+                <CheckBox Grid.Row="3"
+                          Grid.Column="1"
+                          HorizontalAlignment="Left"
+                          IsChecked="{Binding DrawAxisMarks, Mode=TwoWay}" />
+
+                <TextBlock Grid.Row="4"
+                           Grid.Column="0"
+                           HorizontalAlignment="Right"
+                           VerticalAlignment="Center"
+                           Text="Draw axis arrows" />
+                <CheckBox Grid.Row="4"
+                          Grid.Column="1"
+                          HorizontalAlignment="Left"
+                          IsChecked="{Binding DrawAxisArrows, Mode=TwoWay}" />
+
+                <TextBlock Grid.Row="5"
+                           Grid.Column="0"
+                           HorizontalAlignment="Right"
+                           VerticalAlignment="Center"
+                           Text="Draw grid" />
+                <CheckBox Grid.Row="5"
+                          Grid.Column="1"
+                          HorizontalAlignment="Left"
+                          IsChecked="{Binding DrawGrid, Mode=TwoWay}" />
+
+                <TextBlock Grid.Row="6"
+                           Grid.Column="0"
+                           HorizontalAlignment="Right"
+                           VerticalAlignment="Center"
+                           Text="Attach grid to figure" />
+                <CheckBox Grid.Row="6"
+                          Grid.Column="1"
+                          HorizontalAlignment="Left"
+                          IsChecked="{Binding AttachGridToFigure, Mode=TwoWay}" />
+            </Grid>
+        </Grid>
+    </Grid>
+
+</local:OnTopDialog>

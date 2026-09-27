@@ -1,5 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
+using Modeling.Models.Abstractions.Dialogs;
+using Modeling.UI.Resources.Dialogs;
 using Modeling.ViewModels.DependencyInjection;
 
 namespace Modeling.UI.DependencyInjection
@@ -10,6 +12,7 @@ namespace Modeling.UI.DependencyInjection
             => container.ConfigureServices(
                 new ServiceCollection()
                 .RegisterViewModelServices()
+                .AddTransient<ISettingsDialog, SettingsDialog>()
                 .BuildServiceProvider());
     }
 }

@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
+using Modeling.Models.UserInterface;
 using Modeling.ViewModels;
 
 namespace Modeling.UI.DependencyInjection
@@ -10,5 +11,6 @@ namespace Modeling.UI.DependencyInjection
 
         public static DrawingViewModel DrawingViewModel => Ioc.Default.GetRequiredService<DrawingViewModel>();
         public static SettingsViewModel SettingsViewModel => Ioc.Default.GetRequiredService<SettingsViewModel>();
+        public static IUserInterfaceConstantsProvider UserInterfaceConstants => Ioc.Default.GetRequiredService<IUserInterfaceConstantsProvider>();
     }
 }

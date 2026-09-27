@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Modeling.Core.Abstractions.Providers;
-using Modeling.PlatformHelpers.Monitor;
 using Modeling.PlatformHelpers.Providers;
 using Modeling.PlatformHelpers.Providers.ApplicationData;
 using Modeling.PlatformHelpers.Providers.ApplicationPackage;

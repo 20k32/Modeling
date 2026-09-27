@@ -6,7 +6,6 @@ using Modeling.Core.Logging.Formatting;
 using Modeling.Core.Serializer;
 using Modeling.Core.Serializer.NewtonSoft;
 using Modeling.Core.Settings;
-using Newtonsoft.Json;
 using Serilog;
 
 namespace Modeling.Core.DependencyInjection

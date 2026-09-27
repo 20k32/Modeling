@@ -10,6 +10,8 @@ namespace Modeling.Core.Settings
     {
         bool? Initialized { get; set; }
 
+        event ActionEventHandler PropertyChanged;
+
         int DpiX { get; set; }
         int DpiY { get; set; }
 
@@ -48,5 +50,13 @@ namespace Modeling.Core.Settings
 
         float AxisThickness { get; set; }
         float AxisTickThickness { get; set; }
+
+        bool AttachGridToFigure { get; set; }
+        bool DrawGrid { get; set; }
+        bool DrawAxis { get; set; }
+        bool DrawAxisMarks { get; set; }
+        bool DrawAxisArrows { get; set; }
+        bool DrawFigureShapeBounds { get; set; }
+        bool DrawFigureBounds { get; set; }
     }
 }

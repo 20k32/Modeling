@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
 using Modeling.Core.Drawing;
 using Modeling.Models.Abstractions.Drawing.Figure;
-using System.Collections;
 using System.Collections.Generic;
 
 namespace Modeling.Models.Extensions

@@ -1,5 +1,4 @@
-﻿using Modeling.Core.Drawing;
-using Modeling.Models.Drawing.DrawingMessageValues.Points;
+﻿using Modeling.Models.Drawing.DrawingMessageValues.Points;
 using Modeling.Models.Enums;
 
 namespace Modeling.Models.Drawing.DrawingMessageValues

@@ -1,17 +1,13 @@
 ﻿using Modeling.Core.Drawing;
-using Modeling.Models.Drawing.Figures;
 using Modeling.Models.Miscellaneous;
-using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Modeling.Models.Abstractions.Drawing.Figure
 {
-    public interface IFigure : IEnumerable<IPointGeometry>
+    public interface IFigure : IEnumerable<IPointGeometry>, IBounds
     {
         LinkedList<IPointGeometry> Segments { get; }
         PointSingle CenterPoint { get; }
-        RectangleSingle Bounds { get; }
 
         void SetPropertiesFromSegments();
         void AddSegments(IEnumerable<IPointGeometry> segments);

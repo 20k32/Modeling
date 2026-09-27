@@ -1,8 +1,5 @@
 ﻿using Modeling.Core.Abstractions;
 using Modeling.Core.Drawing;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Modeling.Core.Messages.Parameters.Canvas.Drawing
 {

@@ -19,6 +19,7 @@
     <ItemGroup>
       <None Remove="Resources\Controls\Canvas\Win2DCanvas.xaml" />
       <None Remove="Resources\Controls\Root\MainPage.xaml" />
+      <None Remove="Resources\Dialogs\SettingsDialog.xaml" />
       <None Remove="Resources\Dictionaries\SharedResources.xaml" />
       <None Remove="Resources\GeneralResources.xaml" />
       <None Remove="Resources\Icons\FluentIcons.xaml" />
@@ -88,6 +89,11 @@
     </ItemGroup>
     <ItemGroup>
       <Page Update="Resources\Styles\ScrollViewer.xaml">
+        <Generator>MSBuild:Compile</Generator>
+      </Page>
+    </ItemGroup>
+    <ItemGroup>
+      <Page Update="Resources\Dialogs\SettingsDialog.xaml">
         <Generator>MSBuild:Compile</Generator>
       </Page>
     </ItemGroup>

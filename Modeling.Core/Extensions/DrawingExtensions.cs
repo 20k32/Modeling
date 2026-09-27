@@ -1,8 +1,6 @@
-﻿using Modeling.Core.Constants;
-using Modeling.Core.Drawing;
+﻿using Modeling.Core.Drawing;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Modeling.Core.Extensions
 {

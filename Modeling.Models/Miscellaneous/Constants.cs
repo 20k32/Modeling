@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Modeling.Models.Miscellaneous
+﻿namespace Modeling.Models.Miscellaneous
 {
     static class Constants
     {

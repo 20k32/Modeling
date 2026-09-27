@@ -1,10 +1,9 @@
 ﻿using Modeling.Core.Windowing;
-using Modeling.PlatformHelpers.Screens;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Windows.Foundation;
 
-namespace Modeling.PlatformHelpers.Monitor
+namespace Modeling.PlatformHelpers.Screens
 {
     class ScreenListener : IScreenListener
     {

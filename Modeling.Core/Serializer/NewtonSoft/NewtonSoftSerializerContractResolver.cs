@@ -1,5 +1,4 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection;
 using Modeling.Core.Settings;
 using Newtonsoft.Json.Serialization;
 using System;

@@ -7,6 +7,7 @@ namespace Modeling.Core.Drawing.Providers
     public interface IDrawingSettingsProvider : IAsyncInitializer
     {
         IDrawingSettings Settings { get; }
+        event ActionEventHandler SettingsChanged;
 
         Task SaveSettingsAsync();
         Task LoadSettingsAsync();

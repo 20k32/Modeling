@@ -18,6 +18,8 @@ namespace Modeling.Core.Drawing.Providers
 
         public IDrawingSettings Settings { get; private set; }
 
+        public event ActionEventHandler SettingsChanged;
+
         public DrawingSettingsProvider()
         {
             _applicationSettingsProvider = Ioc.Default.GetService<IApplicationSettingsProvider>();

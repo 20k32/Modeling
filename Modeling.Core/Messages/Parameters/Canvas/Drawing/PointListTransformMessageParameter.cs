@@ -1,9 +1,7 @@
 ﻿using Modeling.Core.Abstractions;
 using Modeling.Core.Constants;
 using Modeling.Core.Drawing;
-using Modeling.Core.Messages.Canvas.Drawing;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Modeling.Core.Messages.Parameters.Canvas.Drawing
 {

@@ -5,8 +5,6 @@ using Modeling.Models.Miscellaneous;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Modeling.Models.Drawing.Figures
 {
@@ -20,41 +18,7 @@ namespace Modeling.Models.Drawing.Figures
         public PointSingle CenterPoint => _centerPoint;
         public RectangleSingle Bounds => _bounds;
 
-        public void AddSegment(IPointGeometry segment) => Segments.AddLast(segment);
-
-        public void AddSegments(IEnumerable<IPointGeometry> segments)
-        {
-            foreach (var segment in segments)
-            {
-                AddSegment(segment);
-            }
-        }
-
-        public IEnumerator<IPointGeometry> GetEnumerator()
-        {
-            foreach (var segment in Segments)
-            {
-                yield return segment;
-            }
-        }
-
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-        public IPointGeometry GetFirstMatchingSegment(PointSingle point, float desiredPointDistance = Constants.DISTANCE_BETWEEN_SEGMENT_POINT_AND_USER_POINT_PIXELS)
-        {
-            var result = default(IPointGeometry);
-
-            if (desiredPointDistance <= 0f)
-            {
-                result = FindMatchingPoint(point);
-            }
-            else
-            {
-                result = GetFirstMatchingSegmentCore(point, desiredPointDistance);
-            }
-
-            return result;
-        }
 
         IPointGeometry GetFirstMatchingSegmentCore(PointSingle point, float desiredPointDistance)
         {
@@ -98,12 +62,43 @@ namespace Modeling.Models.Drawing.Figures
             return result;
         }
 
+        public void AddSegment(IPointGeometry segment) => Segments.AddLast(segment);
+
+        public void AddSegments(IEnumerable<IPointGeometry> segments)
+        {
+            foreach (var segment in segments)
+            {
+                AddSegment(segment);
+            }
+        }
+
+        public IEnumerator<IPointGeometry> GetEnumerator()
+        {
+            foreach (var segment in Segments)
+            {
+                yield return segment;
+            }
+        }
+        public IPointGeometry GetFirstMatchingSegment(PointSingle point, float desiredPointDistance = Constants.DISTANCE_BETWEEN_SEGMENT_POINT_AND_USER_POINT_PIXELS)
+        {
+            var result = default(IPointGeometry);
+
+            if (desiredPointDistance <= 0f)
+            {
+                result = FindMatchingPoint(point);
+            }
+            else
+            {
+                result = GetFirstMatchingSegmentCore(point, desiredPointDistance);
+            }
+
+            return result;
+        }
+
         public void Clear() => Segments.Clear();
 
-        public void SetPropertiesFromSegments()
+        public void SetBounds()
         {
-            var firstPoint = Segments.First().Points.First();
-
             var left = float.MaxValue;
             var top = float.MaxValue;
             var width = float.MinValue;
@@ -111,20 +106,24 @@ namespace Modeling.Models.Drawing.Figures
 
             foreach (var segment in Segments)
             {
-                foreach (var point in segment.Points)
-                {
-                    left = MathF.Min(left, point.X);
-                    top = MathF.Min(top, point.Y);
-                    width = MathF.Max(width, point.X);
-                    height = MathF.Max(height, point.Y);
-                }
+                segment.SetBounds();
+
+                left = MathF.Min(left, segment.Bounds.Left);
+                top = MathF.Min(top, segment.Bounds.Top);
+                width = MathF.Max(width, segment.Bounds.Width);
+                height = MathF.Max(height, segment.Bounds.Height);
             }
 
-            _centerPoint = new PointSingle(
-                x: width / 2,
-                y: height / 2);
-
             _bounds = new RectangleSingle(top, left, width, height);
+        }
+
+        public void SetPropertiesFromSegments()
+        {
+            SetBounds();
+
+            _centerPoint = new PointSingle(
+                x: _bounds.Width / 2,
+                y: _bounds.Height / 2);
         }
     }
 }

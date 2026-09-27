@@ -1,8 +1,5 @@
 ﻿using Modeling.Core.Drawing;
-using Modeling.Models.Enums;
-using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Modeling.Models.Drawing.DrawingMessageValues.Points
 {

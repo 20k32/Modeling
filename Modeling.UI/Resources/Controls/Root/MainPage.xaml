@@ -7,6 +7,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:interactivity="using:Microsoft.Xaml.Interactivity"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:media="using:CommunityToolkit.WinUI.Media"
              behaviors:ViewModelsInitializationBehavior.IsDrawingViewModelInitializationEnabled="{Binding DrawingViewModel.InitializeCommand, Source={StaticResource ServiceLocator}}"
              behaviors:ViewModelsInitializationBehavior.IsSettingsViewModelInitializationEnabled="{Binding SettingsViewModel.InitializeCommand, Source={StaticResource ServiceLocator}}"
              DataContext="{Binding DrawingViewModel, Source={StaticResource ServiceLocator}}"
@@ -18,21 +19,31 @@
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
 
+        <Border Grid.ColumnSpan="2"
+                Background="{StaticResource SolidBackgroundColor}"
+                Visibility="{Binding Visibility, ElementName=DialogGrid}" />
+
         <Grid Grid.Column="0"
               HorizontalAlignment="Stretch"
               VerticalAlignment="Stretch">
             <controls:Win2DCanvas Initialize="{Binding InitializeCanvasCommand}" PointerMovedCommand="{Binding CanvasPointerMovedCommand}" />
-        </Grid>
 
+            <Border Background="{StaticResource SolidBackgroundColor}" Visibility="{Binding Visibility, ElementName=DialogGrid}" />
+        </Grid>
 
         <Grid Grid.Column="1">
             <Button Command="{Binding DrawLinesCommand}" Content="Test" />
-            <Button VerticalAlignment="Bottom">
+            <Button VerticalAlignment="Bottom" Command="{Binding SettingsViewModel.ShowSettingsDialogCommand, Source={StaticResource ServiceLocator}}">
                 <Button.Content>
                     <PathIcon Data="{StaticResource SettingsIcon}" />
                 </Button.Content>
             </Button>
         </Grid>
-    </Grid>
 
+        <!--  This grid is used for dialogs  -->
+        <Grid x:Name="DialogGrid"
+              Grid.ColumnSpan="2"
+              Tag="{Binding UserInterfaceConstants.ApplicationPopupRootName, Source={StaticResource ServiceLocator}}"
+              Visibility="Collapsed" />
+    </Grid>
 </UserControl>
