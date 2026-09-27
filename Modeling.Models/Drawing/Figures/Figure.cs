@@ -110,8 +110,8 @@ namespace Modeling.Models.Drawing.Figures
 
                 left = MathF.Min(left, segment.Bounds.Left);
                 top = MathF.Min(top, segment.Bounds.Top);
-                width = MathF.Max(width, segment.Bounds.Width);
-                height = MathF.Max(height, segment.Bounds.Height);
+                width = MathF.Max(width, segment.Bounds.Right);
+                height = MathF.Max(height, segment.Bounds.Bottom);
             }
 
             _bounds = new RectangleSingle(top, left, width, height);
@@ -122,8 +122,8 @@ namespace Modeling.Models.Drawing.Figures
             SetBounds();
 
             _centerPoint = new PointSingle(
-                x: _bounds.Width / 2,
-                y: _bounds.Height / 2);
+                x: _bounds.Right / 2,
+                y: _bounds.Bottom / 2);
         }
     }
 }

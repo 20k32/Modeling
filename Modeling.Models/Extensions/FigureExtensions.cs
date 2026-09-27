@@ -2,6 +2,7 @@
 using Modeling.Core.Drawing;
 using Modeling.Core.Extensions;
 using Modeling.Models.Abstractions.Drawing.Figure;
+using Modeling.Models.Drawing.Figures;
 using System;
 using System.Collections.Generic;
 using Windows.Graphics;
@@ -10,6 +11,21 @@ namespace Modeling.Models.Extensions
 {
     public static class FigureExtensions
     {
+        public static IPointGeometry FindNearestSegment(this IFigure figure, PointSingle point)
+        {
+            var nearestSegment = default(IPointGeometry);
+
+            foreach (var segment in figure)
+            {
+                if (segment.Bounds.SizeBounds.Contains(point))
+                {
+                    nearestSegment = segment;
+                }
+            }
+
+            return nearestSegment;
+        }
+
         public static IEnumerable<PointSingle> CreateGrid(SizeSingle canvasSize, float pixelsPerCentimeter)
         {
             for (var y = DrawingConstants.START_POINT_DRAWING_COORDINATE_X_Y;

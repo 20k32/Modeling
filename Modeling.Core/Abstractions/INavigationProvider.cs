@@ -7,7 +7,7 @@ namespace Modeling.Core.Abstractions
     public interface INavigationProvider
     {
         event ActionEventHandler<NavigatingCancellationParameter> Navigating;
-        event ActionEventHandler Navigated;
+        event ActionEventHandler<NavigationPage> Navigated;
 
         NavigationPage CurrentPage { get; }
 

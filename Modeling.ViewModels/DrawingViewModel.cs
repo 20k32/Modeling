@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using Modeling.Core.Abstractions;
 using Modeling.Core.Constants;
 using Modeling.Core.Drawing;
 using Modeling.Core.Drawing.Providers;
@@ -13,6 +14,7 @@ using Modeling.Core.Messages.Parameters.Canvas.Drawing;
 using Modeling.Core.Messages.Parameters.Canvas.Settings;
 using Modeling.Core.Messages.Settings;
 using Modeling.Core.Messages.ViewModels;
+using Modeling.Core.Navigation;
 using Modeling.Models.Abstractions.Drawing.Figure;
 using Modeling.Models.Extensions;
 using Modeling.ViewModels.Miscellaneous;
@@ -26,6 +28,7 @@ namespace Modeling.ViewModels
     public sealed partial class DrawingViewModel : ObservableObject
     {
         readonly IDrawingSettingsProvider _drawingSettingsProvider;
+        readonly INavigationProvider _navigationProvider;
 
         readonly List<PointSingle> _grid;
         readonly List<PointSingle> _horizontalAxis;
@@ -37,13 +40,18 @@ namespace Modeling.ViewModels
         readonly List<PointSingle> _userPoint;
         readonly IFigure _figure;
 
+
+        IPointGeometry _nearestSegment;
         PointSingle startDrawingPoint;
 
         UserPointDrawingAction _drawingAction;
         PointSingle _previousMovedPoint;
         Matrix3x3Single _transform;
 
-        DrawingMessageParameter _lastDrawingMessage;
+        PointListTransformMessageParameter _lastDrawingMessage;
+
+        [ObservableProperty]
+        bool _needPickShapeForResizing;
 
         public DrawingViewModel()
         {
@@ -68,9 +76,47 @@ namespace Modeling.ViewModels
             _drawingSettingsProvider.SettingsChanged += OnDrawingSettingsProviderSettingsChanged;
 
             WeakReferenceMessenger.Default.Register<ChangeCanvasSettingsMessage>(this, OnChangeCanvasSettingsMessage);
+
+            _navigationProvider = Ioc.Default.GetRequiredService<INavigationProvider>();
+            _navigationProvider.Navigated += OnNavigationProviderNavigated;
         }
 
-        private void OnChangeCanvasSettingsMessage(object recipient, ChangeCanvasSettingsMessage message)
+        void OnNavigationProviderNavigated(NavigationPage page)
+        {
+            try
+            {
+                HandleSubPageNavigation(page);
+            }
+            catch (Exception ex)
+            {
+                Logger.Exception(ex);
+            }
+        }
+
+        void HandleSubPageNavigation(NavigationPage page)
+        {
+            switch (page)
+            {
+                case (NavigationPage.ResizingPage): HandleResizingSubPageNavigation(); break;
+                case (NavigationPage.AffineTransformPage): break;
+                case (NavigationPage.EuclideanTransformPage): break;
+                case (NavigationPage.ProjectiveTransformPage): break;
+                default: break;
+            }
+        }
+
+        void ResetStateForResizingSubPage()
+        {
+            NeedPickShapeForResizing = true;
+            _drawingAction = UserPointDrawingAction.FigurePointSelection;
+        }
+
+        void HandleResizingSubPageNavigation()
+        {
+            ResetStateForResizingSubPage();
+        }
+
+        void OnChangeCanvasSettingsMessage(object recipient, ChangeCanvasSettingsMessage message)
         {
             if (message.ApplyBasicMessageValidation(recipient))
             {
@@ -85,7 +131,7 @@ namespace Modeling.ViewModels
                     ClearDrawingElements();
                     InitializeDrawingElements(message.Value.Size, message.Value.PixelsPerCentimeter);
                 }
-                
+
                 if (message.Value.ShouldUpdateRefreshRate)
                 {
                     var newRefreshRate = TimeSpan.FromSeconds(1 / (double)message.Value.RefreshRate);
@@ -128,24 +174,35 @@ namespace Modeling.ViewModels
         {
             switch (_drawingAction)
             {
-                case UserPointDrawingAction.AxisPointSelection: RedrawUserPoint(point); break;
-                case UserPointDrawingAction.FigurePointSelection: break;
+                case UserPointDrawingAction.AxisPointSelection: RedrawUserPointCore(point); break;
+                case UserPointDrawingAction.FigurePointSelection: SelectSegmentOnFigure(point); break;
                 default: break;
             }
         }
 
-        void RedrawUserPoint(PointSingle point)
+        void SelectSegmentOnFigure(PointSingle point)
         {
-            try
+            var shouldHandlePoint = NeedPickShapeForResizing && _figure.Bounds.Contains(point);
+
+            var nearestSegment = default(IPointGeometry);
+
+            if (shouldHandlePoint)
             {
-                RedrawUserPointCore(point);
+                nearestSegment = _figure.FindNearestSegment(point);
+                shouldHandlePoint &= nearestSegment is not null;
             }
-            catch (Exception ex)
+
+            Logger.Information($"X:{point.X} Y:{point.Y}");
+
+            if (shouldHandlePoint && nearestSegment != _nearestSegment)
             {
-                if (ex is not OperationCanceledException)
-                {
-                    Logger.Exception(ex);
-                }
+                _nearestSegment = nearestSegment;
+
+                var segmentRedrawingMessageParameter = _lastDrawingMessage.With(
+                    points: [.. nearestSegment.Bounds.GetPointsFromBounds()],
+                    color: new(_drawingSettingsProvider.Settings.FigureBoundsColor));
+
+                WeakReferenceMessenger.Default.Send(new TransformPointsMessage(this, segmentRedrawingMessageParameter));
             }
         }
 

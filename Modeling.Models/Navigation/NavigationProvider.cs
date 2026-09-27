@@ -27,7 +27,7 @@ namespace Modeling.Models.Navigation
         public NavigationPage CurrentPage => _currentPage;
 
         public event ActionEventHandler<NavigatingCancellationParameter> Navigating;
-        public event ActionEventHandler Navigated;
+        public event ActionEventHandler<NavigationPage> Navigated;
 
         public NavigationProvider()
         {
@@ -49,8 +49,8 @@ namespace Modeling.Models.Navigation
         public void Navigate(NavigationPage page)
         {
             var cancelNavigationParameter = new NavigatingCancellationParameter(
-                fromPage: _currentPage, 
-                toPage: page, 
+                fromPage: _currentPage,
+                toPage: page,
                 cancelNavigation: false);
 
             Navigating?.Invoke(cancelNavigationParameter);
@@ -71,7 +71,7 @@ namespace Modeling.Models.Navigation
                     }
                 }
 
-                Navigated?.Invoke();
+                Navigated?.Invoke(page);
 
                 _previousPage = _currentPage;
                 _currentPage = page;
