@@ -35,7 +35,6 @@ namespace Modeling.Core.Constants
 
         public const int ONE_SECOND_MILISECONDS = 1000;
         public const int DEFAULT_FRAMES_PER_SECOND = 60;
-        public static readonly TimeSpan DEFAULT_REFRESH_RATE = new(ONE_SECOND_MILISECONDS / DEFAULT_FRAMES_PER_SECOND);
 
         public const int STANDART_DPI = 96;
 
@@ -75,5 +74,7 @@ namespace Modeling.Core.Constants
         public const float MAXIMUM_CANVAS_SIZE_PIXELS = 3000;
         public const float MAXIMUM_CANVAS_PIXELS_PER_CENTIMETER = 400;
         public const float MINIMUM_CANVAS_PIXELS_PER_CENTIMETER = 1;
+
+        public const int DEFAULT_CANVAS_REFRESH_RATE = 60;
     }
 }

@@ -10,6 +10,7 @@ using Modeling.Core.Logging;
 using Modeling.Core.Messages.Canvas.Drawing;
 using Modeling.Core.Messages.Canvas.Settings;
 using Modeling.Core.Messages.Parameters.Canvas.Drawing;
+using Modeling.Core.Messages.Parameters.Canvas.Settings;
 using Modeling.Core.Messages.Settings;
 using Modeling.Core.Messages.ViewModels;
 using Modeling.Models.Abstractions.Drawing.Figure;
@@ -79,8 +80,19 @@ namespace Modeling.ViewModels
                     WeakReferenceMessenger.Default.Send(changeCanvasSizeMessage);
                 }
 
-                ClearDrawingElements();
-                InitializeDrawingElements(message.Value.Size, message.Value.PixelsPerCentimeter);
+                if (message.Value.ShouldRecreateFigure)
+                {
+                    ClearDrawingElements();
+                    InitializeDrawingElements(message.Value.Size, message.Value.PixelsPerCentimeter);
+                }
+                
+                if (message.Value.ShouldUpdateRefreshRate)
+                {
+                    var newRefreshRate = TimeSpan.FromSeconds(1 / (double)message.Value.RefreshRate);
+                    var refreshRateParameter = new RefreshRateParameter(newRefreshRate);
+                    var changeRefreshRateMessage = new ChangeCanvasRefreshRateMessage(this, refreshRateParameter);
+                    WeakReferenceMessenger.Default.Send(changeRefreshRateMessage);
+                }
             }
         }
 

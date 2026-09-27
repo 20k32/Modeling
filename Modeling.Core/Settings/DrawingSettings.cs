@@ -204,20 +204,6 @@ namespace Modeling.Core.Settings
             }
         }
 
-        private TimeSpan _refreshRate;
-        public TimeSpan RefreshRate
-        {
-            get => _refreshRate;
-            set
-            {
-                if (_refreshRate != value)
-                {
-                    _refreshRate = value;
-                    InvokeSettingsChanged();
-                }
-            }
-        }
-
         private float _pixelsPerCentimeter;
         public float PixelsPerCentimeter
         {
@@ -517,6 +503,20 @@ namespace Modeling.Core.Settings
                     {
                         SettingsChanged?.Invoke();
                     }
+                }
+            }
+        }
+
+        private int _canvasRefreshRate;
+        public int CanvasRefreshRate
+        {
+            get => _canvasRefreshRate;
+            set
+            {
+                if (_canvasRefreshRate != value)
+                {
+                    _canvasRefreshRate = value;
+                    InvokeSettingsChanged();
                 }
             }
         }

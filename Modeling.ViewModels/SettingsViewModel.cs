@@ -14,9 +14,12 @@ using Modeling.Core.Messages.Settings;
 using Modeling.Core.Messages.ViewModels;
 using Modeling.Core.Miscellaneous;
 using Modeling.Models.Abstractions.Dialogs;
+using Modeling.Models.Settings;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Windows.Security.Cryptography.Certificates;
@@ -63,11 +66,25 @@ namespace Modeling.ViewModels
         [ObservableProperty]
         float _pixelsPerCentimeter;
 
+        [ObservableProperty]
+        RefreshRateItem _refreshRate;
+
+        [ObservableProperty]
+        ObservableCollection<RefreshRateItem> _refreshRates;
+
         public SettingsViewModel()
         {
             _applyingChangesLock = new SemaphoreSlim(1, 1);
             _drawingSettingsProvider = Ioc.Default.GetService<IDrawingSettingsProvider>();
             _applicationSettingsProvider = Ioc.Default.GetService<IApplicationSettingsProvider>();
+            _refreshRates =
+                [
+                    new RefreshRateItem(1),
+                    new RefreshRateItem(24),
+                    new RefreshRateItem(30),
+                    new RefreshRateItem(60),
+                    new RefreshRateItem(120),
+                ];
         }
 
         async Task WaitBeforeExecutionAsync(ActionEventHandler action)
@@ -100,6 +117,35 @@ namespace Modeling.ViewModels
             }
         }
 
+        async partial void OnRefreshRateChanged(RefreshRateItem value)
+        {
+            if (value is null)
+            {
+                value = RefreshRates.First(refreshRate => refreshRate.Value == DrawingConstants.DEFAULT_CANVAS_REFRESH_RATE);
+            }
+
+            if (value.Value != _drawingSettingsProvider.Settings.CanvasRefreshRate)
+            {
+                await WaitBeforeExecutionAsync(() =>
+                {
+                    if (value.Value != _drawingSettingsProvider.Settings.CanvasRefreshRate)
+                    {
+                        var settingsParameter = new UpdateDrawingsParameter(
+                            shouldUpdateCanvasSize: false,
+                            shouldRecreateFigure: false,
+                            shouldUpdateRefreshRate: true,
+                            new((float)CanvasWidth,
+                            (float)CanvasHeight), PixelsPerCentimeter,
+                            value.Value);
+
+                        WeakReferenceMessenger.Default.Send(new ChangeCanvasSettingsMessage(this, settingsParameter));
+
+                        _drawingSettingsProvider.Settings.CanvasRefreshRate = value.Value;
+                    }
+                });
+            }
+        }
+
         async partial void OnPixelsPerCentimeterChanged(float value)
         {
             if (value > DrawingConstants.MAXIMUM_CANVAS_PIXELS_PER_CENTIMETER)
@@ -122,9 +168,13 @@ namespace Modeling.ViewModels
                 {
                     if (value != _drawingSettingsProvider.Settings.PixelsPerCentimeter)
                     {
-                        var settingsParameter = new UpdateDrawingsParameter(shouldUpdateCanvasSize: false,
+                        var settingsParameter = new UpdateDrawingsParameter(
+                            shouldUpdateCanvasSize: false,
+                            shouldRecreateFigure: true,
+                            shouldUpdateRefreshRate: false,
                             new((float)CanvasWidth,
-                            (float)CanvasHeight), PixelsPerCentimeter);
+                            (float)CanvasHeight), PixelsPerCentimeter,
+                            RefreshRate.Value);
 
                         WeakReferenceMessenger.Default.Send(new ChangeCanvasSettingsMessage(this, settingsParameter));
 
@@ -161,9 +211,13 @@ namespace Modeling.ViewModels
                 {
                     if (newSize != _drawingSettingsProvider.Settings.CanvasSize)
                     {
-                        var settingsParameter = new UpdateDrawingsParameter(shouldUpdateCanvasSize: true,
+                        var settingsParameter = new UpdateDrawingsParameter(
+                            shouldUpdateCanvasSize: true,
+                            shouldRecreateFigure: true,
+                            shouldUpdateRefreshRate: false,
                             new((float)CanvasWidth, (float)CanvasHeight),
-                            PixelsPerCentimeter);
+                            PixelsPerCentimeter,
+                            RefreshRate.Value);
 
                         WeakReferenceMessenger.Default.Send(new ChangeCanvasSettingsMessage(this, settingsParameter));
 
@@ -199,9 +253,13 @@ namespace Modeling.ViewModels
                 {
                     if (newSize != _drawingSettingsProvider.Settings.CanvasSize)
                     {
-                        var updateDrawingsParameter = new UpdateDrawingsParameter(shouldUpdateCanvasSize: true,
+                        var updateDrawingsParameter = new UpdateDrawingsParameter(
+                            shouldUpdateCanvasSize: true,
+                            shouldRecreateFigure: true,
+                            shouldUpdateRefreshRate: false,
                             new((float)CanvasWidth, (float)CanvasHeight),
-                            PixelsPerCentimeter);
+                            PixelsPerCentimeter,
+                            RefreshRate.Value);
 
                         WeakReferenceMessenger.Default.Send(new ChangeCanvasSettingsMessage(this, updateDrawingsParameter));
 
@@ -365,8 +423,6 @@ namespace Modeling.ViewModels
             _drawingSettingsProvider.Settings.DisplayAxis = DrawingConstants.DISPLAY_AXIS_BY_DEFAULT;
             _drawingSettingsProvider.Settings.DisplayGrid = DrawingConstants.DISPLAY_GRID_BY_DEFAULT;
 
-            _drawingSettingsProvider.Settings.RefreshRate = DrawingConstants.DEFAULT_REFRESH_RATE;
-
             _drawingSettingsProvider.Settings.PixelsPerCentimeter = DrawingConstants.PIXELS_PER_CENTIMETER;
             _drawingSettingsProvider.Settings.CanvasSize = DrawingConstants.CANVAS_SIZE;
 
@@ -391,6 +447,8 @@ namespace Modeling.ViewModels
             _drawingSettingsProvider.Settings.DrawAxisArrows = true;
             _drawingSettingsProvider.Settings.DrawFigureShapeBounds = true;
             _drawingSettingsProvider.Settings.DrawFigureBounds = true;
+
+            _drawingSettingsProvider.Settings.CanvasRefreshRate = DrawingConstants.DEFAULT_CANVAS_REFRESH_RATE;
         }
 
         void ApplySettingsForUserInterface()
@@ -405,6 +463,7 @@ namespace Modeling.ViewModels
             _drawGrid = _drawingSettingsProvider.Settings.DrawGrid;
             _attachGridToFigure = _drawingSettingsProvider.Settings.AttachGridToFigure;
             _pixelsPerCentimeter = _drawingSettingsProvider.Settings.PixelsPerCentimeter;
+            _refreshRate = RefreshRates.First(refreshRate => refreshRate.Value == _drawingSettingsProvider.Settings.CanvasRefreshRate);
 
             OnPropertyChanged(nameof(DrawFigureBounds));
             OnPropertyChanged(nameof(DrawFigureShapeBounds));
@@ -417,9 +476,13 @@ namespace Modeling.ViewModels
             OnPropertyChanged(nameof(CanvasHeight));
             OnPropertyChanged(nameof(PixelsPerCentimeter));
 
-            var updateDrawingsParameter = new UpdateDrawingsParameter(shouldUpdateCanvasSize: true,
+            var updateDrawingsParameter = new UpdateDrawingsParameter(
+                shouldUpdateCanvasSize: true,
+                shouldRecreateFigure: true,
+                shouldUpdateRefreshRate: true,
                 new((float)CanvasWidth, (float)CanvasHeight),
-                PixelsPerCentimeter);
+                PixelsPerCentimeter,
+                _drawingSettingsProvider.Settings.CanvasRefreshRate);
 
             WeakReferenceMessenger.Default.Send(new ChangeCanvasSettingsMessage(this, updateDrawingsParameter));
         }

@@ -41,6 +41,7 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -142,8 +143,8 @@
                            Style="{StaticResource ApplicationTextBlockStyle}"
                            Text="Canvas height" />
                 <TextBox Grid.Row="8"
-                         Margin="0,5"
                          Grid.Column="1"
+                         Margin="0,5"
                          HorizontalAlignment="Stretch"
                          Text="{Binding CanvasHeight, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
@@ -155,8 +156,22 @@
                            Text="Pixels per centimeter" />
                 <TextBox Grid.Row="9"
                          Grid.Column="1"
+                         Margin="0,0,0,5"
                          HorizontalAlignment="Stretch"
                          Text="{Binding PixelsPerCentimeter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                <TextBlock Grid.Row="10"
+                           Grid.Column="0"
+                           HorizontalAlignment="Right"
+                           VerticalAlignment="Center"
+                           Style="{StaticResource ApplicationTextBlockStyle}"
+                           Text="Refresh rate" />
+                <ComboBox Grid.Row="10"
+                          Grid.Column="1"
+                          HorizontalAlignment="Stretch"
+                          DisplayMemberPath="{Binding UserInterfaceConstants.DisplayMemberPath, Source={StaticResource ServiceLocator}}"
+                          ItemsSource="{Binding RefreshRates}"
+                          SelectedItem="{Binding RefreshRate, Mode=TwoWay}" />
             </Grid>
         </Grid>
     </Grid>

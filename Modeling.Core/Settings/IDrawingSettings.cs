@@ -1,6 +1,5 @@
 ﻿using Modeling.Core.Abstractions;
 using Modeling.Core.Drawing;
-using System;
 using System.Collections.Generic;
 using Windows.Graphics;
 using Windows.UI;
@@ -35,8 +34,6 @@ namespace Modeling.Core.Settings
         bool DisplayGrid { get; set; }
         bool DisplayAxis { get; set; }
 
-        TimeSpan RefreshRate { get; set; }
-
         public float PixelsPerCentimeter { get; set; }
         public SizeInt32 CanvasSize { get; set; }
 
@@ -57,5 +54,7 @@ namespace Modeling.Core.Settings
         bool DrawAxisArrows { get; set; }
         bool DrawFigureShapeBounds { get; set; }
         bool DrawFigureBounds { get; set; }
+
+        public int CanvasRefreshRate { get; set; }
     }
 }
