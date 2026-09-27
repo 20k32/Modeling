@@ -55,7 +55,7 @@ namespace Modeling.Core.Constants
         };
 
         public const int PIXELS_PER_CENTIMETER = 35;
-        public static readonly SizeInt32 CANVAS_SIZE = new(3990, 3990);
+        public static readonly SizeInt32 CANVAS_SIZE = new(1000, 1000);
         public const float START_POINT_DRAWING_COORDINATE_X_Y = 1;
         public const float START_POINT_DRAWING_AXIST_COORDINATE_X_Y = PIXELS_PER_CENTIMETER * 2;
         public static readonly PointSingle START_DRAWING_POINT = new(START_POINT_DRAWING_COORDINATE_X_Y, START_POINT_DRAWING_COORDINATE_X_Y);
@@ -70,5 +70,7 @@ namespace Modeling.Core.Constants
         public const float X_Y_AXIS_THICKNESS = 3;
         public const float X_Y_AXIS_TICKS_LENGTH_PIXELS = 15;
         public const float X_Y_AXIST_TICKS_THICKNESS = 5;
+
+        public const float MAXIMUM_CANVAS_SIZE_PIXELS = 3000;
     }
 }

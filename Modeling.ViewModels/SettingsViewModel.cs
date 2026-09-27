@@ -1,23 +1,34 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Messaging;
-using Modeling.Core.Messages.Settings;
-using Modeling.Core.Extensions;
-using System.Threading.Tasks;
-using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.DependencyInjection;
-using Modeling.Core.Drawing.Providers;
+using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
+using Modeling.Core;
 using Modeling.Core.Abstractions.Providers;
 using Modeling.Core.Constants;
+using Modeling.Core.Drawing.Providers;
+using Modeling.Core.Extensions;
+using Modeling.Core.Logging;
+using Modeling.Core.Messages.Canvas.Settings;
+using Modeling.Core.Messages.Parameters.Canvas.Settings;
+using Modeling.Core.Messages.Settings;
+using Modeling.Core.Messages.ViewModels;
 using Modeling.Core.Miscellaneous;
 using Modeling.Models.Abstractions.Dialogs;
+using Newtonsoft.Json.Linq;
+using System;
 using System.ComponentModel;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Modeling.ViewModels
 {
     public sealed partial class SettingsViewModel : ObservableObject
     {
+        readonly SemaphoreSlim _applyingChangesLock;
         readonly IApplicationSettingsProvider _applicationSettingsProvider;
         readonly IDrawingSettingsProvider _drawingSettingsProvider;
+
+        CancellationTokenSource _applyingChangesCancellation;
 
         bool _initialized;
 
@@ -51,13 +62,98 @@ namespace Modeling.ViewModels
         [ObservableProperty]
         float _pixelsPerCentimeter;
 
+
         public SettingsViewModel()
         {
-            _canvasHeight = DrawingConstants.CANVAS_SIZE.Height;
-            _canvasWidth = DrawingConstants.CANVAS_SIZE.Width;
-
+            _applyingChangesLock = new SemaphoreSlim(1, 1);
             _drawingSettingsProvider = Ioc.Default.GetService<IDrawingSettingsProvider>();
             _applicationSettingsProvider = Ioc.Default.GetService<IApplicationSettingsProvider>();
+        }
+
+        async Task WaitBeforeExecutionAsync(ActionEventHandler action)
+        {
+            try
+            {
+                await _applyingChangesCancellation.TryCancelAsync(shouldDispose: false);
+
+                using (var cancellationSource = new CancellationTokenSource())
+                {
+                    _applyingChangesCancellation = cancellationSource;
+
+                    await Task.Delay(CoreConstants.MAXIMUM_DELAY_BEFORE_CHANGES_APPLIED_MILLISECONDS, cancellationSource.Token);
+
+                    await _applyingChangesLock.WaitAsync();
+
+                    action();
+                }
+            }
+            catch (Exception ex)
+            {
+                if (ex is not OperationCanceledException)
+                {
+                    Logger.Exception(ex);
+                }
+            }
+            finally
+            {
+                _applyingChangesLock.ReleaseSafe();
+            }
+        }
+
+        async partial void OnCanvasHeightChanged(double value)
+        {
+            if (value > DrawingConstants.MAXIMUM_CANVAS_SIZE_PIXELS)
+            {
+                value = DrawingConstants.MAXIMUM_CANVAS_SIZE_PIXELS;
+                _canvasHeight = value;
+                OnPropertyChanged(nameof(CanvasHeight));
+            }
+
+            var newSize = new Windows.Graphics.SizeInt32(
+                    _drawingSettingsProvider.Settings.CanvasSize.Width,
+                    (int)value);
+
+            if (newSize != _drawingSettingsProvider.Settings.CanvasSize)
+            {
+                await WaitBeforeExecutionAsync(() =>
+                {
+                    if (newSize != _drawingSettingsProvider.Settings.CanvasSize)
+                    {
+
+                    }
+                    var sizeParameter = new CanvasSizeParameter(new((float)CanvasWidth, (float)CanvasHeight));
+                    WeakReferenceMessenger.Default.Send(new ChangeCanvasSizeSettingMessage(this, sizeParameter));
+
+                    _drawingSettingsProvider.Settings.CanvasSize = newSize;
+                });
+            }
+        }
+
+        async partial void OnCanvasWidthChanged(double value)
+        {
+            if (value > DrawingConstants.MAXIMUM_CANVAS_SIZE_PIXELS)
+            {
+                value = DrawingConstants.MAXIMUM_CANVAS_SIZE_PIXELS;
+                _canvasWidth = value;
+                OnPropertyChanged(nameof(CanvasWidth));
+            }
+
+            var newSize = new Windows.Graphics.SizeInt32(
+                    (int)value,
+                    _drawingSettingsProvider.Settings.CanvasSize.Height);
+
+            if (newSize != _drawingSettingsProvider.Settings.CanvasSize)
+            {
+                await WaitBeforeExecutionAsync(() =>
+                {
+                    if (newSize != _drawingSettingsProvider.Settings.CanvasSize)
+                    {
+                        var sizeParameter = new CanvasSizeParameter(new((float)CanvasWidth, (float)CanvasHeight));
+                        WeakReferenceMessenger.Default.Send(new ChangeCanvasSizeSettingMessage(this, sizeParameter));
+                        _drawingSettingsProvider.Settings.CanvasSize = newSize;
+                    }
+                });
+            }
         }
 
         partial void OnAttachGridToFigureChanged(bool value)
@@ -144,15 +240,31 @@ namespace Modeling.ViewModels
         {
             await InitializeDrawingSettingsAsync();
 
+            try
+            {
+                _drawingSettingsProvider.ShouldInvokeSettingsChanged = false;
+
+                await LoadSettingsCoreAsync();
+            }
+            finally
+            {
+                _drawingSettingsProvider.ShouldInvokeSettingsChanged = true;
+            }
+
+            return Unit.Default;
+        }
+
+        async Task LoadSettingsCoreAsync()
+        {
             var firstApplicationLaunch = _applicationSettingsProvider
                 .GetSettingsValue<bool?>(CoreConstants.FIRST_LAUNCH_APPLICAITON_SETTING_KEY);
 
-            var shouldInitializeSettingsWithDefaults = !(firstApplicationLaunch ?? false)
+            var shouldInitializeSettingsWithDefaults = (firstApplicationLaunch ?? false)
                 || !(_drawingSettingsProvider.Settings.Initialized ?? false);
 
             if (shouldInitializeSettingsWithDefaults)
             {
-                if (firstApplicationLaunch ?? true)
+                if (!(firstApplicationLaunch ?? false))
                 {
                     _applicationSettingsProvider.SetSettingsValue(CoreConstants.FIRST_LAUNCH_APPLICAITON_SETTING_KEY, false);
                 }
@@ -163,8 +275,6 @@ namespace Modeling.ViewModels
             }
 
             ApplySettingsForUserInterface();
-
-            return Unit.Default;
         }
 
         async Task<Unit> SaveSettingsAsync()
@@ -176,8 +286,6 @@ namespace Modeling.ViewModels
 
         void SetDefaultSettings()
         {
-            _drawingSettingsProvider.ShouldInvokeSettingsChanged = false;
-
             _drawingSettingsProvider.Settings.Initialized = true;
 
             _drawingSettingsProvider.Settings.DpiX = DrawingConstants.STANDART_DPI;
@@ -228,8 +336,6 @@ namespace Modeling.ViewModels
             _drawingSettingsProvider.Settings.DrawAxisArrows = true;
             _drawingSettingsProvider.Settings.DrawFigureShapeBounds = true;
             _drawingSettingsProvider.Settings.DrawFigureBounds = true;
-
-            _drawingSettingsProvider.ShouldInvokeSettingsChanged = true;
         }
 
         void ApplySettingsForUserInterface()
@@ -253,6 +359,9 @@ namespace Modeling.ViewModels
             OnPropertyChanged(nameof(AttachGridToFigure));
             OnPropertyChanged(nameof(CanvasWidth));
             OnPropertyChanged(nameof(CanvasHeight));
+
+            var sizeParameter = new CanvasSizeParameter(new((float)CanvasWidth, (float)CanvasHeight));
+            WeakReferenceMessenger.Default.Send(new ChangeCanvasSizeSettingMessage(this, sizeParameter));
         }
 
         [RelayCommand]

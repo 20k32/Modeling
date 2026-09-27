@@ -11,12 +11,13 @@
 
     <Grid HorizontalAlignment="Stretch"
           VerticalAlignment="Stretch"
-          Background="{StaticResource SolidBackgroundColor}">
-        <Grid MaxWidth="600"
-              MaxHeight="600"
+          Background="Transparent">
+        <Grid MaxWidth="400"
+              MaxHeight="400"
               Margin="{StaticResource DialogTitleBarMargins}"
               HorizontalAlignment="Stretch"
               VerticalAlignment="Stretch"
+              Background="{StaticResource SolidBackgroundColor}"
               BorderBrush="{StaticResource DialogBordersColor}"
               BorderThickness="{StaticResource DialogBordersThickness}"
               CornerRadius="{StaticResource DialogBordersCornerRadius}">
@@ -37,9 +38,12 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="10*" />
+                    <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
@@ -47,6 +51,7 @@
                            Grid.Column="0"
                            HorizontalAlignment="Right"
                            VerticalAlignment="Center"
+                           Style="{StaticResource ApplicationTextBlockStyle}"
                            Text="Draw figure bounds" />
                 <CheckBox Grid.Row="0"
                           Grid.Column="1"
@@ -57,6 +62,7 @@
                            Grid.Column="0"
                            HorizontalAlignment="Right"
                            VerticalAlignment="Center"
+                           Style="{StaticResource ApplicationTextBlockStyle}"
                            Text="Draw shape bounds" />
                 <CheckBox Grid.Row="1"
                           Grid.Column="1"
@@ -67,6 +73,7 @@
                            Grid.Column="0"
                            HorizontalAlignment="Right"
                            VerticalAlignment="Center"
+                           Style="{StaticResource ApplicationTextBlockStyle}"
                            Text="Draw axis" />
                 <CheckBox Grid.Row="2"
                           Grid.Column="1"
@@ -77,6 +84,7 @@
                            Grid.Column="0"
                            HorizontalAlignment="Right"
                            VerticalAlignment="Center"
+                           Style="{StaticResource ApplicationTextBlockStyle}"
                            Text="Draw axis marks" />
                 <CheckBox Grid.Row="3"
                           Grid.Column="1"
@@ -87,6 +95,7 @@
                            Grid.Column="0"
                            HorizontalAlignment="Right"
                            VerticalAlignment="Center"
+                           Style="{StaticResource ApplicationTextBlockStyle}"
                            Text="Draw axis arrows" />
                 <CheckBox Grid.Row="4"
                           Grid.Column="1"
@@ -97,6 +106,7 @@
                            Grid.Column="0"
                            HorizontalAlignment="Right"
                            VerticalAlignment="Center"
+                           Style="{StaticResource ApplicationTextBlockStyle}"
                            Text="Draw grid" />
                 <CheckBox Grid.Row="5"
                           Grid.Column="1"
@@ -107,11 +117,34 @@
                            Grid.Column="0"
                            HorizontalAlignment="Right"
                            VerticalAlignment="Center"
+                           Style="{StaticResource ApplicationTextBlockStyle}"
                            Text="Attach grid to figure" />
                 <CheckBox Grid.Row="6"
                           Grid.Column="1"
                           HorizontalAlignment="Left"
                           IsChecked="{Binding AttachGridToFigure, Mode=TwoWay}" />
+
+                <TextBlock Grid.Row="7"
+                           Grid.Column="0"
+                           HorizontalAlignment="Right"
+                           VerticalAlignment="Center"
+                           Style="{StaticResource ApplicationTextBlockStyle}"
+                           Text="Canvas width" />
+                <TextBox Grid.Row="7"
+                         Grid.Column="1"
+                         HorizontalAlignment="Stretch"
+                         Text="{Binding CanvasWidth, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                <TextBlock Grid.Row="8"
+                           Grid.Column="0"
+                           HorizontalAlignment="Right"
+                           VerticalAlignment="Center"
+                           Style="{StaticResource ApplicationTextBlockStyle}"
+                           Text="Canvas height" />
+                <TextBox Grid.Row="8"
+                         Grid.Column="1"
+                         HorizontalAlignment="Stretch"
+                         Text="{Binding CanvasHeight, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
             </Grid>
         </Grid>
     </Grid>

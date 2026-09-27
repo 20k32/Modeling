@@ -78,6 +78,16 @@ namespace Modeling.UI.Resources.Controls.Canvas
             WeakReferenceMessenger.Default.Register<TransformPointsMessage>(this, OnWin2DCanvasReceivedDrawingMessage);
             WeakReferenceMessenger.Default.Register<ChangeRedrawStatusMessage>(this, OnWin2DCanvasChangeRedrawStatusMessage);
             WeakReferenceMessenger.Default.Register<ChangeCanvasRefreshRateMessage>(this, OnWin2DCanvasChangeCanvasRefreshRateMessage);
+            WeakReferenceMessenger.Default.Register<ChangeCanvasSizeMessage>(this, OnWin2DCanvasChangeCanvasSizeMessage);
+        }
+
+        private void OnWin2DCanvasChangeCanvasSizeMessage(object recipient, ChangeCanvasSizeMessage message)
+        {
+            if (message.ApplyBasicMessageValidation(recipient))
+            {
+                DisposeRenderTarget();
+                CreateRenderTarget(AnimatedCanvas, message.Value.Size);
+            }
         }
 
         void UnregisterMessages()
@@ -89,7 +99,7 @@ namespace Modeling.UI.Resources.Controls.Canvas
             WeakReferenceMessenger.Default.Unregister<TransformPointsMessage>(this);
             WeakReferenceMessenger.Default.Unregister<ChangeRedrawStatusMessage>(this);
             WeakReferenceMessenger.Default.Unregister<ChangeCanvasRefreshRateMessage>(this);
-
+            WeakReferenceMessenger.Default.Unregister<ChangeCanvasSizeMessage>(this);
         }
 
         void OnWin2DCanvasChangeCanvasRefreshRateMessage(object recipient, ChangeCanvasRefreshRateMessage message)
@@ -114,7 +124,7 @@ namespace Modeling.UI.Resources.Controls.Canvas
             {
                 _isControlInitialized = false;
 
-                await DisposeDrawingPipelineAsync();
+                DisposeDrawingPipeline();
 
                 UnregisterMessages();
 
@@ -136,7 +146,7 @@ namespace Modeling.UI.Resources.Controls.Canvas
                 AnimatedCanvas.PointerWheelChanged += OnAnimatedCanvasPointerWheelChanged;
                 AnimatedCanvas.PointerMoved += OnAnimatedCanvasPointerMoved;
 
-                _ = InitializeDrawingPipelineAsync();
+                InitializeDrawingPipeline();
             }
             else
             {
@@ -169,10 +179,15 @@ namespace Modeling.UI.Resources.Controls.Canvas
         {
             if (message.ApplyBasicMessageValidation(recipient))
             {
-                AnimatedCanvas.Draw -= OnCanvasAnimatedControlDraw;
-
-                DisposeRenderTarget();
+                EndDrawingSessionCore();
             }
+        }
+
+        void EndDrawingSessionCore()
+        {
+            AnimatedCanvas.Draw -= OnCanvasAnimatedControlDraw;
+
+            DisposeRenderTarget();
         }
 
         void OnWin2DCanvasInitializeDrawingSessionMessage(object recipient, InitializeDrawingSessionMessage message)
@@ -184,7 +199,7 @@ namespace Modeling.UI.Resources.Controls.Canvas
 
                 AnimatedCanvas.Draw -= OnCanvasAnimatedControlDraw;
                 AnimatedCanvas.Draw += OnCanvasAnimatedControlDraw;
-                
+
                 ScrollToCenter();
             }
         }
@@ -203,8 +218,6 @@ namespace Modeling.UI.Resources.Controls.Canvas
             if (sender is not null)
             {
                 sender.CreateResources -= OnCanvasAnimatedControlCreateResources;
-
-                CreateRenderTarget(sender);
 
                 await (Initialize?.ExecuteAsync(parameter: default) ?? Task.CompletedTask);
             }
@@ -375,13 +388,13 @@ namespace Modeling.UI.Resources.Controls.Canvas
                 strokeStyle);
         }
 
-        async Task InitializeDrawingPipelineAsync()
+        void InitializeDrawingPipeline()
         {
             _drawingPipeline.MessageReceived -= OnDrawingPipelineMessageReceived;
             _drawingPipeline.MessageReceived += OnDrawingPipelineMessageReceived;
         }
 
-        async Task DisposeDrawingPipelineAsync()
+        void DisposeDrawingPipeline()
         {
             _drawingPipeline.MessageReceived -= OnDrawingPipelineMessageReceived;
         }
@@ -398,11 +411,11 @@ namespace Modeling.UI.Resources.Controls.Canvas
             }
         }
 
-        void CreateRenderTarget(CanvasAnimatedControl canvasAnimatedControl)
+        void CreateRenderTarget(CanvasAnimatedControl canvasAnimatedControl, SizeSingle size)
         {
             if (_canvasRenderTarget is null)
             {
-                _canvasRenderTarget = CreateRenderTargetCore(canvasAnimatedControl);
+                _canvasRenderTarget = CreateRenderTargetCore(canvasAnimatedControl, size);
             }
         }
 
@@ -416,7 +429,7 @@ namespace Modeling.UI.Resources.Controls.Canvas
             }
         }
 
-        static CanvasRenderTarget CreateRenderTargetCore(CanvasAnimatedControl canvas)
+        static CanvasRenderTarget CreateRenderTargetCore(CanvasAnimatedControl canvas, SizeSingle size)
         {
             CanvasRenderTarget result = default!;
 
@@ -424,8 +437,8 @@ namespace Modeling.UI.Resources.Controls.Canvas
             {
                 result = new CanvasRenderTarget(
                                 canvas,
-                                (float)canvas.ActualWidth,
-                                (float)canvas.ActualHeight,
+                                size.Width,
+                                size.Height,
                                 DrawingConstants.STANDART_DPI);
             }
             catch (Exception ex)

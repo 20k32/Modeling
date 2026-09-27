@@ -2,6 +2,8 @@
 {
     static class FigureRelatedConstants
     {
+        public const float FIGURE_HEIGHT_MILLIMETERS = 60; //approx
+        public const float FIGURE_WIDTH_MILLIMETERS = 110; //approx
         public const float HALF_CIRCLES_DIAMETER_MILLIMETERS = 10; //approx
         public const float INNER_HALF_CIRCLES_DIAMETER_MILLIMETERS = 5;
         public const float HORIZONTAL_DISTANCE_BETWEEN_HALF_CIRCLES_MILLIMETERS = 100;

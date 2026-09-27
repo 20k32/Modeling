@@ -19,16 +19,10 @@
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
 
-        <Border Grid.ColumnSpan="2"
-                Background="{StaticResource SolidBackgroundColor}"
-                Visibility="{Binding Visibility, ElementName=DialogGrid}" />
-
         <Grid Grid.Column="0"
               HorizontalAlignment="Stretch"
               VerticalAlignment="Stretch">
             <controls:Win2DCanvas Initialize="{Binding InitializeCanvasCommand}" PointerMovedCommand="{Binding CanvasPointerMovedCommand}" />
-
-            <Border Background="{StaticResource SolidBackgroundColor}" Visibility="{Binding Visibility, ElementName=DialogGrid}" />
         </Grid>
 
         <Grid Grid.Column="1">

@@ -10,7 +10,7 @@ namespace Modeling.Models.Extensions
 {
     public static class FigureExtensions
     {
-        public static IEnumerable<PointSingle> CreateGrid(SizeInt32 canvasSize, float pixelsPerCentimeter)
+        public static IEnumerable<PointSingle> CreateGrid(SizeSingle canvasSize, float pixelsPerCentimeter)
         {
             for (var y = DrawingConstants.START_POINT_DRAWING_COORDINATE_X_Y;
                 y <= canvasSize.Height; y += pixelsPerCentimeter)
@@ -43,7 +43,7 @@ namespace Modeling.Models.Extensions
             }
         }
 
-        public static IEnumerable<PointSingle> CreateAxisLine(int dimensionSize, int pixelsPerCentimeter, float centerX, float centerY, bool isVertical)
+        public static IEnumerable<PointSingle> CreateAxisLine(float dimensionSize, float pixelsPerCentimeter, float centerX, float centerY, bool isVertical)
         {
             if (isVertical)
             {
@@ -123,7 +123,7 @@ namespace Modeling.Models.Extensions
             yield return DrawingConstants.BREAK_POINT;
         }
 
-        public static IEnumerable<PointSingle> CreateAxisMarks(int dimensionSize, int pixelsPerCentimeter, float tickStart, float tickEnd, float centerX, float centerY, bool isVertical)
+        public static IEnumerable<PointSingle> CreateAxisMarks(float dimensionSize, int pixelsPerCentimeter, float tickStart, float tickEnd, float centerX, float centerY, bool isVertical)
         {
             if (isVertical)
             {

@@ -7,6 +7,7 @@
     <CornerRadius x:Key="DialogBordersCornerRadius">8</CornerRadius>
     <Thickness x:Key="DialogBordersThickness">1</Thickness>
     <Thickness x:Key="DialogTitleBarMargins">5,38</Thickness>
+    <x:Double x:Key="TextBlockFontSize">16</x:Double>
     <!--  todo: themeresources  -->
     <Color x:Key="SolidBackgroundColor">#2C2C2C</Color>
     <Color x:Key="DialogBordersColor">LightGray</Color>
