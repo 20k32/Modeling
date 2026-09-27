@@ -9,6 +9,20 @@ namespace Modeling.UI.Behaviors
         static bool _shouldExecuteInitialization = true;
         private const string IsSettingsViewModelInitializationEnabledPropertyName = "IsSettingsViewModelInitializationEnabled";
         private const string IsDrawingViewModelInitializationEnabledPropertyName = "IsDrawingViewModelInitializationEnabled";
+        private const string IsNavigationViewModelInitializationEnabledPropertyName = "IsNavigationViewModelInitializationEnabled";
+
+        public static readonly DependencyProperty IsNavigationViewModelInitializationEnabledProperty =
+        DependencyProperty.RegisterAttached(
+            IsNavigationViewModelInitializationEnabledPropertyName,
+            typeof(IRelayCommand),
+            typeof(ViewModelsInitializationBehavior),
+            new PropertyMetadata(default, OnIsViewModelInitializationEnabledChanged));
+
+        public static IRelayCommand GetIsNavigationViewModelInitializationEnabled(DependencyObject obj) =>
+            (IRelayCommand)obj.GetValue(IsNavigationViewModelInitializationEnabledProperty);
+
+        public static void SetIsNavigationViewModelInitializationEnabled(DependencyObject obj, IRelayCommand value) =>
+            obj.SetValue(IsNavigationViewModelInitializationEnabledProperty, value);
 
         public static readonly DependencyProperty IsDrawingViewModelInitializationEnabledProperty =
         DependencyProperty.RegisterAttached(
@@ -53,9 +67,11 @@ namespace Modeling.UI.Behaviors
                 _shouldExecuteInitialization = false;
                 element.Loaded -= OnControlLoaded;
 
+                var navigationViewModelInitializationCommand = GetIsNavigationViewModelInitializationEnabled(element);
                 var settingsViewModelInitializationCommand = GetIsSettingsViewModelInitializationEnabled(element);
                 var drawingViewModelInitializationCommand = GetIsDrawingViewModelInitializationEnabled(element);
 
+                await ExecuteCommandAsync(navigationViewModelInitializationCommand);
                 await ExecuteCommandAsync(settingsViewModelInitializationCommand);
                 await ExecuteCommandAsync(drawingViewModelInitializationCommand);
             }

@@ -2,9 +2,9 @@
 using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using Modeling.Core;
 using Modeling.Core.Abstractions.Providers;
 using Modeling.Core.Constants;
+using Modeling.Core.CoreDelegates;
 using Modeling.Core.Drawing.Providers;
 using Modeling.Core.Extensions;
 using Modeling.Core.Logging;
@@ -475,6 +475,7 @@ namespace Modeling.ViewModels
             OnPropertyChanged(nameof(CanvasWidth));
             OnPropertyChanged(nameof(CanvasHeight));
             OnPropertyChanged(nameof(PixelsPerCentimeter));
+            OnPropertyChanged(nameof(RefreshRate));
 
             var updateDrawingsParameter = new UpdateDrawingsParameter(
                 shouldUpdateCanvasSize: true,

@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<UserControl x:Class="Modeling.UI.Resources.Controls.Pages.SettingsPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="using:Modeling.UI.Resources.Controls.Pages"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             DataContext="{Binding SettingsViewModel, Source={StaticResource ServiceLocator}}"
+             mc:Ignorable="d">
+
+    <Grid HorizontalAlignment="Stretch"
+          VerticalAlignment="Stretch"
+          ColumnSpacing="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <TextBlock Grid.Row="0"
+                   Grid.Column="0"
+                   HorizontalAlignment="Right"
+                   VerticalAlignment="Center"
+                   Style="{StaticResource ApplicationTextBlockStyle}"
+                   Text="Draw figure bounds" />
+        <CheckBox Grid.Row="0"
+                  Grid.Column="1"
+                  HorizontalAlignment="Left"
+                  IsChecked="{Binding DrawFigureBounds, Mode=TwoWay}" />
+
+        <TextBlock Grid.Row="1"
+                   Grid.Column="0"
+                   HorizontalAlignment="Right"
+                   VerticalAlignment="Center"
+                   Style="{StaticResource ApplicationTextBlockStyle}"
+                   Text="Draw shape bounds" />
+        <CheckBox Grid.Row="1"
+                  Grid.Column="1"
+                  HorizontalAlignment="Left"
+                  IsChecked="{Binding DrawFigureShapeBounds, Mode=TwoWay}" />
+
+        <TextBlock Grid.Row="2"
+                   Grid.Column="0"
+                   HorizontalAlignment="Right"
+                   VerticalAlignment="Center"
+                   Style="{StaticResource ApplicationTextBlockStyle}"
+                   Text="Draw axis" />
+        <CheckBox Grid.Row="2"
+                  Grid.Column="1"
+                  HorizontalAlignment="Left"
+                  IsChecked="{Binding DrawAxis, Mode=TwoWay}" />
+
+        <TextBlock Grid.Row="3"
+                   Grid.Column="0"
+                   HorizontalAlignment="Right"
+                   VerticalAlignment="Center"
+                   Style="{StaticResource ApplicationTextBlockStyle}"
+                   Text="Draw axis marks" />
+        <CheckBox Grid.Row="3"
+                  Grid.Column="1"
+                  HorizontalAlignment="Left"
+                  IsChecked="{Binding DrawAxisMarks, Mode=TwoWay}" />
+
+        <TextBlock Grid.Row="4"
+                   Grid.Column="0"
+                   HorizontalAlignment="Right"
+                   VerticalAlignment="Center"
+                   Style="{StaticResource ApplicationTextBlockStyle}"
+                   Text="Draw axis arrows" />
+        <CheckBox Grid.Row="4"
+                  Grid.Column="1"
+                  HorizontalAlignment="Left"
+                  IsChecked="{Binding DrawAxisArrows, Mode=TwoWay}" />
+
+        <TextBlock Grid.Row="5"
+                   Grid.Column="0"
+                   HorizontalAlignment="Right"
+                   VerticalAlignment="Center"
+                   Style="{StaticResource ApplicationTextBlockStyle}"
+                   Text="Draw grid" />
+        <CheckBox Grid.Row="5"
+                  Grid.Column="1"
+                  HorizontalAlignment="Left"
+                  IsChecked="{Binding DrawGrid, Mode=TwoWay}" />
+
+        <TextBlock Grid.Row="6"
+                   Grid.Column="0"
+                   HorizontalAlignment="Right"
+                   VerticalAlignment="Center"
+                   Style="{StaticResource ApplicationTextBlockStyle}"
+                   Text="Attach grid to figure" />
+        <CheckBox Grid.Row="6"
+                  Grid.Column="1"
+                  HorizontalAlignment="Left"
+                  IsChecked="{Binding AttachGridToFigure, Mode=TwoWay}" />
+
+        <TextBlock Grid.Row="7"
+                   Grid.Column="0"
+                   HorizontalAlignment="Right"
+                   VerticalAlignment="Center"
+                   Style="{StaticResource ApplicationTextBlockStyle}"
+                   Text="Canvas width" />
+        <TextBox Grid.Row="7"
+                 Grid.Column="1"
+                 HorizontalAlignment="Stretch"
+                 Text="{Binding CanvasWidth, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+        <TextBlock Grid.Row="8"
+                   Grid.Column="0"
+                   HorizontalAlignment="Right"
+                   VerticalAlignment="Center"
+                   Style="{StaticResource ApplicationTextBlockStyle}"
+                   Text="Canvas height" />
+        <TextBox Grid.Row="8"
+                 Grid.Column="1"
+                 Margin="0,5"
+                 HorizontalAlignment="Stretch"
+                 Text="{Binding CanvasHeight, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+        <TextBlock Grid.Row="9"
+                   Grid.Column="0"
+                   HorizontalAlignment="Right"
+                   VerticalAlignment="Center"
+                   Style="{StaticResource ApplicationTextBlockStyle}"
+                   Text="Pixels per centimeter" />
+        <TextBox Grid.Row="9"
+                 Grid.Column="1"
+                 Margin="0,0,0,5"
+                 HorizontalAlignment="Stretch"
+                 Text="{Binding PixelsPerCentimeter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+        <TextBlock Grid.Row="10"
+                   Grid.Column="0"
+                   HorizontalAlignment="Right"
+                   VerticalAlignment="Center"
+                   Style="{StaticResource ApplicationTextBlockStyle}"
+                   Text="Refresh rate" />
+        <ComboBox Grid.Row="10"
+                  Grid.Column="1"
+                  HorizontalAlignment="Stretch"
+                  DisplayMemberPath="{Binding UserInterfaceConstants.DisplayMemberPath, Source={StaticResource ServiceLocator}}"
+                  ItemsSource="{Binding RefreshRates}"
+                  SelectedItem="{Binding RefreshRate, Mode=TwoWay}" />
+    </Grid>
+</UserControl>

@@ -1,4 +1,6 @@
-﻿namespace Modeling.Core.Abstractions
+﻿using Modeling.Core.CoreDelegates;
+
+namespace Modeling.Core.Abstractions
 {
     public interface ISettingsChanged
     {

@@ -9,6 +9,7 @@ namespace Modeling.UI.DependencyInjection
         public ServiceLocatorWrapper()
         { }
 
+        public static NavigationViewModel NavigationViewModel => Ioc.Default.GetRequiredService<NavigationViewModel>();
         public static DrawingViewModel DrawingViewModel => Ioc.Default.GetRequiredService<DrawingViewModel>();
         public static SettingsViewModel SettingsViewModel => Ioc.Default.GetRequiredService<SettingsViewModel>();
         public static IUserInterfaceConstantsProvider UserInterfaceConstants => Ioc.Default.GetRequiredService<IUserInterfaceConstantsProvider>();

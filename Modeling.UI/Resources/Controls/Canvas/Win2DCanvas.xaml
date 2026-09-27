@@ -9,9 +9,6 @@
              mc:Ignorable="d">
 
     <ScrollViewer x:Name="CanvasScrollViewer"
-                  Margin="15"
-                  HorizontalAlignment="Center"
-                  VerticalAlignment="Center"
                   HorizontalScrollBarVisibility="Auto"
                   VerticalScrollBarVisibility="Auto">
         <canvas:CanvasAnimatedControl x:Name="AnimatedCanvas"

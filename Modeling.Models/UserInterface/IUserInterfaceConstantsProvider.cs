@@ -4,5 +4,6 @@
     {
         public string ApplicationPopupRootName { get; }
         public string DisplayMemberPath { get; }
+        public string NavigationFrameName { get; }
     }
 }
