@@ -48,6 +48,9 @@ namespace Modeling.ViewModels
         [ObservableProperty]
         bool _attachGridToFigure;
 
+        [ObservableProperty]
+        float _pixelsPerCentimeter;
+
         public SettingsViewModel()
         {
             _canvasHeight = DrawingConstants.CANVAS_SIZE.Height;
@@ -91,7 +94,7 @@ namespace Modeling.ViewModels
         {
             _drawingSettingsProvider.Settings.DrawFigureBounds = value;
         }
-        
+
         [RelayCommand]
         void Initialize()
         {
@@ -159,7 +162,7 @@ namespace Modeling.ViewModels
                 await SaveSettingsAsync();
             }
 
-            ApplySettings();
+            ApplySettingsForUserInterface();
 
             return Unit.Default;
         }
@@ -171,14 +174,10 @@ namespace Modeling.ViewModels
             return Unit.Default;
         }
 
-        void ApplySettings()
-        {
-            CanvasHeight = _drawingSettingsProvider.Settings.CanvasSize.Height;
-            CanvasWidth = _drawingSettingsProvider.Settings.CanvasSize.Width;
-        }
-
         void SetDefaultSettings()
         {
+            _drawingSettingsProvider.ShouldInvokeSettingsChanged = false;
+
             _drawingSettingsProvider.Settings.Initialized = true;
 
             _drawingSettingsProvider.Settings.DpiX = DrawingConstants.STANDART_DPI;
@@ -221,6 +220,39 @@ namespace Modeling.ViewModels
 
             _drawingSettingsProvider.Settings.FigureBoundsColor = DrawingConstants.FIGURE_BOUNDS_COLOR;
             _drawingSettingsProvider.Settings.FigureCenterPointColor = DrawingConstants.FIGURE_BOUNDS_COLOR;
+
+            _drawingSettingsProvider.Settings.AttachGridToFigure = true;
+            _drawingSettingsProvider.Settings.DrawGrid = true;
+            _drawingSettingsProvider.Settings.DrawAxis = true;
+            _drawingSettingsProvider.Settings.DrawAxisMarks = true;
+            _drawingSettingsProvider.Settings.DrawAxisArrows = true;
+            _drawingSettingsProvider.Settings.DrawFigureShapeBounds = true;
+            _drawingSettingsProvider.Settings.DrawFigureBounds = true;
+
+            _drawingSettingsProvider.ShouldInvokeSettingsChanged = true;
+        }
+
+        void ApplySettingsForUserInterface()
+        {
+            _canvasHeight = _drawingSettingsProvider.Settings.CanvasSize.Height;
+            _canvasWidth = _drawingSettingsProvider.Settings.CanvasSize.Width;
+            _drawFigureBounds = _drawingSettingsProvider.Settings.DrawFigureBounds;
+            _drawFigureShapeBounds = _drawingSettingsProvider.Settings.DrawFigureShapeBounds;
+            _drawAxis = _drawingSettingsProvider.Settings.DrawAxis;
+            _drawAxisMarks = _drawingSettingsProvider.Settings.DrawAxisMarks;
+            _drawAxisArrows = _drawingSettingsProvider.Settings.DrawAxisArrows;
+            _drawGrid = _drawingSettingsProvider.Settings.DrawGrid;
+            _attachGridToFigure = _drawingSettingsProvider.Settings.AttachGridToFigure;
+
+            OnPropertyChanged(nameof(DrawFigureBounds));
+            OnPropertyChanged(nameof(DrawFigureShapeBounds));
+            OnPropertyChanged(nameof(DrawAxis));
+            OnPropertyChanged(nameof(DrawAxisArrows));
+            OnPropertyChanged(nameof(DrawAxisMarks));
+            OnPropertyChanged(nameof(DrawGrid));
+            OnPropertyChanged(nameof(AttachGridToFigure));
+            OnPropertyChanged(nameof(CanvasWidth));
+            OnPropertyChanged(nameof(CanvasHeight));
         }
 
         [RelayCommand]

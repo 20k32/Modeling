@@ -10,13 +10,13 @@ namespace Modeling.Models.Extensions
 {
     public static class FigureExtensions
     {
-        public static IEnumerable<PointSingle> CreateGrid(SizeInt32 canvasSize, int pixelsPerCentimeter)
+        public static IEnumerable<PointSingle> CreateGrid(SizeInt32 canvasSize, float pixelsPerCentimeter)
         {
             for (var y = DrawingConstants.START_POINT_DRAWING_COORDINATE_X_Y;
-                y <= canvasSize.Height; y += (int)pixelsPerCentimeter)
+                y <= canvasSize.Height; y += pixelsPerCentimeter)
             {
                 for (var x = DrawingConstants.START_POINT_DRAWING_COORDINATE_X_Y;
-                    x <= canvasSize.Width + pixelsPerCentimeter; x += (int)pixelsPerCentimeter)
+                    x <= canvasSize.Width + pixelsPerCentimeter; x += pixelsPerCentimeter)
                 {
                     yield return new PointSingle(x, y);
                 }
@@ -28,10 +28,10 @@ namespace Modeling.Models.Extensions
             }
 
             for (var x = DrawingConstants.START_POINT_DRAWING_COORDINATE_X_Y;
-                x <= canvasSize.Width; x += (int)pixelsPerCentimeter)
+                x <= canvasSize.Width; x += pixelsPerCentimeter)
             {
                 for (var y = DrawingConstants.START_POINT_DRAWING_COORDINATE_X_Y;
-                    y <= canvasSize.Height + pixelsPerCentimeter; y += (int)pixelsPerCentimeter)
+                    y <= canvasSize.Height + pixelsPerCentimeter; y += pixelsPerCentimeter)
                 {
                     yield return new PointSingle(x, y);
                 }
@@ -180,7 +180,7 @@ namespace Modeling.Models.Extensions
         }
 
         public static IEnumerable<IPointGeometry> CreateCustomShape(PointSingle startDrawingPoint,
-                                                                    int pixelsPerCentimeter,
+                                                                    float pixelsPerCentimeter,
                                                                     float halfCirclesDiameterMillimeters,
                                                                     float innerHalfCirclesDiameterMillimeters,
                                                                     float distanceBetweenHalfCirclesAndLargeRectangleMillimeters,

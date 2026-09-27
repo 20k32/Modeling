@@ -4,10 +4,9 @@ using System.Threading.Tasks;
 
 namespace Modeling.Core.Drawing.Providers
 {
-    public interface IDrawingSettingsProvider : IAsyncInitializer
+    public interface IDrawingSettingsProvider : IAsyncInitializer, ISettingsChanged
     {
         IDrawingSettings Settings { get; }
-        event ActionEventHandler SettingsChanged;
 
         Task SaveSettingsAsync();
         Task LoadSettingsAsync();

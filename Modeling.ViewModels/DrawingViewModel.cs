@@ -29,6 +29,8 @@ namespace Modeling.ViewModels
 
         readonly List<PointSingle> _grid;
         readonly List<PointSingle> _horizontalAxis;
+        readonly List<PointSingle> _horizontalAxisArrows;
+        readonly List<PointSingle> _verticalAxisArrows;
         readonly List<PointSingle> _verticalAxis;
         readonly List<PointSingle> _horizontalAxisMarks;
         readonly List<PointSingle> _verticalAxisMarks;
@@ -39,7 +41,7 @@ namespace Modeling.ViewModels
         PointSingle _previousMovedPoint;
         Matrix3x3Single _transform;
 
-        DrawingMessageParameter _gridWithAxisDrawingMessage;
+        DrawingMessageParameter _lastDrawingMessage;
 
         public DrawingViewModel()
         {
@@ -49,9 +51,11 @@ namespace Modeling.ViewModels
             _grid = [];
 
             _horizontalAxis = [];
+            _horizontalAxisArrows = [];
             _horizontalAxisMarks = [];
 
             _verticalAxis = [];
+            _verticalAxisArrows = [];
             _verticalAxisMarks = [];
 
             _userPoint = [];
@@ -59,6 +63,15 @@ namespace Modeling.ViewModels
             _transform = DrawingConstants.NON_TRANSFORM_MATRIX;
 
             _drawingSettingsProvider = Ioc.Default.GetRequiredService<IDrawingSettingsProvider>();
+            _drawingSettingsProvider.SettingsChanged += OnDrawingSettingsProviderSettingsChanged;
+        }
+
+        private void OnDrawingSettingsProviderSettingsChanged()
+        {
+            if (_figure.Any())
+            {
+                RedrawFigure();
+            }
         }
 
         [RelayCommand]
@@ -76,7 +89,7 @@ namespace Modeling.ViewModels
         [RelayCommand]
         void DrawLines()
         {
-            DrawGrid();
+            RedrawFigure();
         }
 
         [RelayCommand]
@@ -138,7 +151,7 @@ namespace Modeling.ViewModels
                     clearBeforeRedraw: false,
                     backgroundColor: backgroundColor,
                     thickness: thickness,
-                    parent: _gridWithAxisDrawingMessage);
+                    parent: _lastDrawingMessage);
 
                 WeakReferenceMessenger.Default.Send(new TransformPointsMessage(this, drawCircleMessageParameter));
 
@@ -146,25 +159,8 @@ namespace Modeling.ViewModels
             }
         }
 
-        void DrawGrid()
+        void RedrawFigure()
         {
-            _grid.Clear();
-
-            _horizontalAxis.Clear();
-            _horizontalAxisMarks.Clear();
-
-            _verticalAxis.Clear();
-            _verticalAxisMarks.Clear();
-
-            _userPoint.Clear();
-            _figure.Clear();
-
-            InitializeGrid();
-            InitializeAxis();
-            InitializeMarksOnAxis();
-            InitializeCircle();
-            InitializeFigure();
-
             var rawBackgroundColor = _drawingSettingsProvider.Settings.BackgroundColor;
             var backgroundColor = new DrawingColor(rawBackgroundColor);
 
@@ -183,35 +179,64 @@ namespace Modeling.ViewModels
             var verticalAxisTicksColor = _drawingSettingsProvider.Settings.VerticalAxisTicksColor;
             var verticalAxisTicksDrawingColor = new DrawingColor(verticalAxisTicksColor);
 
-            var thickness = _drawingSettingsProvider.Settings.GridDrawingThickness;
             var axisThickness = _drawingSettingsProvider.Settings.AxisThickness;
             var axisTickThickness = _drawingSettingsProvider.Settings.AxisTickThickness;
 
-            var drawGridMessageParameter = new PointListTransformMessageParameter(
-                points: _grid,
-                color: drawingColor,
-                _transform,
-                clearBeforeRedraw: true,
-                backgroundColor: backgroundColor,
-                thickness: thickness);
+            var thickness = _drawingSettingsProvider.Settings.GridDrawingThickness;
 
-            var drawGridWithAxisMessageParameter = drawGridMessageParameter
+            var currentDrawingMessage = new PointListTransformMessageParameter(
+                    points: [],
+                    color: drawingColor,
+                    transformMatrix: _transform,
+                    clearBeforeRedraw: true,
+                    backgroundColor: backgroundColor,
+                    thickness: thickness);
+
+            if (_drawingSettingsProvider.Settings.DrawGrid)
+            {
+                currentDrawingMessage = currentDrawingMessage.With(
+                    points: _grid,
+                    clearBeforeRedraw: false);
+            }
+
+            if (_drawingSettingsProvider.Settings.DrawAxis)
+            {
+                currentDrawingMessage = currentDrawingMessage
                 .With(points: _horizontalAxis,
                       color: horizontalAxisDrawingColor,
                       clearBeforeRedraw: false,
                       thickness: axisThickness)
                 .With(points: _verticalAxis,
-                      color: verticalAxisDrawingColor)
-                .With(points: _horizontalAxisMarks,
+                      color: verticalAxisDrawingColor);
+            }
+
+            if (_drawingSettingsProvider.Settings.DrawAxisArrows)
+            {
+                currentDrawingMessage = currentDrawingMessage
+                .With(points: _horizontalAxisArrows,
+                      color: horizontalAxisDrawingColor,
+                      clearBeforeRedraw: false,
+                      thickness: axisThickness)
+                .With(points: _verticalAxisArrows,
+                      color: verticalAxisDrawingColor);
+            }
+
+            if (_drawingSettingsProvider.Settings.DrawAxisMarks)
+            {
+                currentDrawingMessage = currentDrawingMessage
+                 .With(points: _horizontalAxisMarks,
+                      clearBeforeRedraw: false,
                       color: horizontalAxisTicksDrawingColor,
                       thickness: axisTickThickness)
                 .With(points: _verticalAxisMarks);
+            }
+            ;
 
-            var figureDrawingMessage = GetDrawingFigureMessage(drawGridWithAxisMessageParameter);
+            currentDrawingMessage = GetDrawingFigureMessage(currentDrawingMessage);
 
-            WeakReferenceMessenger.Default.Send(new TransformPointsMessage(this, figureDrawingMessage));
+            WeakReferenceMessenger.Default.Send(new TransformPointsMessage(this, currentDrawingMessage));
 
-            _gridWithAxisDrawingMessage = drawGridWithAxisMessageParameter;
+            _lastDrawingMessage = currentDrawingMessage;
         }
 
         private void InitializeFigure()
@@ -252,17 +277,25 @@ namespace Modeling.ViewModels
                     parentFigureComponentDrawingMessage.With(points: [.. figureComponent.Points]);
             }
 
-            var boundsDrawingMessage = parentFigureComponentDrawingMessage.With(
+            if (_drawingSettingsProvider.Settings.DrawFigureBounds)
+            {
+                parentFigureComponentDrawingMessage = parentFigureComponentDrawingMessage.With(
                 points: [.. _figure.Bounds.GetPointsFromBounds()],
                 color: new(_drawingSettingsProvider.Settings.FigureBoundsColor));
-
-            foreach (var segment in _figure.Segments)
-            {
-                boundsDrawingMessage = boundsDrawingMessage
-                    .With(points: [.. segment.Bounds.GetPointsFromBounds()]);
             }
 
-            return boundsDrawingMessage;
+            if (_drawingSettingsProvider.Settings.DrawFigureShapeBounds)
+            {
+                foreach (var segment in _figure.Segments)
+                {
+                    parentFigureComponentDrawingMessage =
+                        parentFigureComponentDrawingMessage.With(
+                            points: [.. segment.Bounds.GetPointsFromBounds()],
+                            color: new(_drawingSettingsProvider.Settings.FigureBoundsColor));
+                }
+            }
+
+            return parentFigureComponentDrawingMessage;
         }
 
         [RelayCommand]
@@ -272,9 +305,9 @@ namespace Modeling.ViewModels
 
             LoadCanvasState();
 
-            InitializeGrid();
+            InitializeDrawingElements();
 
-            InitializeAxis();
+            RedrawFigure();
         }
 
         void InitializeGrid()
@@ -295,12 +328,12 @@ namespace Modeling.ViewModels
             var centerY = canvasSize.Height / 2f;
 
             _horizontalAxis.AddRange(FigureExtensions.CreateAxisLine(canvasSize.Width, pixelsPerCentimeter, centerX, centerY, isVertical: false));
-            _horizontalAxis.AddRange(FigureExtensions.CreateArrowHead(new PointSingle(canvasSize.Width, centerY), isVertical: false, arrowHeadSize));
-            _horizontalAxis.AddRange(FigureExtensions.CreateArrowHead(new PointSingle(0, centerY), isVertical: false, arrowHeadSize, pointingLeft: true));
+            _horizontalAxisArrows.AddRange(FigureExtensions.CreateArrowHead(new PointSingle(canvasSize.Width, centerY), isVertical: false, arrowHeadSize));
+            _horizontalAxisArrows.AddRange(FigureExtensions.CreateArrowHead(new PointSingle(0, centerY), isVertical: false, arrowHeadSize, pointingLeft: true));
 
             _verticalAxis.AddRange(FigureExtensions.CreateAxisLine(canvasSize.Height, pixelsPerCentimeter, centerX, centerY, isVertical: true));
-            _verticalAxis.AddRange(FigureExtensions.CreateArrowHead(new PointSingle(centerX, canvasSize.Height), isVertical: true, arrowHeadSize));
-            _verticalAxis.AddRange(FigureExtensions.CreateArrowHead(new PointSingle(centerX, 0), isVertical: true, arrowHeadSize, pointingUp: true));
+            _verticalAxisArrows.AddRange(FigureExtensions.CreateArrowHead(new PointSingle(centerX, canvasSize.Height), isVertical: true, arrowHeadSize));
+            _verticalAxisArrows.AddRange(FigureExtensions.CreateArrowHead(new PointSingle(centerX, 0), isVertical: true, arrowHeadSize, pointingUp: true));
         }
 
         void InitializeMarksOnAxis()
@@ -369,6 +402,15 @@ namespace Modeling.ViewModels
         void InitializeSettings()
         {
             WeakReferenceMessenger.Default.Send(new InitializeSettingsMessage(this));
+        }
+
+        void InitializeDrawingElements()
+        {
+            InitializeGrid();
+            InitializeAxis();
+            InitializeMarksOnAxis();
+            InitializeCircle();
+            InitializeFigure();
         }
 
         async Task LoadSettingsAsync()

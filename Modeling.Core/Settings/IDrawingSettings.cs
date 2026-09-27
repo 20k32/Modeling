@@ -1,4 +1,5 @@
-﻿using Modeling.Core.Drawing;
+﻿using Modeling.Core.Abstractions;
+using Modeling.Core.Drawing;
 using System;
 using System.Collections.Generic;
 using Windows.Graphics;
@@ -6,11 +7,9 @@ using Windows.UI;
 
 namespace Modeling.Core.Settings
 {
-    public interface IDrawingSettings
+    public interface IDrawingSettings : ISettingsChanged
     {
         bool? Initialized { get; set; }
-
-        event ActionEventHandler PropertyChanged;
 
         int DpiX { get; set; }
         int DpiY { get; set; }
@@ -38,7 +37,7 @@ namespace Modeling.Core.Settings
 
         TimeSpan RefreshRate { get; set; }
 
-        public int PixelsPerCentimeter { get; set; }
+        public float PixelsPerCentimeter { get; set; }
         public SizeInt32 CanvasSize { get; set; }
 
         public Color HorizontalAxisColor { get; set; }
