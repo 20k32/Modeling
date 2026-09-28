@@ -1,6 +1,7 @@
 ﻿using Modeling.Core.Drawing;
 using Modeling.Core.Extensions;
 using Modeling.Models.Abstractions.Drawing.Figure;
+using Modeling.Models.Drawing.Figures.PointGeometries;
 using Modeling.Models.Miscellaneous;
 using System;
 using System.Collections;
@@ -97,33 +98,34 @@ namespace Modeling.Models.Drawing.Figures
 
         public void Clear() => Segments.Clear();
 
-        public void SetBounds()
+        public void CalculateBounds()
         {
             var left = float.MaxValue;
             var top = float.MaxValue;
-            var width = float.MinValue;
-            var height = float.MinValue;
+            var right = float.MinValue;
+            var bottom = float.MinValue;
 
             foreach (var segment in Segments)
             {
-                segment.SetBounds();
+                segment.CalculateBounds();
 
                 left = MathF.Min(left, segment.Bounds.Left);
                 top = MathF.Min(top, segment.Bounds.Top);
-                width = MathF.Max(width, segment.Bounds.Right);
-                height = MathF.Max(height, segment.Bounds.Bottom);
+                right = MathF.Max(right, segment.Bounds.Right);
+                bottom = MathF.Max(bottom, segment.Bounds.Bottom);
             }
 
-            _bounds = new RectangleSingle(top, left, width, height);
+            _bounds = new RectangleSingle(top, left, right, bottom);
         }
 
-        public void SetPropertiesFromSegments()
+        public void CalculatePropertiesFromSegments()
         {
-            SetBounds();
-
-            _centerPoint = new PointSingle(
-                x: _bounds.Right / 2,
-                y: _bounds.Bottom / 2);
+            CalculateBounds();
+            CalculateCenterPoint();
         }
+
+        public void CalculateCenterPoint() => _centerPoint = new PointSingle(
+                x: _bounds.Width / 2,
+                y: _bounds.Height / 2);
     }
 }

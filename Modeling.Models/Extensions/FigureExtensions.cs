@@ -2,22 +2,21 @@
 using Modeling.Core.Drawing;
 using Modeling.Core.Extensions;
 using Modeling.Models.Abstractions.Drawing.Figure;
-using Modeling.Models.Drawing.Figures;
+using Modeling.Models.Drawing.Figures.PointGeometries;
 using System;
 using System.Collections.Generic;
-using Windows.Graphics;
 
 namespace Modeling.Models.Extensions
 {
     public static class FigureExtensions
     {
-        public static IPointGeometry FindNearestSegment(this IFigure figure, PointSingle point)
+        public static IPointGeometry FindNearestSegment(this IFigure figure, PointSingle point, float pixelsPerCentimeter)
         {
             var nearestSegment = default(IPointGeometry);
 
             foreach (var segment in figure)
             {
-                if (segment.Bounds.SizeBounds.Contains(point))
+                if (segment.Bounds.Contains(point, pixelsPerCentimeter))
                 {
                     nearestSegment = segment;
                 }
@@ -558,127 +557,134 @@ namespace Modeling.Models.Extensions
                 bottomRightHalfCircleCenterPoint.GetCirclePoints(
                     innerHalfCirclesRadiusPixels);
 
-            yield return topLeftHalfCircle.ToPointGeometry();
+            yield return topLeftHalfCircle.ToCirclePointGeometry();
 
-            yield return topLeftInnerCircle.ToPointGeometry();
+            yield return topLeftInnerCircle.ToCirclePointGeometry();
 
-            yield return bottomLeftInnerCircle.ToPointGeometry();
+            yield return bottomLeftInnerCircle.ToCirclePointGeometry();
 
-            yield return bottomLeftHalfCircle.ToPointGeometry();
+            yield return bottomLeftHalfCircle.ToCirclePointGeometry();
 
             yield return ((ICollection<PointSingle>)[
                 topLeftHalfCircleTopLineSecondPoint,
         topTopRightHalfCircleTopLineSecondPoint])
-                .ToPointGeometry();
+                .ToLinePointGeometry();
 
             yield return ((ICollection<PointSingle>)[
                 bottomBottomRightHalfCircleTopLineFirstPoint,
         bottomBottomRightHalfCircleTopLineSecondPoint])
-                .ToPointGeometry();
+                .ToLinePointGeometry();
 
             yield return ((ICollection<PointSingle>)[
                 topLeftHalfCircleTopLineSecondPoint,
         bottomLeftHalfCircleTopLineSecondPoint])
-                .ToPointGeometry();
+                .ToLinePointGeometry();
 
             yield return ((ICollection<PointSingle>)[
                 bottomTopLeftHalfCircleTopLineSecondPoint,
         bottomBottomLeftHalfCircleTopLineSecondPoint])
-                .ToPointGeometry();
+                .ToLinePointGeometry();
 
             yield return ((ICollection<PointSingle>)[
                 bottomLeftHalfCircleTopLineSecondPoint,
         bottomTopLeftHalfCircleTopLineSecondPoint])
-                .ToPointGeometry();
+                .ToLinePointGeometry();
 
-            yield return largeCircle.ToPointGeometry();
+            yield return largeCircle.ToCirclePointGeometry();
 
             yield return ((ICollection<PointSingle>)[
                 topLeftSmallSquareStartPoint,
         bottomLeftSmallSquareEndPoint])
-                .ToPointGeometry();
+                .ToLinePointGeometry();
 
             yield return ((ICollection<PointSingle>)[
                 topLeftSmallSquareStartPoint,
         topRightLeftSmallSquareEndPoint])
-                .ToPointGeometry();
+                .ToLinePointGeometry();
 
             yield return ((ICollection<PointSingle>)[
                 topLeftRightSmallSquareStartPoint,
+        topLeftRightSmallSquareEndPoint]).ToLinePointGeometry();
+
+            yield return ((ICollection<PointSingle>)[
         topLeftRightSmallSquareEndPoint,
+        bottomRightSmallSquareEndPoint])
+                .ToLinePointGeometry();
+
+            yield return ((ICollection<PointSingle>)[
         bottomRightSmallSquareEndPoint,
         bottomLeftRightSmallSquareEndPoint])
-                .ToPointGeometry();
+                .ToLinePointGeometry();
 
-            yield return smallCircle.ToPointGeometry();
+            yield return smallCircle.ToCirclePointGeometry();
 
             yield return ((ICollection<PointSingle>)[
                 bottomLeftSmallSquareEndPoint,
         bottomRightLeftSmallSquareEndPoint])
-                .ToPointGeometry();
+                .ToLinePointGeometry();
 
             yield return ((ICollection<PointSingle>)[
                 topTopRightHalfCircleTopLineSecondPoint,
         topRightHalfCircleConnectionLineEndPoint])
-                .ToPointGeometry();
+                .ToLinePointGeometry();
 
             yield return ((ICollection<PointSingle>)[
                 topBottomRightHalfCircleConnectionLineStartPoint,
         topBottomRightHalfCircleConnectionLineEndPoint])
-                .ToPointGeometry();
+                .ToLinePointGeometry();
 
             yield return ((ICollection<PointSingle>)[
                 topTopRightHalfCircleTopLineSecondPoint,
         topBottomRightHalfCircleConnectionLineStartPoint])
-                .ToPointGeometry();
+                .ToLinePointGeometry();
 
             yield return ((ICollection<PointSingle>)[
                 rightBorderEndPoint,
         bottomRightHalfCircleConnectionLineTopEndPoint])
-                .ToPointGeometry();
+                .ToLinePointGeometry();
 
-            yield return topRightInnerCircle.ToPointGeometry();
+            yield return topRightInnerCircle.ToCirclePointGeometry();
 
-            yield return topRightHalfCircle.ToPointGeometry();
+            yield return topRightHalfCircle.ToCirclePointGeometry();
 
             yield return ((ICollection<PointSingle>)[
                 topBottomRightHalfCircleConnectionLineStartPoint,
         rightBorderEndPoint])
-                .ToPointGeometry();
+                .ToLinePointGeometry();
 
             yield return ((ICollection<PointSingle>)[
                 bottomRightHalfCircleConnectionLineBottomStartPoint,
         bottomRightHalfCircleConnectionLineBottomEndPoint])
-                .ToPointGeometry();
+                .ToLinePointGeometry();
 
             yield return ((ICollection<PointSingle>)[
                 topLeftHalfCircleTopLineFirstPoint,
         topLeftHalfCircleTopLineSecondPoint])
-                .ToPointGeometry();
+                .ToLinePointGeometry();
 
             yield return ((ICollection<PointSingle>)[
                 rightBorderEndPoint,
         bottomConnectionLineEndPoint])
-                .ToPointGeometry();
+                .ToLinePointGeometry();
 
             yield return ((ICollection<PointSingle>)[
                 bottomLeftHalfCircleTopLineFirstPoint,
         bottomLeftHalfCircleTopLineSecondPoint])
-                .ToPointGeometry();
+                .ToLinePointGeometry();
 
             yield return ((ICollection<PointSingle>)[
                 bottomTopLeftHalfCircleTopLineFirstPoint,
         bottomTopLeftHalfCircleTopLineSecondPoint])
-                .ToPointGeometry();
+                .ToLinePointGeometry();
 
             yield return ((ICollection<PointSingle>)[
                 bottomBottomLeftHalfCircleTopLineFirstPoint,
         bottomBottomLeftHalfCircleTopLineSecondPoint])
-                .ToPointGeometry();
+                .ToLinePointGeometry();
 
-            yield return bottomRightHalfCircle.ToPointGeometry();
+            yield return bottomRightHalfCircle.ToCirclePointGeometry();
 
-            yield return bottomRightInnerCircle.ToPointGeometry();
+            yield return bottomRightInnerCircle.ToCirclePointGeometry();
         }
     }
 }

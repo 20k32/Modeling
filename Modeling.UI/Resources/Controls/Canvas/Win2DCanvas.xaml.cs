@@ -23,6 +23,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Windows.Storage.AccessCache;
 using Windows.System;
 using Windows.UI.Core;
 
@@ -59,6 +60,18 @@ namespace Modeling.UI.Resources.Controls.Canvas
             set { SetValue(PointerMovedCommandProperty, value); }
         }
 
+        public static readonly DependencyProperty PointerPressedCommandProperty =
+            DependencyProperty.Register(nameof(PointerPressedCommand),
+            typeof(IRelayCommand<PointSingle>),
+            typeof(Win2DCanvas),
+            new PropertyMetadata(default));
+
+        public IRelayCommand<PointSingle> PointerPressedCommand
+        {
+            get { return (IRelayCommand<PointSingle>)GetValue(PointerPressedCommandProperty); }
+            set { SetValue(PointerPressedCommandProperty, value); }
+        }
+
         public Win2DCanvas()
         {
             InitializeComponent();
@@ -81,7 +94,7 @@ namespace Modeling.UI.Resources.Controls.Canvas
             WeakReferenceMessenger.Default.Register<ChangeCanvasSizeMessage>(this, OnWin2DCanvasChangeCanvasSizeMessage);
         }
 
-        private void OnWin2DCanvasChangeCanvasSizeMessage(object recipient, ChangeCanvasSizeMessage message)
+        void OnWin2DCanvasChangeCanvasSizeMessage(object recipient, ChangeCanvasSizeMessage message)
         {
             if (message.ApplyBasicMessageValidation(recipient))
             {
@@ -130,6 +143,7 @@ namespace Modeling.UI.Resources.Controls.Canvas
 
                 AnimatedCanvas.PointerWheelChanged -= OnAnimatedCanvasPointerWheelChanged;
                 AnimatedCanvas.PointerMoved -= OnAnimatedCanvasPointerMoved;
+                AnimatedCanvas.PointerPressed -= OnAnimatedCanvasPointerPressed;
             }
         }
 
@@ -145,6 +159,7 @@ namespace Modeling.UI.Resources.Controls.Canvas
 
                 AnimatedCanvas.PointerWheelChanged += OnAnimatedCanvasPointerWheelChanged;
                 AnimatedCanvas.PointerMoved += OnAnimatedCanvasPointerMoved;
+                AnimatedCanvas.PointerPressed += OnAnimatedCanvasPointerPressed;
 
                 InitializeDrawingPipeline();
             }
@@ -231,7 +246,7 @@ namespace Modeling.UI.Resources.Controls.Canvas
             {
                 return;
             }
-
+            
             try
             {
                 args.DrawingSession.DrawImage(_canvasRenderTarget);
@@ -461,7 +476,7 @@ namespace Modeling.UI.Resources.Controls.Canvas
             }
         }
 
-        private void OnAnimatedCanvasPointerWheelChanged(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+        void OnAnimatedCanvasPointerWheelChanged(object sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
             var scrollViewer = CanvasScrollViewer;
 
@@ -495,7 +510,7 @@ namespace Modeling.UI.Resources.Controls.Canvas
                     disableAnimation: false);
         }
 
-        private void OnAnimatedCanvasPointerMoved(object sender, PointerRoutedEventArgs e)
+        void OnAnimatedCanvasPointerMoved(object sender, PointerRoutedEventArgs e)
         {
             if (sender is CanvasAnimatedControl canvasControl
                 && e is not null
@@ -505,6 +520,19 @@ namespace Modeling.UI.Resources.Controls.Canvas
                 var position = pointerPoint.Position;
 
                 PointerMovedCommand.Execute(new PointSingle((float)position.X, (float)position.Y));
+            }
+        }
+
+        void OnAnimatedCanvasPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            if (sender is CanvasAnimatedControl canvasControl
+                && e is not null
+                && PointerPressedCommand is not null)
+            {
+                var pointerPoint = e.GetCurrentPoint(canvasControl);
+                var position = pointerPoint.Position;
+
+                PointerPressedCommand.Execute(new PointSingle((float)position.X, (float)position.Y));
             }
         }
     }

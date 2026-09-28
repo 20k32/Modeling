@@ -51,7 +51,7 @@ namespace Modeling.Core.Drawing.Providers
             Settings.SettingsChanged += OnDrawingSettingsSettingsChanged;
         }
 
-        private void OnDrawingSettingsSettingsChanged()
+        void OnDrawingSettingsSettingsChanged()
         {
             _ = SaveSettingsAsync();
 

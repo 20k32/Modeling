@@ -4,7 +4,10 @@ namespace Modeling.Models.Abstractions.Drawing
 {
     public interface IBounds
     {
+        PointSingle CenterPoint { get; }
         RectangleSingle Bounds { get; }
-        void SetBounds();
+
+        void CalculateCenterPoint();
+        void CalculateBounds();
     }
 }

@@ -9,6 +9,20 @@
              mc:Ignorable="d">
 
     <Grid>
-        <TextBlock Text="Pick a shape by mouse" Visibility="{Binding NeedPickShapeForResizing}" />
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+
+        <ToggleButton Grid.Row="0"
+                      Content="Pick a shape by mouse"
+                      IsChecked="{Binding PickShapeForResizing, Mode=TwoWay}"
+                      Visibility="{Binding AdditionalPanelVisible, Converter={StaticResource CommunityToolkit.BoolToVisibilityConverter}, ConverterParameter=True}" />
+        <ToggleButton Grid.Row="1"
+                      Content="Change figure position"
+                      IsChecked="{Binding ChangeFigurePositon, Mode=TwoWay}"
+                      Visibility="{Binding AdditionalPanelVisible, Converter={StaticResource CommunityToolkit.BoolToVisibilityConverter}, ConverterParameter=True}" />
+        
     </Grid>
 </UserControl>

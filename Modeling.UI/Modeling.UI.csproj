@@ -24,6 +24,7 @@
       <None Remove="Resources\Controls\Pages\ResizingPage.xaml" />
       <None Remove="Resources\Controls\Pages\SettingsPage.xaml" />
       <None Remove="Resources\Controls\Root\MainPage.xaml" />
+      <None Remove="Resources\Converters\GeneralConverters.xaml" />
       <None Remove="Resources\Dialogs\SettingsDialog.xaml" />
       <None Remove="Resources\Dictionaries\SharedResources.xaml" />
       <None Remove="Resources\GeneralResources.xaml" />
@@ -57,6 +58,7 @@
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+        <PackageReference Include="CommunityToolkit.WinUI.Converters" Version="8.2.251219" />
         <PackageReference Include="CommunityToolkit.WinUI.Media" Version="8.2.251219" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.11" />
         <PackageReference Include="Microsoft.Graphics.Win2D" Version="1.4.0" />
@@ -130,6 +132,11 @@
     </ItemGroup>
     <ItemGroup>
       <Page Update="Resources\Controls\Pages\ResizingPage.xaml">
+        <Generator>MSBuild:Compile</Generator>
+      </Page>
+    </ItemGroup>
+    <ItemGroup>
+      <Page Update="Resources\Converters\GeneralConverters.xaml">
         <Generator>MSBuild:Compile</Generator>
       </Page>
     </ItemGroup>

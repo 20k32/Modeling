@@ -11,7 +11,5 @@ namespace Modeling.Core.Drawing
 
         public readonly float Width = MathF.Abs(right - left);
         public readonly float Height = MathF.Abs(bottom - top);
-
-        public RectangleSingle SizeBounds => new(Top, Left, Math.Max(Width, 10f), Math.Max(Height, 10f));
     }
 }

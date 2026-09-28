@@ -14,7 +14,7 @@ namespace Modeling.Core.Settings
 
         public event ActionEventHandler SettingsChanged;
 
-        private void InvokeSettingsChanged()
+        void InvokeSettingsChanged()
         {
             if (ShouldInvokeSettingsChanged
                 && SettingsChanged is not null)

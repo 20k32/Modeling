@@ -44,7 +44,8 @@
                               Margin="0,0,15,15"
                               HorizontalAlignment="Center"
                               Initialize="{Binding InitializeCanvasCommand}"
-                              PointerMovedCommand="{Binding CanvasPointerMovedCommand}" />
+                              PointerMovedCommand="{Binding CanvasPointerMovedCommand}"
+                              PointerPressedCommand="{Binding CanvasPointerPressedCommand}" />
 
         <ContentControl Grid.Row="2"
                         Grid.Column="1"

@@ -16,6 +16,7 @@ using Modeling.Core.Messages.Settings;
 using Modeling.Core.Messages.ViewModels;
 using Modeling.Core.Navigation;
 using Modeling.Models.Abstractions.Drawing.Figure;
+using Modeling.Models.Drawing.Figures.PointGeometries;
 using Modeling.Models.Extensions;
 using Modeling.ViewModels.Miscellaneous;
 using System;
@@ -40,8 +41,6 @@ namespace Modeling.ViewModels
         readonly List<PointSingle> _userPoint;
         readonly IFigure _figure;
 
-
-        IPointGeometry _nearestSegment;
         PointSingle startDrawingPoint;
 
         UserPointDrawingAction _drawingAction;
@@ -51,7 +50,22 @@ namespace Modeling.ViewModels
         PointListTransformMessageParameter _lastDrawingMessage;
 
         [ObservableProperty]
-        bool _needPickShapeForResizing;
+        bool _pickShapeForResizing;
+
+        [ObservableProperty]
+        bool _changeFigurePosition;
+
+        [ObservableProperty]
+        bool _additionalPanelVisible;
+
+        [ObservableProperty]
+        bool _lineEditingPanelVisible;
+
+        [ObservableProperty]
+        bool _circleEditingPanelVisible;
+
+        [ObservableProperty]
+        IPointGeometry _nearestSegment;
 
         public DrawingViewModel()
         {
@@ -81,6 +95,17 @@ namespace Modeling.ViewModels
             _navigationProvider.Navigated += OnNavigationProviderNavigated;
         }
 
+        partial void OnPickShapeForResizingChanged(bool value)
+        {
+            if (!value
+                && _nearestSegment is not null
+                && _figure.Any())
+            {
+                RedrawFigure();
+                AdditionalPanelVisible = true;
+            }
+        }
+
         void OnNavigationProviderNavigated(NavigationPage page)
         {
             try
@@ -107,7 +132,7 @@ namespace Modeling.ViewModels
 
         void ResetStateForResizingSubPage()
         {
-            NeedPickShapeForResizing = true;
+            PickShapeForResizing = true;
             _drawingAction = UserPointDrawingAction.FigurePointSelection;
         }
 
@@ -142,7 +167,7 @@ namespace Modeling.ViewModels
             }
         }
 
-        private void OnDrawingSettingsProviderSettingsChanged()
+        void OnDrawingSettingsProviderSettingsChanged()
         {
             if (_figure.Any())
             {
@@ -180,23 +205,41 @@ namespace Modeling.ViewModels
             }
         }
 
+        [RelayCommand]
+        void CanvasPointerPressed(PointSingle point)
+        {
+            switch (_drawingAction)
+            {
+                case UserPointDrawingAction.AxisPointSelection: RedrawUserPointCore(point); break;
+                case UserPointDrawingAction.FigurePointSelection: EndSegmentSelection(); break;
+                default: break;
+            }
+        }
+
+        void EndSegmentSelection()
+        {
+            PickShapeForResizing = false;
+        }
+
         void SelectSegmentOnFigure(PointSingle point)
         {
-            var shouldHandlePoint = NeedPickShapeForResizing && _figure.Bounds.Contains(point);
+            var pixelsPerCentimeter = _drawingSettingsProvider.Settings.PixelsPerCentimeter;
+
+            var shouldHandlePoint = PickShapeForResizing && _figure.Bounds.Contains(point, pixelsPerCentimeter);
 
             var nearestSegment = default(IPointGeometry);
 
             if (shouldHandlePoint)
             {
-                nearestSegment = _figure.FindNearestSegment(point);
+                nearestSegment = _figure.FindNearestSegment(point, pixelsPerCentimeter);
                 shouldHandlePoint &= nearestSegment is not null;
             }
 
             Logger.Information($"X:{point.X} Y:{point.Y}");
 
-            if (shouldHandlePoint && nearestSegment != _nearestSegment)
+            if (shouldHandlePoint && nearestSegment != NearestSegment)
             {
-                _nearestSegment = nearestSegment;
+                NearestSegment = nearestSegment;
 
                 var segmentRedrawingMessageParameter = _lastDrawingMessage.With(
                     points: [.. nearestSegment.Bounds.GetPointsFromBounds()],
@@ -329,7 +372,7 @@ namespace Modeling.ViewModels
             _lastDrawingMessage = currentDrawingMessage;
         }
 
-        private void InitializeFigure(SizeSingle canvasSize, float pixelsPerCentimeter)
+        void InitializeFigure(SizeSingle canvasSize, float pixelsPerCentimeter)
         {
             var pixelsPerMillimeter = pixelsPerCentimeter / 10;
 
@@ -354,7 +397,7 @@ namespace Modeling.ViewModels
                 FigureRelatedConstants.LARGE_CIRCLE_DIAMETER_MILLIMETERS,
                 FigureRelatedConstants.SMALL_CIRCLE_DIAMETER_MILLIMETERS));
 
-            _figure.SetPropertiesFromSegments();
+            _figure.CalculatePropertiesFromSegments();
         }
 
         private PointListTransformMessageParameter GetDrawingFigureMessage(PointListTransformMessageParameter parentMessage)
@@ -377,6 +420,8 @@ namespace Modeling.ViewModels
                 parentFigureComponentDrawingMessage =
                     parentFigureComponentDrawingMessage.With(points: [.. figureComponent.Points]);
             }
+
+            _figure.CalculatePropertiesFromSegments();
 
             if (_drawingSettingsProvider.Settings.DrawFigureBounds)
             {
