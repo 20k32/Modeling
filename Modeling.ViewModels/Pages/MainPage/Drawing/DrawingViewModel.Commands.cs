@@ -62,9 +62,15 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         }
 
         [RelayCommand]
-        void CancelPickingShapeCommand()
+        void CancelPickingShape()
         {
+            AdditionalPanelVisible = false;
 
+            if (NearestSegment is not null)
+            {
+                NearestSegment = default;
+                RedrawFigure();
+            }
         }
     }
 }

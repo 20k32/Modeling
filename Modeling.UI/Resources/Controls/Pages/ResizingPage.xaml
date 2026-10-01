@@ -22,7 +22,7 @@
                       Visibility="{Binding AdditionalPanelVisible, Converter={StaticResource CommunityToolkit.BoolToVisibilityConverter}, ConverterParameter=True}" />
         <ToggleButton Grid.Row="1"
                       Content="Change figure position"
-                      IsChecked="{Binding ChangeFigurePositon, Mode=TwoWay}"
+                      IsChecked="{Binding ChangeFigurePosition, Mode=TwoWay}"
                       Visibility="{Binding AdditionalPanelVisible, Converter={StaticResource CommunityToolkit.BoolToVisibilityConverter}, ConverterParameter=True}" />
 
         <TextBlock Grid.Row="0" Visibility="{Binding AdditionalPanelVisible}">

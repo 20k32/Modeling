@@ -27,6 +27,14 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         [ObservableProperty]
         float _dimensionLength;
 
+        partial void OnChangeFigurePositionChanged(bool value)
+        {
+            if (value)
+            {
+                PickShapeForResizing = false;
+            }
+        }
+
         partial void OnNearestSegmentChanged(IPointGeometry oldValue, IPointGeometry newValue)
         {
             if (oldValue is not null)
@@ -59,6 +67,11 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             {
                 RedrawFigure();
                 AdditionalPanelVisible = true;
+            }
+
+            if (value)
+            {
+                ChangeFigurePosition = false;
             }
         }
     }
