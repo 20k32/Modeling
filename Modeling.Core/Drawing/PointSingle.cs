@@ -31,6 +31,9 @@ namespace Modeling.Core.Drawing
         public static PointSingle operator +(PointSingle left, float right)
             => new PointSingle(left.X + right, left.Y + right);
 
+        public static PointSingle operator +(PointSingle left, PointSingle right)
+            => new PointSingle(left.X + right.X, left.Y + right.Y);
+
         public static PointSingle operator *(Matrix3x3Single matrix, PointSingle point)
         {
             float x = point.X * matrix.M11

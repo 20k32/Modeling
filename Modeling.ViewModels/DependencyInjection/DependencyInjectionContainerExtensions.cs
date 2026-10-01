@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Modeling.Models.DependencyInjection;
+using Modeling.ViewModels.Pages.MainPage.Drawing;
 
 namespace Modeling.ViewModels.DependencyInjection
 {

@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
 using Modeling.Models.UserInterface;
 using Modeling.ViewModels;
+using Modeling.ViewModels.Pages.MainPage.Drawing;
 
 namespace Modeling.UI.DependencyInjection
 {

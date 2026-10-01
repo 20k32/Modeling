@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Modeling.Models.Drawing.Figures.PointGeometries.Abstractions
 {
-    public interface ICirclePointGeometry
+    public interface ICirclePointGeometry : IPointGeometry
     {
         public float Diameter { get; set; }
     }

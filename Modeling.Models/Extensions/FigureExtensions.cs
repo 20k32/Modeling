@@ -225,8 +225,7 @@ namespace Modeling.Models.Extensions
             var rightHalfCirclesStartAngleDegrees = -90f;
             var rightHalfCircleEndAngleDegrees = 90f;
 
-            var topLeftHalfCircleCenterPoint =
-                startDrawingPoint + halfCirclesDiameterPixels;
+            var topLeftHalfCircleCenterPoint = startDrawingPoint;
 
             var distanceBetweenHalfCirclesAndLargeRectanglePixels =
                 distanceBetweenHalfCirclesAndLargeRectangleMillimeters

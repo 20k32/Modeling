@@ -1,4 +1,4 @@
-﻿namespace Modeling.Models.Drawing.Figures.PointGeometries
+﻿namespace Modeling.Models.Drawing.Figures.PointGeometries.Enums
 {
     public enum GeometryType
     {

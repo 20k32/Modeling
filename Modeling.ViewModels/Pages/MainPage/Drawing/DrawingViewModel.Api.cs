@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.UI.Xaml.Media;
 using Modeling.Core.Abstractions;
 using Modeling.Core.Constants;
 using Modeling.Core.Drawing;
@@ -17,6 +18,8 @@ using Modeling.Core.Messages.ViewModels;
 using Modeling.Core.Navigation;
 using Modeling.Models.Abstractions.Drawing.Figure;
 using Modeling.Models.Drawing.Figures.PointGeometries;
+using Modeling.Models.Drawing.Figures.PointGeometries.Abstractions;
+using Modeling.Models.Drawing.Figures.PointGeometries.Enums;
 using Modeling.Models.Extensions;
 using Modeling.ViewModels.Miscellaneous;
 using System;
@@ -24,7 +27,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Modeling.ViewModels
+namespace Modeling.ViewModels.Pages.MainPage.Drawing
 {
     public sealed partial class DrawingViewModel : ObservableObject
     {
@@ -47,25 +50,9 @@ namespace Modeling.ViewModels
         PointSingle _previousMovedPoint;
         Matrix3x3Single _transform;
 
+        IPointGeometry _pointerMoveNearestSegment;
+
         PointListTransformMessageParameter _lastDrawingMessage;
-
-        [ObservableProperty]
-        bool _pickShapeForResizing;
-
-        [ObservableProperty]
-        bool _changeFigurePosition;
-
-        [ObservableProperty]
-        bool _additionalPanelVisible;
-
-        [ObservableProperty]
-        bool _lineEditingPanelVisible;
-
-        [ObservableProperty]
-        bool _circleEditingPanelVisible;
-
-        [ObservableProperty]
-        IPointGeometry _nearestSegment;
 
         public DrawingViewModel()
         {
@@ -95,14 +82,38 @@ namespace Modeling.ViewModels
             _navigationProvider.Navigated += OnNavigationProviderNavigated;
         }
 
-        partial void OnPickShapeForResizingChanged(bool value)
+        void SetDimensionLengthSilent(float newValue)
         {
-            if (!value
-                && _nearestSegment is not null
-                && _figure.Any())
+            if (_dimensionLength != newValue)
             {
-                RedrawFigure();
-                AdditionalPanelVisible = true;
+                _dimensionLength = newValue;
+                OnPropertyChanged(nameof(DimensionLength));
+            }
+        }
+
+        void HandleDistanceDisplaying(IPointGeometry pointGeometry)
+        {
+            switch (pointGeometry.GeometryType)
+            {
+                case GeometryType.Line: HandleLineDistanceDisplaying(pointGeometry); break;
+                case GeometryType.Circle: HandleCircleDistanceDisplaying(pointGeometry); break;
+                default: break;
+            }
+        }
+
+        void HandleCircleDistanceDisplaying(IPointGeometry pointGeometry)
+        {
+            if (pointGeometry is ICirclePointGeometry circlePointGeometry)
+            {
+                SetDimensionLengthSilent(circlePointGeometry.Diameter / 2);
+            }
+        }
+
+        void HandleLineDistanceDisplaying(IPointGeometry pointGeometry)
+        {
+            if (pointGeometry is ILinePointGeometry linePointGeometry)
+            {
+                SetDimensionLengthSilent(linePointGeometry.Length);
             }
         }
 
@@ -175,47 +186,6 @@ namespace Modeling.ViewModels
             }
         }
 
-        [RelayCommand]
-        void Initialize()
-        {
-            Logger.LoadedInformation("Main page");
-
-            InitializeCanvas();
-
-            InitializeDrawingSession();
-
-            InitializeSettings();
-        }
-
-        [RelayCommand]
-        void DrawLines()
-        {
-            _drawingAction = UserPointDrawingAction.AxisPointSelection;
-            RedrawFigure();
-        }
-
-        [RelayCommand]
-        void CanvasPointerMoved(PointSingle point)
-        {
-            switch (_drawingAction)
-            {
-                case UserPointDrawingAction.AxisPointSelection: RedrawUserPointCore(point); break;
-                case UserPointDrawingAction.FigurePointSelection: SelectSegmentOnFigure(point); break;
-                default: break;
-            }
-        }
-
-        [RelayCommand]
-        void CanvasPointerPressed(PointSingle point)
-        {
-            switch (_drawingAction)
-            {
-                case UserPointDrawingAction.AxisPointSelection: RedrawUserPointCore(point); break;
-                case UserPointDrawingAction.FigurePointSelection: EndSegmentSelection(); break;
-                default: break;
-            }
-        }
-
         void EndSegmentSelection()
         {
             PickShapeForResizing = false;
@@ -237,9 +207,9 @@ namespace Modeling.ViewModels
 
             Logger.Information($"X:{point.X} Y:{point.Y}");
 
-            if (shouldHandlePoint && nearestSegment != NearestSegment)
+            if (shouldHandlePoint && nearestSegment != _pointerMoveNearestSegment)
             {
-                NearestSegment = nearestSegment;
+                _pointerMoveNearestSegment = nearestSegment;
 
                 var segmentRedrawingMessageParameter = _lastDrawingMessage.With(
                     points: [.. nearestSegment.Bounds.GetPointsFromBounds()],
@@ -444,16 +414,6 @@ namespace Modeling.ViewModels
             return parentFigureComponentDrawingMessage;
         }
 
-        [RelayCommand]
-        async Task InitializeCanvasAsync()
-        {
-            await LoadSettingsAsync();
-
-            LoadCanvasState();
-
-            RedrawFigure();
-        }
-
         void InitializeGrid(SizeSingle canvasSize, float pixelsPerCentimeter)
         {
             _grid.AddRange(FigureExtensions.CreateGrid(canvasSize, pixelsPerCentimeter));
@@ -563,6 +523,50 @@ namespace Modeling.ViewModels
         async Task LoadSettingsAsync()
         {
             await WeakReferenceMessenger.Default.Send(new LoadSettingsAsyncMessage(this));
+        }
+
+        void HandleDimensionLengthChanged(float value)
+        {
+            switch (NearestSegment.GeometryType)
+            {
+                case GeometryType.Line: HandleLineLengthChanged(value); break;
+                case GeometryType.Circle: HandleCircleLengthChanged(value); break;
+                default: break;
+            }
+        }
+
+        void HandleCircleLengthChanged(float value)
+        {
+            if (NearestSegment is ICirclePointGeometry circleGeometry)
+            {
+                var pixelsPerCentimeter = _drawingSettingsProvider.Settings.PixelsPerCentimeter;
+                var pixelsPerMillimeter = pixelsPerCentimeter / 10;
+
+                var newRadius = value / 2 * pixelsPerMillimeter;
+
+                var newPoints = circleGeometry.CenterPoint.GetCirclePoints(newRadius);
+
+                circleGeometry.Points.Clear();
+
+                circleGeometry.AddPointsRange(newPoints);
+
+                circleGeometry.CalculateBounds();
+
+                circleGeometry.Commit();
+            }
+        }
+
+        void HandleLineLengthChanged(float value)
+        {
+            if (NearestSegment is ILinePointGeometry lineGeometry)
+            {
+                var points = lineGeometry.Points;
+            }
+        }
+
+        void OnNearestSegmentDimensionChanged()
+        {
+            RedrawFigure();
         }
     }
 }

@@ -8,8 +8,9 @@
              DataContext="{Binding DrawingViewModel, Source={StaticResource ServiceLocator}}"
              mc:Ignorable="d">
 
-    <Grid>
+    <Grid RowSpacing="20">
         <Grid.RowDefinitions>
+            <RowDefinition />
             <RowDefinition />
             <RowDefinition />
             <RowDefinition />
@@ -23,6 +24,28 @@
                       Content="Change figure position"
                       IsChecked="{Binding ChangeFigurePositon, Mode=TwoWay}"
                       Visibility="{Binding AdditionalPanelVisible, Converter={StaticResource CommunityToolkit.BoolToVisibilityConverter}, ConverterParameter=True}" />
-        
+
+        <TextBlock Grid.Row="0" Visibility="{Binding AdditionalPanelVisible}">
+            <TextBlock.Inlines>
+                <Run Text="You have picked:" />
+                <Run Text="{Binding NearestSegment.GeometryType}" />
+            </TextBlock.Inlines>
+        </TextBlock>
+
+        <TextBox Grid.Row="1"
+                 Text="{Binding DimensionLength, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                 Visibility="{Binding AdditionalPanelVisible}">
+            <TextBox.Header>
+                <TextBlock>
+                    <Run Text="{Binding NearestSegment.DimensionType}" /><Run Text=":" />
+                </TextBlock>
+            </TextBox.Header>
+        </TextBox>
+
+        <Button Grid.Row="2"
+                HorizontalAlignment="Stretch"
+                Content="Cancel"
+                Command="{Binding CancelPickingShapeCommand}"
+                Visibility="{Binding AdditionalPanelVisible}" />
     </Grid>
 </UserControl>

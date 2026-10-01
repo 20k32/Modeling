@@ -1,5 +1,8 @@
-﻿using Modeling.Core.CoreDelegates;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Modeling.Core.CoreDelegates;
 using Modeling.Core.Drawing;
+using Modeling.Core.Extensions;
+using Modeling.Models.Drawing.Figures.PointGeometries.Enums;
 using Modeling.Models.Miscellaneous;
 using System;
 using System.Collections.Generic;
@@ -7,9 +10,10 @@ using System.Collections.Generic;
 namespace Modeling.Models.Drawing.Figures.PointGeometries;
 
 abstract class PointGeometry(float minimumAcceptableDistance = Constants.MINIMUM_ACCEPTABLE_DISTANCE,
-    float maximumAcceptableDistance = Constants.MAXIMUM_ACCEPATABLE_DISTANCE) : IPointGeometry
+    float maximumAcceptableDistance = Constants.MAXIMUM_ACCEPATABLE_DISTANCE) : ObservableObject, IPointGeometry
 {
     public abstract GeometryType GeometryType { get; protected set; }
+    public abstract DimensionType DimensionType { get; protected set; }
 
     RectangleSingle _bounds;
     PointSingle _centerPoint;
@@ -50,10 +54,14 @@ abstract class PointGeometry(float minimumAcceptableDistance = Constants.MINIMUM
         _bounds = new(top, left, right, bottom);
 
         CalculateCenterPoint();
+
+        _distance = CalculateDistance();
     }
 
     public void CalculateCenterPoint()
-        => _centerPoint = new PointSingle(Bounds.Width / 2, Bounds.Height / 2);
+        => _centerPoint = new PointSingle((Bounds.Left + Bounds.Right)  / 2, (Bounds.Top + Bounds.Bottom) / 2);
+
+    public void Commit() => InvokePointGeometryPropertyChanged();
 
     protected void InvokePointGeometryPropertyChanged() => PointGeometryPropertyChanged?.Invoke();
     private float _distance;
@@ -62,22 +70,17 @@ abstract class PointGeometry(float minimumAcceptableDistance = Constants.MINIMUM
         get => _distance;
         set
         {
-            if (_distance != value)
+            var newValue = MathFloatExtensions.Clamp(value, _minimumAcceptableDistance, _maximumAcceptableDistance);
+
+            if (_distance != newValue)
             {
-                if (_distance > _maximumAcceptableDistance)
-                {
-                    _distance = _maximumAcceptableDistance;
-                }
-
-                if (_distance < _minimumAcceptableDistance)
-                {
-                    _distance = _minimumAcceptableDistance;
-                }
-
-                _distance = value;
+                _distance = newValue;
 
                 InvokePointGeometryPropertyChanged();
             }
         }
     }
+
+    protected virtual float CalculateDistance()
+        => MathF.Sqrt(_bounds.Width * _bounds.Width + _bounds.Height * _bounds.Height);
 }
