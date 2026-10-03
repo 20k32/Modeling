@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 namespace Modeling.Core.Collections
 {
     public class BlockingCollection<T, TCollection> : IBlockingCollection<T>
-        where TCollection : ICollection<T>, new()
+        where TCollection : IParametrizedCollection<T>, new()
     {
         const int INVALID_THREAD_IDENTIFIER = -1;
 
@@ -16,6 +16,22 @@ namespace Modeling.Core.Collections
         int enumerationLockedThreadId;
 
         public object SyncRoot => _syncRoot;
+
+        public int Count => _items.Count;
+
+        public T this[int index]
+        {
+            get => _items[index];
+            set
+            {
+                ThrowIfCurrentThreadBlockedEnumeration();
+
+                lock (SyncRoot)
+                {
+                    _items[index] = value;
+                }
+            }
+        }
 
         public BlockingCollection()
         {

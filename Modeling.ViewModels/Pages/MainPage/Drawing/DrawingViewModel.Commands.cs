@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using Modeling.Core.Drawing;
 using Modeling.Core.Logging;
 using Modeling.Core.Messages.Base.SynchronousMessages;
+using System;
 using System.Threading.Tasks;
 
 namespace Modeling.ViewModels.Pages.MainPage.Drawing
@@ -42,14 +43,27 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         [RelayCommand]
         void CanvasPointerPressed(PointSingle point)
         {
-            NearestSegment = _pointerMoveNearestSegment;
-
             switch (_drawingAction)
             {
                 case UserPointDrawingAction.AxisPointSelection: RedrawUserPointCore(point); break;
                 case UserPointDrawingAction.FigurePointSelection: EndSegmentSelection(); break;
                 default: break;
             }
+        }
+
+        [RelayCommand]
+        void CanvasPointerReleased(PointSingle point)
+        {
+            switch (_drawingAction)
+            {
+                case UserPointDrawingAction.AxisPointSelection: EndUserPointRedrawing(point); break;
+                default: break;
+            }
+        }
+
+        private void EndUserPointRedrawing(PointSingle point)
+        {
+            _drawingAction = UserPointDrawingAction.None;
         }
 
         [RelayCommand]
@@ -65,7 +79,16 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         [RelayCommand]
         void CancelPickingShape()
         {
-            AdditionalPanelVisible = false;
+            PositionEditingPanelVisible = false;
+            SizeEditingPanelVisible = false;
+
+            PickButtonsVisible = true;
+
+            CancelButtonVisible = false;
+
+            ChangeFigurePosition = false;
+
+            PositionEditingControlVisible = false;
 
             if (NearestSegment is not null)
             {

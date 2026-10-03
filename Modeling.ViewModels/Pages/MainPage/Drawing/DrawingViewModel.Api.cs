@@ -18,6 +18,7 @@ using Modeling.Core.Messages.Settings;
 using Modeling.Core.Messages.ViewModels;
 using Modeling.Core.Navigation;
 using Modeling.Models.Abstractions.Drawing.Figure;
+using Modeling.Models.Drawing.Figures.PointGeometries;
 using Modeling.Models.Drawing.Figures.PointGeometries.Abstractions;
 using Modeling.Models.Drawing.Figures.PointGeometries.Enums;
 using Modeling.Models.Extensions;
@@ -80,6 +81,8 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
             _navigationProvider = Ioc.Default.GetRequiredService<INavigationProvider>();
             _navigationProvider.Navigated += OnNavigationProviderNavigated;
+
+            _pickButtonsVisible = true;
         }
 
         void SetDimensionLengthCentimetersSilent(float newValuePixels)
@@ -191,6 +194,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
         void EndSegmentSelection()
         {
+            NearestSegment = _pointerMoveNearestSegment;
             PickShapeForResizing = false;
         }
 
@@ -545,10 +549,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
                 var newRadius = value * pixelsPerCentimeter;
 
-                var newPoints = circleGeometry.DefaultCenterPoint.GetCirclePoints(
-                    newRadius,
-                    circleGeometry.StartAngle,
-                    circleGeometry.EndAngle);
+                var newPoints = circleGeometry.CenterPoint.GetCirclePoints(newRadius);
 
                 circleGeometry.ClearPoints();
 
@@ -567,7 +568,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
                 return;
             }
 
-            var pixelsPerMillimeter = _drawingSettingsProvider.Settings.PixelsPerCentimeter;
+            var pixelsPerMillimeter = _drawingSettingsProvider.Settings.PixelsPerCentimeter / 10f;
             var newLength = value * pixelsPerMillimeter;
 
             var p1 = lineGeometry.DefaultPoints.First();

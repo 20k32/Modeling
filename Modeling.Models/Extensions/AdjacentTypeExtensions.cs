@@ -1,4 +1,4 @@
-﻿using Modeling.Models.Enums;
+﻿using Modeling.Core.Enums;
 
 namespace Modeling.Models.Extensions
 {

@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
 using Modeling.Core.Drawing;
 using Modeling.Models.Abstractions.Drawing.Figure;
+using Modeling.Models.Drawing.Figures.PointGeometries;
 using Modeling.Models.Drawing.Figures.PointGeometries.GeometryCreationFactory;
 using System.Collections.Generic;
 

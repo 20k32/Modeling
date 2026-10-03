@@ -1,8 +1,8 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
 using Modeling.Core.Abstractions.Collections.Drawings;
 using Modeling.Core.Drawing;
+using Modeling.Core.Enums;
 using System;
-using System.Collections.Generic;
 
 namespace Modeling.Core.Extensions
 {
@@ -48,6 +48,50 @@ namespace Modeling.Core.Extensions
                    firstRight >= second.Left &&
                    first.Top <= secondBottom &&
                    firstBottom >= second.Top;
+        }
+
+        public static AdjacentType DetermineAdjacentType(this RectangleSingle first, RectangleSingle second, float pixelsPerCentimeter)
+        {
+            var result = AdjacentType.None;
+
+            var minSize = MIN_BOUND_DIMENSION_SIZE_PIXELS / 10f * pixelsPerCentimeter;
+
+            var firstLeft = first.Left;
+            var firstTop = first.Top;
+            var firstRight = firstLeft + MathF.Max(first.Width, minSize);
+            var firstBottom = firstTop + MathF.Max(first.Height, minSize);
+
+            var secondLeft = second.Left;
+            var secondTop = second.Top;
+            var secondRight = secondLeft + MathF.Max(second.Width, minSize);
+            var secondBottom = secondTop + MathF.Max(second.Height, minSize);
+
+            var intersects = firstLeft <= secondRight &&
+                             firstRight >= secondLeft &&
+                             firstTop <= secondBottom &&
+                             firstBottom >= secondTop;
+
+            if (!intersects)
+            {
+                return result;
+            }
+
+            if (firstLeft >= secondLeft && firstRight <= secondRight && // 1st is subset
+                    firstTop >= secondTop && firstBottom <= secondBottom)
+            {
+                result = AdjacentType.Inner;
+            }
+            else if (secondLeft >= firstLeft && secondRight <= firstRight && // 1st superset
+                    secondTop >= firstTop && secondBottom <= firstBottom)
+            {
+                result = AdjacentType.Outer;
+            }
+            else
+            {
+                result = AdjacentType.Nearby;
+            }
+
+            return result;
         }
     }
 }

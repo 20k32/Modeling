@@ -1,11 +1,11 @@
 ﻿using Modeling.Core.Abstractions.Collections.Drawings;
 using Modeling.Core.CoreDelegates;
 using Modeling.Core.Drawing;
-using Modeling.Models.Abstractions.Collections.Drawings;
+using Modeling.Models.Abstractions.Drawing;
 using Modeling.Models.Drawing.Figures.PointGeometries.Enums;
 using System.Collections.Generic;
 
-namespace Modeling.Models.Abstractions.Drawing.Figure
+namespace Modeling.Models.Drawing.Figures.PointGeometries
 {
     public interface IPointGeometry : IBounds, IAdjacentGeometriesProvider
     {
@@ -23,6 +23,7 @@ namespace Modeling.Models.Abstractions.Drawing.Figure
         void ClearPoints();
 
         void CommitPropertyChanges();
+        void UpdateAdjacentGeometriesBounds();
         void SetDefaultProperties();
     }
 }

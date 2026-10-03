@@ -1,6 +1,7 @@
-﻿using Modeling.Models.Abstractions.Collections.Drawings;
+﻿using Modeling.Core.Enums;
+using Modeling.Models.Abstractions.Collections.Drawings;
 using Modeling.Models.Abstractions.Drawing.Figure;
-using Modeling.Models.Enums;
+using Modeling.Models.Drawing.Figures.PointGeometries;
 using System.Collections.Generic;
 
 namespace Modeling.Models.Abstractions.Drawing
@@ -12,6 +13,5 @@ namespace Modeling.Models.Abstractions.Drawing
         void AddAdjacentGeometry(IPointGeometry geometry, AdjacentType adjacentType);
         void RemoveAdjacentGeometry(IPointGeometry geometry);
         void ClearAdjacentGeometries();
-        void AddAdjacentGeometriesRange(IEnumerable<IPointGeometry> geometries, AdjacentType adjacentType);
     }
 }

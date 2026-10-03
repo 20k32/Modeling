@@ -2,6 +2,7 @@
 using Modeling.Core.Drawing;
 using Modeling.Core.Extensions;
 using Modeling.Models.Abstractions.Drawing.Figure;
+using Modeling.Models.Drawing.Figures.PointGeometries;
 using System;
 using System.Collections.Generic;
 

@@ -1,6 +1,4 @@
-﻿using Modeling.Models.Abstractions.Drawing.Figure;
-
-namespace Modeling.Models.Drawing.Figures.PointGeometries.Abstractions
+﻿namespace Modeling.Models.Drawing.Figures.PointGeometries.Abstractions
 {
     public interface ILinePointGeometry : IPointGeometry
     {

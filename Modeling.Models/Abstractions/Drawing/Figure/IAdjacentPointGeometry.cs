@@ -1,4 +1,5 @@
-﻿using Modeling.Models.Enums;
+﻿using Modeling.Core.Enums;
+using Modeling.Models.Drawing.Figures.PointGeometries;
 
 namespace Modeling.Models.Abstractions.Drawing.Figure
 {

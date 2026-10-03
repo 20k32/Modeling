@@ -14,24 +14,20 @@
             <RowDefinition />
             <RowDefinition />
             <RowDefinition />
+            <RowDefinition />
         </Grid.RowDefinitions>
 
         <ToggleButton Grid.Row="0"
                       Content="Pick a shape by mouse"
                       IsChecked="{Binding PickShapeForResizing, Mode=TwoWay}"
-                      Visibility="{Binding AdditionalPanelVisible, Converter={StaticResource CommunityToolkit.BoolToVisibilityConverter}, ConverterParameter=True}" />
+                      Visibility="{Binding PickButtonsVisible}" />
         <ToggleButton Grid.Row="1"
                       Content="Change figure position"
                       IsChecked="{Binding ChangeFigurePosition, Mode=TwoWay}"
-                      Visibility="{Binding AdditionalPanelVisible, Converter={StaticResource CommunityToolkit.BoolToVisibilityConverter}, ConverterParameter=True}" />
+                      Visibility="{Binding PickButtonsVisible}" />
 
-        <Button Grid.Row="2"
-                HorizontalAlignment="Stretch"
-                Command="{Binding ResetFigureCommand}"
-                Content="Reset Figure"
-                Visibility="{Binding AdditionalPanelVisible, Converter={StaticResource CommunityToolkit.BoolToVisibilityConverter}, ConverterParameter=True}" />
-
-        <TextBlock Grid.Row="0" Visibility="{Binding AdditionalPanelVisible}">
+        <!--  Size editing panel  -->
+        <TextBlock Grid.Row="0" Visibility="{Binding SizeEditingPanelVisible}">
             <TextBlock.Inlines>
                 <Run Text="You have picked:" />
                 <Run Text="{Binding NearestSegment.GeometryType}" />
@@ -40,7 +36,7 @@
 
         <TextBox Grid.Row="1"
                  Text="{Binding DimensionLengthCentimeters, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
-                 Visibility="{Binding AdditionalPanelVisible}">
+                 Visibility="{Binding SizeEditingPanelVisible}">
             <TextBox.Header>
                 <TextBlock>
                     <Run Text="{Binding NearestSegment.DimensionType}" /><Run Text=", " /><Run Text="cm" /><Run Text=":" />
@@ -48,10 +44,38 @@
             </TextBox.Header>
         </TextBox>
 
+
+        <!--  Position editing panel  -->
+        <CheckBox Grid.Row="0"
+                  Content="Show rotation point"
+                  IsChecked="{Binding RotationPointVisible}"
+                  Visibility="{Binding PositionEditingPanelVisible}" />
+
+        <Slider Grid.Row="1"
+                Width="200"
+                Header="Rotation angle (degrees):"
+                Maximum="360"
+                Minimum="0"
+                StepFrequency="0.5"
+                Visibility="{Binding PositionEditingPanelVisible}" />
+
+        <ToggleButton Grid.Row="2"
+                      HorizontalAlignment="Stretch"
+                      Content="Change position"
+                      IsChecked="{Binding PositionEditingControlVisible, Mode=TwoWay}"
+                      Visibility="{Binding PositionEditingPanelVisible}" />
+
+        <!--  Content for both panels  -->
         <Button Grid.Row="2"
+                HorizontalAlignment="Stretch"
+                Command="{Binding ResetFigureCommand}"
+                Content="Reset Figure"
+                Visibility="{Binding CancelButtonVisible, Converter={StaticResource CommunityToolkit.BoolToVisibilityConverter}, ConverterParameter=True}" />
+
+        <Button Grid.Row="3"
                 HorizontalAlignment="Stretch"
                 Command="{Binding CancelPickingShapeCommand}"
                 Content="Cancel"
-                Visibility="{Binding AdditionalPanelVisible}" />
+                Visibility="{Binding CancelButtonVisible}" />
     </Grid>
 </UserControl>

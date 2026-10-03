@@ -1,12 +1,17 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
+using Modeling.Core.Abstractions.Collections.Drawings;
 using Modeling.Core.Drawing;
+using Modeling.Core.Enums;
 using Modeling.Core.Extensions;
+using Modeling.Core.Logging;
 using Modeling.Models.Abstractions.Collections.Drawings;
 using Modeling.Models.Abstractions.Drawing.Figure;
+using Modeling.Models.Drawing.Figures.PointGeometries;
 using Modeling.Models.Miscellaneous;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Modeling.Models.Drawing.Figures
 {
@@ -77,9 +82,11 @@ namespace Modeling.Models.Drawing.Figures
             {
                 foreach (var existingSegment in Segments)
                 {
-                    if (existingSegment.Bounds.IntersectsBounds(segment.Bounds, pixelsPerCentimeter))
+                    var adjacentType = existingSegment.Bounds.DetermineAdjacentType(segment.Bounds, pixelsPerCentimeter);
+
+                    if (adjacentType != AdjacentType.None)
                     {
-                        segment.AddAdjacentGeometry(existingSegment);
+                        segment.AddAdjacentGeometry(existingSegment, adjacentType);
                     }
                 }
 
@@ -159,7 +166,76 @@ namespace Modeling.Models.Drawing.Figures
                 x: _bounds.Width / 2,
                 y: _bounds.Height / 2);
 
-        public void UpdateAdjacentGeometriesBounds()
+        public void UpdateAdjacentGeometriesBounds(float pixelsPerCentimeter)
+        {
+            var visitedAdjacentElements = new HashSet<IAdjacentPointGeometry>();
+
+            foreach (var geometry in Segments)
+            {
+                foreach (var adjacentGeometry in geometry.AdjacentGeometries)
+                {
+                    HandleGeometryAdjustment(geometry, adjacentGeometry.Geometry, adjacentGeometry.AdjacentType, pixelsPerCentimeter);
+                }
+            }
+        }
+
+        void HandleGeometryAdjustment(IPointGeometry changedGeometry, IPointGeometry geometryToAdjust, AdjacentType geometryToAdjustType, float pixelsPerCentimeter)
+        {
+            switch (geometryToAdjustType)
+            {
+                case AdjacentType.Inner: CollapseInnerGeometry(changedGeometry, geometryToAdjust); break;
+                case AdjacentType.Outer: ExpandOuterGeometry(changedGeometry, geometryToAdjust); break;
+                case AdjacentType.Nearby: ConnectTwoGeometries(changedGeometry, geometryToAdjust, pixelsPerCentimeter); break;
+                default: break;
+            }
+        }
+
+        void ConnectTwoGeometries(IPointGeometry changedGeometry, IPointGeometry geometryToAdjust, float pixelsPerCentimeter)
+        {
+            var pointsCount = Math.Min(changedGeometry.Points.Count, changedGeometry.DefaultPoints.Count);
+
+            for (var i = 0; i < pointsCount; i++)
+            {
+                var defaultPoint = changedGeometry.DefaultPoints[i];
+                var changedPoint = changedGeometry.Points[i];
+
+                if (defaultPoint != changedPoint)
+                {
+                    if (geometryToAdjust.Points.Contains(defaultPoint))
+                    {
+                        geometryToAdjust.Points.Remove(defaultPoint);
+                        geometryToAdjust.Points.Add(changedPoint);
+                    }
+                    else
+                    {
+                        var pointsToRemove = Ioc.Default.GetService<IPointListCollection>();
+
+                        foreach (var oldPoint in geometryToAdjust.Points)
+                        {
+                            if (changedGeometry.Bounds.Contains(oldPoint, pixelsPerCentimeter))
+                            {
+                                pointsToRemove.Add(oldPoint);
+                            }
+                        }
+
+                        if (pointsToRemove.Count > 0)
+                        {
+                            geometryToAdjust.Points.RemoveRange(pointsToRemove);
+                            geometryToAdjust.AddPoint(changedPoint);
+                        }
+                    }
+
+                    pointsCount = Math.Min(changedGeometry.Points.Count, changedGeometry.DefaultPoints.Count);
+                }
+            }
+        }
+
+        void ExpandOuterGeometry(IPointGeometry changedGeometry, IPointGeometry geometryToAdjust)
+        {
+
+        }
+
+        void CollapseInnerGeometry(IPointGeometry changedGeometry, IPointGeometry geometryToCollapse)
         {
 
         }

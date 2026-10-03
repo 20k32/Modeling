@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Modeling.Models.Abstractions.Drawing.Figure;
+using Modeling.Models.Drawing.Figures.PointGeometries;
 using System.Linq;
 
 namespace Modeling.ViewModels.Pages.MainPage.Drawing
@@ -13,13 +14,28 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         bool _changeFigurePosition;
 
         [ObservableProperty]
-        bool _additionalPanelVisible;
+        bool _pickButtonsVisible;
+
+        [ObservableProperty]
+        bool _sizeEditingPanelVisible;
+
+        [ObservableProperty]
+        bool _positionEditingPanelVisible;
+
+        [ObservableProperty]
+        bool _cancelButtonVisible;
 
         [ObservableProperty]
         bool _lineEditingPanelVisible;
 
         [ObservableProperty]
         bool _circleEditingPanelVisible;
+
+        [ObservableProperty]
+        bool _positionEditingControlVisible;
+
+        [ObservableProperty]
+        bool _rotationPointVisible;
 
         [ObservableProperty]
         IPointGeometry _nearestSegment;
@@ -32,7 +48,12 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             if (value)
             {
                 PickShapeForResizing = false;
+                SizeEditingPanelVisible = false;
+                PositionEditingPanelVisible = true;
+                PickButtonsVisible = false;
             }
+
+            CancelButtonVisible = value;
         }
 
         partial void OnNearestSegmentChanged(IPointGeometry oldValue, IPointGeometry newValue)
@@ -62,11 +83,17 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         partial void OnPickShapeForResizingChanged(bool value)
         {
             if (!value
-                && _nearestSegment is not null
+                && (_nearestSegment is not null || _pointerMoveNearestSegment is not null)
                 && _figure.Any())
             {
                 RedrawFigure();
-                AdditionalPanelVisible = true;
+
+                PickButtonsVisible = false;
+                PositionEditingPanelVisible = false;
+                SizeEditingPanelVisible = true;
+                CancelButtonVisible = true;
+
+                _pointerMoveNearestSegment = default;
             }
 
             if (value)

@@ -3,11 +3,11 @@ using CommunityToolkit.Mvvm.DependencyInjection;
 using Modeling.Core.Abstractions.Collections.Drawings;
 using Modeling.Core.CoreDelegates;
 using Modeling.Core.Drawing;
+using Modeling.Core.Enums;
 using Modeling.Core.Extensions;
 using Modeling.Models.Abstractions.Collections.Drawings;
 using Modeling.Models.Abstractions.Drawing.Figure;
 using Modeling.Models.Drawing.Figures.PointGeometries.Enums;
-using Modeling.Models.Enums;
 using Modeling.Models.Extensions;
 using Modeling.Models.Miscellaneous;
 using System;
@@ -93,6 +93,9 @@ abstract class PointGeometry(float minimumAcceptableDistance = Constants.MINIMUM
 
     public void CommitPropertyChanges() => InvokePointGeometryPropertyChanged();
 
+    public void UpdateAdjacentGeometriesBounds()
+    { }
+
     public bool ContainsPoint(PointSingle point) => Points.Contains(point);
 
     public void SetDefaultProperties()
@@ -102,6 +105,7 @@ abstract class PointGeometry(float minimumAcceptableDistance = Constants.MINIMUM
     }
 
     public void ClearPoints() => Points.Clear();
+
 
     protected void InvokePointGeometryPropertyChanged() => PointGeometryPropertyChanged?.Invoke();
 
