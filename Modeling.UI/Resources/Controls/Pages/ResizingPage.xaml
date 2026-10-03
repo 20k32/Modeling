@@ -39,11 +39,11 @@
         </TextBlock>
 
         <TextBox Grid.Row="1"
-                 Text="{Binding DimensionLength, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                 Text="{Binding DimensionLengthCentimeters, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
                  Visibility="{Binding AdditionalPanelVisible}">
             <TextBox.Header>
                 <TextBlock>
-                    <Run Text="{Binding NearestSegment.DimensionType}" /><Run Text=":" />
+                    <Run Text="{Binding NearestSegment.DimensionType}" /><Run Text=", " /><Run Text="cm" /><Run Text=":" />
                 </TextBlock>
             </TextBox.Header>
         </TextBox>

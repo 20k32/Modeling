@@ -19,7 +19,9 @@ namespace Modeling.Models.DependencyInjection
     public static class DependencyInjectionContainerExtensions
     {
         public static IServiceCollection RegisterModelsServices(this IServiceCollection services)
-            => services.AddTransient<IPointGeometryCollection, PointGeometryCollection>()
+            => services.AddTransient<IAdjacentPointGeometry, AdjacentPointGeometry>()
+            .AddTransient<IAdjacentPointGeometryCollection, AdjacentPointGeometriesCollection>()
+            .AddTransient<IPointGeometryCollection, PointGeometryCollection>()
             .AddTransient<CirclePointGeometry, CirclePointGeometry>()
             .AddTransient<LinePointGeometry, LinePointGeometry>()
             .AddTransient<IPointGeometryCreationFactory, PointGeometryCreationFactory>()

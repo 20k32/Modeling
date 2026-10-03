@@ -4,10 +4,15 @@ using Modeling.Core.Abstractions.Collections.Drawings;
 using Modeling.Core.CoreDelegates;
 using Modeling.Core.Drawing;
 using Modeling.Core.Extensions;
+using Modeling.Models.Abstractions.Collections.Drawings;
+using Modeling.Models.Abstractions.Drawing.Figure;
 using Modeling.Models.Drawing.Figures.PointGeometries.Enums;
+using Modeling.Models.Enums;
+using Modeling.Models.Extensions;
 using Modeling.Models.Miscellaneous;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Modeling.Models.Drawing.Figures.PointGeometries;
 
@@ -19,11 +24,15 @@ abstract class PointGeometry(float minimumAcceptableDistance = Constants.MINIMUM
 
     float _distance;
 
-    RectangleSingle _bounds;
+    PointSingle _defaultCenterPoint;
     PointSingle _centerPoint;
+    RectangleSingle _bounds;
 
+    public IPointHashSetCollection DefaultPoints { get; private init; } = Ioc.Default.GetRequiredService<IPointHashSetCollection>();
     public IPointHashSetCollection Points { get; private init; } = Ioc.Default.GetRequiredService<IPointHashSetCollection>();
+    public IAdjacentPointGeometryCollection AdjacentGeometries { get; private init; } = Ioc.Default.GetRequiredService<IAdjacentPointGeometryCollection>();
 
+    public PointSingle DefaultCenterPoint => _defaultCenterPoint;
     public PointSingle CenterPoint => _centerPoint;
     public RectangleSingle Bounds => _bounds;
 
@@ -59,10 +68,10 @@ abstract class PointGeometry(float minimumAcceptableDistance = Constants.MINIMUM
 
     public void CalculateBounds()
     {
-        var left = float.MaxValue;
-        var top = float.MaxValue;
-        var right = float.MinValue;
-        var bottom = float.MinValue;
+        var left = float.PositiveInfinity;
+        var top = float.PositiveInfinity;
+        var right = float.NegativeInfinity;
+        var bottom = float.NegativeInfinity;
 
         foreach (var point in Points)
         {
@@ -80,19 +89,79 @@ abstract class PointGeometry(float minimumAcceptableDistance = Constants.MINIMUM
     }
 
     public void CalculateCenterPoint()
-        => _centerPoint = new PointSingle((Bounds.Left + Bounds.Right) / 2, (Bounds.Top + Bounds.Bottom) / 2);
+        => _centerPoint = CalculateCenterPointCore();
 
     public void CommitPropertyChanges() => InvokePointGeometryPropertyChanged();
 
-    public void UpdateAdjacentGeometriesBounds()
-    { }
-
     public bool ContainsPoint(PointSingle point) => Points.Contains(point);
+
+    public void SetDefaultProperties()
+    {
+        DefaultPoints.AddRange(Points);
+        _defaultCenterPoint = CenterPoint;
+    }
+
+    public void ClearPoints() => Points.Clear();
 
     protected void InvokePointGeometryPropertyChanged() => PointGeometryPropertyChanged?.Invoke();
 
     protected virtual float CalculateDistance()
         => MathF.Sqrt(_bounds.Width * _bounds.Width + _bounds.Height * _bounds.Height);
 
-    public void ClearPoints() => Points.Clear();
+    protected virtual PointSingle CalculateCenterPointCore()
+        => new PointSingle((Bounds.Left + Bounds.Right) / 2, (Bounds.Top + Bounds.Bottom) / 2);
+
+    public void AddAdjacentGeometry(IPointGeometry geometry, AdjacentType adjacentType)
+    {
+        var firstAdjacentGeometry = Ioc.Default.GetRequiredService<IAdjacentPointGeometry>();
+
+        firstAdjacentGeometry.AdjacentType = adjacentType;
+        firstAdjacentGeometry.Geometry = geometry;
+
+        AdjacentGeometries.AddUnique(firstAdjacentGeometry);
+
+        var secondAdjacentGeometry = Ioc.Default.GetRequiredService<IAdjacentPointGeometry>();
+
+        secondAdjacentGeometry.AdjacentType = adjacentType.Invert();
+        secondAdjacentGeometry.Geometry = geometry;
+
+        geometry.AdjacentGeometries.AddUnique(secondAdjacentGeometry);
+    }
+
+    public void RemoveAdjacentGeometry(IPointGeometry geometry)
+    {
+        var geometriesToRemove = (ICollection<IAdjacentPointGeometry>)[.. AdjacentGeometries.Where(existing => existing.Geometry == geometry)];
+
+        AdjacentGeometries.RemoveRange(geometriesToRemove);
+
+        geometriesToRemove = [.. geometry.AdjacentGeometries.Where(existing => existing.Geometry == geometry)];
+        geometry.AdjacentGeometries.RemoveRange(geometriesToRemove);
+    }
+
+    public void ClearAdjacentGeometries()
+    {
+        foreach (var adjacentGeometry in AdjacentGeometries)
+        {
+            if (adjacentGeometry.Geometry.AdjacentGeometries.Select(existing => existing.Geometry).Contains(this))
+            {
+                var geometriesToRemove = (ICollection<IAdjacentPointGeometry>)[.. adjacentGeometry.Geometry.AdjacentGeometries.Where(existing => existing.Geometry == adjacentGeometry)];
+
+                adjacentGeometry.Geometry.AdjacentGeometries.RemoveRange(geometriesToRemove);
+            }
+        }
+
+        AdjacentGeometries.Clear();
+    }
+
+    public void AddAdjacentGeometriesRange(IEnumerable<IPointGeometry> geometries, AdjacentType adjacentType)
+    {
+        foreach (var geometry in geometries)
+        {
+            var adjacentGeometry = Ioc.Default.GetRequiredService<IAdjacentPointGeometry>();
+            adjacentGeometry.AdjacentType = adjacentType;
+            adjacentGeometry.Geometry = geometry;
+
+            AdjacentGeometries.Add(adjacentGeometry);
+        }
+    }
 }

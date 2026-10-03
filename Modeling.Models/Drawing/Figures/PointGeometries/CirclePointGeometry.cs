@@ -1,4 +1,5 @@
-﻿using Modeling.Models.Drawing.Figures.PointGeometries.Abstractions;
+﻿using Modeling.Core.Drawing;
+using Modeling.Models.Drawing.Figures.PointGeometries.Abstractions;
 using Modeling.Models.Drawing.Figures.PointGeometries.Enums;
 using System;
 
@@ -15,6 +16,15 @@ namespace Modeling.Models.Drawing.Figures.PointGeometries
             set => Distance = value;
         }
 
-        protected override float CalculateDistance() => MathF.Min(Bounds.Width, Bounds.Height);
+        public float StartAngle { get; set;  }
+
+        public float EndAngle { get; set; }
+
+        public PointSingle CenterCirclePoint { get; set; }
+
+        //MathF.Max used there because Circle also can be semicircle (one dimension bigger than another).
+        protected override float CalculateDistance() => MathF.Max(Bounds.Width, Bounds.Height);
+
+        protected override PointSingle CalculateCenterPointCore() => CenterCirclePoint;
     }
 }

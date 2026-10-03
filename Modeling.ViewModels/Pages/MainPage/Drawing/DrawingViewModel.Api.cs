@@ -18,7 +18,6 @@ using Modeling.Core.Messages.Settings;
 using Modeling.Core.Messages.ViewModels;
 using Modeling.Core.Navigation;
 using Modeling.Models.Abstractions.Drawing.Figure;
-using Modeling.Models.Drawing.Figures.PointGeometries;
 using Modeling.Models.Drawing.Figures.PointGeometries.Abstractions;
 using Modeling.Models.Drawing.Figures.PointGeometries.Enums;
 using Modeling.Models.Extensions;
@@ -83,12 +82,15 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             _navigationProvider.Navigated += OnNavigationProviderNavigated;
         }
 
-        void SetDimensionLengthSilent(float newValue)
+        void SetDimensionLengthCentimetersSilent(float newValuePixels)
         {
-            if (_dimensionLength != newValue)
+            if (_dimensionLengthCentimeters != newValuePixels)
             {
-                _dimensionLength = newValue;
-                OnPropertyChanged(nameof(DimensionLength));
+                var pixelsPerCentimeter = _drawingSettingsProvider.Settings.PixelsPerCentimeter;
+
+                _dimensionLengthCentimeters = newValuePixels / pixelsPerCentimeter;
+
+                OnPropertyChanged(nameof(DimensionLengthCentimeters));
             }
         }
 
@@ -106,7 +108,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         {
             if (pointGeometry is ICirclePointGeometry circlePointGeometry)
             {
-                SetDimensionLengthSilent(circlePointGeometry.Diameter / 2);
+                SetDimensionLengthCentimetersSilent(circlePointGeometry.Diameter / 2);
             }
         }
 
@@ -114,7 +116,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         {
             if (pointGeometry is ILinePointGeometry linePointGeometry)
             {
-                SetDimensionLengthSilent(linePointGeometry.Length);
+                SetDimensionLengthCentimetersSilent(linePointGeometry.Length);
             }
         }
 
@@ -366,9 +368,11 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
                 FigureRelatedConstants.LARGE_RECTANGLE_WIDTH_MILLIMETERS,
                 FigureRelatedConstants.SMALL_SQUARES_DIMENSION_SIZE_MILLIMETERS,
                 FigureRelatedConstants.LARGE_CIRCLE_DIAMETER_MILLIMETERS,
-                FigureRelatedConstants.SMALL_CIRCLE_DIAMETER_MILLIMETERS));
+                FigureRelatedConstants.SMALL_CIRCLE_DIAMETER_MILLIMETERS),
+                pixelsPerCentimeter);
 
             _figure.CalculatePropertiesFromSegments();
+            _figure.CalculateDefaultPropertiesFromSegments();
         }
 
         private PointListTransformMessageParameter GetDrawingFigureMessage(PointListTransformMessageParameter parentMessage)
@@ -391,8 +395,6 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
                 parentFigureComponentDrawingMessage =
                     parentFigureComponentDrawingMessage.With(points: figureComponent.Points);
             }
-
-            _figure.CalculatePropertiesFromSegments();
 
             if (_drawingSettingsProvider.Settings.DrawFigureBounds)
             {
@@ -525,7 +527,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             await WeakReferenceMessenger.Default.Send(new LoadSettingsAsyncMessage(this));
         }
 
-        void HandleDimensionLengthChanged(float value)
+        void HandleDimensionLengthCentimetersChanged(float value)
         {
             switch (NearestSegment.GeometryType)
             {
@@ -540,11 +542,13 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             if (NearestSegment is ICirclePointGeometry circleGeometry)
             {
                 var pixelsPerCentimeter = _drawingSettingsProvider.Settings.PixelsPerCentimeter;
-                var pixelsPerMillimeter = pixelsPerCentimeter / 10;
 
-                var newRadius = value / 2 * pixelsPerMillimeter;
+                var newRadius = value * pixelsPerCentimeter;
 
-                var newPoints = circleGeometry.CenterPoint.GetCirclePoints(newRadius);
+                var newPoints = circleGeometry.DefaultCenterPoint.GetCirclePoints(
+                    newRadius,
+                    circleGeometry.StartAngle,
+                    circleGeometry.EndAngle);
 
                 circleGeometry.ClearPoints();
 
@@ -558,50 +562,41 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
         void HandleLineLengthChanged(float value)
         {
-            if (NearestSegment is ILinePointGeometry lineGeometry)
+            if (NearestSegment is not ILinePointGeometry lineGeometry || value < 0)
             {
-                var pixelsPerCentimeter = _drawingSettingsProvider.Settings.PixelsPerCentimeter;
-                var pixelsPerMillimeter = pixelsPerCentimeter / 10;
-
-                var newLength = value * pixelsPerMillimeter;
-
-                var points = lineGeometry.Points;
-
-                var p1 = points.First();
-                var p2 = points.Last();
-
-                var dx = p2.X - p1.X;
-                var dy = p2.Y - p1.Y;
-
-                var distance = lineGeometry.Length * pixelsPerMillimeter;
-
-                if (distance > 0 || p1 == p2)
-                {
-                    // Unit vector from p1 -> p2
-                    var ux = dx / distance;
-                    var uy = dy / distance;
-
-                    // Move both points toward each other
-                    var shift = newLength / 2f;
-
-                    var newFirstPoint = new PointSingle(
-                        x: p1.X + ux * shift,
-                        y: p1.Y + uy * shift);
-
-                    var newSecondPoint = new PointSingle(
-                        x: p2.X - ux * shift,
-                        y: p2.Y - uy * shift);
-
-                    lineGeometry.Points.Clear();
-                    lineGeometry.Points.AddRange([newFirstPoint, newSecondPoint]);
-
-                    lineGeometry.CalculateBounds();
-
-                    Logger.Information($"distance: {lineGeometry.Length}");
-
-                    lineGeometry.CommitPropertyChanges();
-                }
+                return;
             }
+
+            var pixelsPerMillimeter = _drawingSettingsProvider.Settings.PixelsPerCentimeter;
+            var newLength = value * pixelsPerMillimeter;
+
+            var p1 = lineGeometry.DefaultPoints.First();
+            var p2 = lineGeometry.DefaultPoints.Last();
+
+            var dx = p2.X - p1.X;
+            var dy = p2.Y - p1.Y;
+            var distance = MathF.Sqrt(dx * dx + dy * dy);
+
+            var ux = distance > 0 ? dx / distance : 1f;
+            var uy = distance > 0 ? dy / distance : 0f;
+
+            var midX = (p1.X + p2.X) / 2f;
+            var midY = (p1.Y + p2.Y) / 2f;
+            var half = newLength / 2f;
+
+            var newFirstPoint = new PointSingle(
+                x: midX - ux * half,
+                y: midY - uy * half);
+
+            var newSecondPoint = new PointSingle(
+                x: midX + ux * half,
+                y: midY + uy * half);
+
+            lineGeometry.Points.Clear();
+            lineGeometry.Points.AddRange([newFirstPoint, newSecondPoint]);
+
+            lineGeometry.CalculateBounds();
+            lineGeometry.CommitPropertyChanges();
         }
 
         void OnNearestSegmentDimensionChanged()

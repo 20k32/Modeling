@@ -5,6 +5,6 @@ using System.Collections.Generic;
 
 namespace Modeling.Models.Collections.Drawings
 {
-    sealed class PointGeometryCollection : BlockingCollection<IPointGeometry, LinkedList<IPointGeometry>>, IPointGeometryCollection
+    sealed class AdjacentPointGeometriesCollection : BlockingCollection<IAdjacentPointGeometry, LinkedList<IAdjacentPointGeometry>>, IAdjacentPointGeometryCollection
     { }
 }

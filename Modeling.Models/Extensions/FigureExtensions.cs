@@ -2,7 +2,6 @@
 using Modeling.Core.Drawing;
 using Modeling.Core.Extensions;
 using Modeling.Models.Abstractions.Drawing.Figure;
-using Modeling.Models.Drawing.Figures.PointGeometries;
 using System;
 using System.Collections.Generic;
 
@@ -556,13 +555,16 @@ namespace Modeling.Models.Extensions
                 bottomRightHalfCircleCenterPoint.GetCirclePoints(
                     innerHalfCirclesRadiusPixels);
 
-            yield return topLeftHalfCircle.ToCirclePointGeometry();
+            yield return topLeftHalfCircle.ToCirclePointGeometry(topLeftHalfCircleCenterPoint, leftHalfCirclesStartAngleDegrees,
+                leftHalfCirclesEndAngleDegrees);
 
-            yield return topLeftInnerCircle.ToCirclePointGeometry();
+            yield return topLeftInnerCircle.ToCirclePointGeometry(topLeftInnerCirclePoint);
 
-            yield return bottomLeftInnerCircle.ToCirclePointGeometry();
+            yield return bottomLeftInnerCircle.ToCirclePointGeometry(bottomLeftInnerCirclePoint);
 
-            yield return bottomLeftHalfCircle.ToCirclePointGeometry();
+            yield return bottomLeftHalfCircle.ToCirclePointGeometry(bottomLeftHalfCircleCenterPoint,
+                leftHalfCirclesStartAngleDegrees,
+                leftHalfCirclesEndAngleDegrees);
 
             yield return ((ICollection<PointSingle>)[
                 topLeftHalfCircleTopLineSecondPoint,
@@ -589,7 +591,7 @@ namespace Modeling.Models.Extensions
         bottomTopLeftHalfCircleTopLineSecondPoint])
                 .ToLinePointGeometry();
 
-            yield return largeCircle.ToCirclePointGeometry();
+            yield return largeCircle.ToCirclePointGeometry(largeCircleCenterPoint);
 
             yield return ((ICollection<PointSingle>)[
                 topLeftSmallSquareStartPoint,
@@ -615,7 +617,7 @@ namespace Modeling.Models.Extensions
         bottomLeftRightSmallSquareEndPoint])
                 .ToLinePointGeometry();
 
-            yield return smallCircle.ToCirclePointGeometry();
+            yield return smallCircle.ToCirclePointGeometry(largeCircleCenterPoint);
 
             yield return ((ICollection<PointSingle>)[
                 bottomLeftSmallSquareEndPoint,
@@ -642,9 +644,11 @@ namespace Modeling.Models.Extensions
         bottomRightHalfCircleConnectionLineTopEndPoint])
                 .ToLinePointGeometry();
 
-            yield return topRightInnerCircle.ToCirclePointGeometry();
+            yield return topRightInnerCircle.ToCirclePointGeometry(topRightHalfCircleCenterPoint);
 
-            yield return topRightHalfCircle.ToCirclePointGeometry();
+            yield return topRightHalfCircle.ToCirclePointGeometry(topRightHalfCircleCenterPoint,
+                rightHalfCirclesStartAngleDegrees,
+                    rightHalfCircleEndAngleDegrees);
 
             yield return ((ICollection<PointSingle>)[
                 topBottomRightHalfCircleConnectionLineStartPoint,
@@ -681,9 +685,11 @@ namespace Modeling.Models.Extensions
         bottomBottomLeftHalfCircleTopLineSecondPoint])
                 .ToLinePointGeometry();
 
-            yield return bottomRightHalfCircle.ToCirclePointGeometry();
+            yield return bottomRightHalfCircle.ToCirclePointGeometry(bottomRightHalfCircleCenterPoint,
+                rightHalfCirclesStartAngleDegrees,
+                    rightHalfCircleEndAngleDegrees);
 
-            yield return bottomRightInnerCircle.ToCirclePointGeometry();
+            yield return bottomRightInnerCircle.ToCirclePointGeometry(bottomRightHalfCircleCenterPoint);
         }
     }
 }

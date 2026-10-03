@@ -21,10 +21,33 @@ namespace Modeling.Core.Extensions
         {
             var minDimensionSizeScaled = MIN_BOUND_DIMENSION_SIZE_PIXELS / 10 * pixelsPerCentimeter;
 
-            return point.X >= bounds.Left &&
+            return point.X >= bounds.Left - minDimensionSizeScaled &&
                    point.X <= bounds.Left + MathF.Max(bounds.Width, minDimensionSizeScaled) &&
                    point.Y >= bounds.Top - minDimensionSizeScaled &&
                    point.Y <= bounds.Top + MathF.Max(bounds.Height, minDimensionSizeScaled);
+        }
+
+        public static bool IntersectsBounds(this RectangleSingle first, RectangleSingle second, float pixelsPerCentimeter)
+        {
+            var minDimensionSizeScaled =
+                MIN_BOUND_DIMENSION_SIZE_PIXELS / 10f * pixelsPerCentimeter;
+
+            var firstRight = first.Left +
+                             MathF.Max(first.Width, minDimensionSizeScaled);
+
+            var firstBottom = first.Top +
+                              MathF.Max(first.Height, minDimensionSizeScaled);
+
+            var secondRight = second.Left +
+                              MathF.Max(second.Width, minDimensionSizeScaled);
+
+            var secondBottom = second.Top +
+                               MathF.Max(second.Height, minDimensionSizeScaled);
+
+            return first.Left <= secondRight &&
+                   firstRight >= second.Left &&
+                   first.Top <= secondBottom &&
+                   firstBottom >= second.Top;
         }
     }
 }

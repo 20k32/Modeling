@@ -35,6 +35,19 @@ namespace Modeling.Core.Collections
             }
         }
 
+        public void AddUnique(T item)
+        {
+            ThrowIfCurrentThreadBlockedEnumeration();
+
+            lock (SyncRoot)
+            {
+                if (!_items.Contains(item))
+                {
+                    _items.Add(item);
+                }
+            }
+        }
+
         public void AddRange(IEnumerable<T> items)
         {
             ThrowIfCurrentThreadBlockedEnumeration();
@@ -105,6 +118,17 @@ namespace Modeling.Core.Collections
             if (enumerationLockedThreadId != INVALID_THREAD_IDENTIFIER)
             {
                 throw new Exception($"Deadlock will occur if {methodName} will continue execution for thread {enumerationLockedThreadId}");
+            }
+        }
+
+        public void RemoveRange(IEnumerable<T> items)
+        {
+            lock (SyncRoot)
+            {
+                foreach (var item in items)
+                {
+                    _items.Remove(item);
+                }
             }
         }
     }

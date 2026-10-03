@@ -3,7 +3,6 @@ using Modeling.Core.Drawing;
 using Modeling.Core.Extensions;
 using Modeling.Models.Abstractions.Collections.Drawings;
 using Modeling.Models.Abstractions.Drawing.Figure;
-using Modeling.Models.Drawing.Figures.PointGeometries;
 using Modeling.Models.Miscellaneous;
 using System;
 using System.Collections;
@@ -13,11 +12,13 @@ namespace Modeling.Models.Drawing.Figures
 {
     public sealed class Figure : IFigure
     {
+        PointSingle _defaultCenterPoint;
         PointSingle _centerPoint;
         RectangleSingle _bounds;
-        
+
         public IPointGeometryCollection Segments { get; private init; }
 
+        public PointSingle DefaultCenterPoint => _defaultCenterPoint;
         public PointSingle CenterPoint => _centerPoint;
         public RectangleSingle Bounds => _bounds;
 
@@ -70,13 +71,27 @@ namespace Modeling.Models.Drawing.Figures
             return result;
         }
 
-        public void AddSegment(IPointGeometry segment) => Segments.Add(segment);
+        public void AddSegment(IPointGeometry segment, float pixelsPerCentimeter)
+        {
+            if (!Segments.Contains(segment))
+            {
+                foreach (var existingSegment in Segments)
+                {
+                    if (existingSegment.Bounds.IntersectsBounds(segment.Bounds, pixelsPerCentimeter))
+                    {
+                        segment.AddAdjacentGeometry(existingSegment);
+                    }
+                }
 
-        public void AddSegments(IEnumerable<IPointGeometry> segments)
+                Segments.Add(segment);
+            }
+        }
+
+        public void AddSegments(IEnumerable<IPointGeometry> segments, float pixelsPerCentimeter)
         {
             foreach (var segment in segments)
             {
-                AddSegment(segment);
+                AddSegment(segment, pixelsPerCentimeter);
             }
         }
 
@@ -87,6 +102,7 @@ namespace Modeling.Models.Drawing.Figures
                 yield return segment;
             }
         }
+
         public IPointGeometry GetFirstMatchingSegment(PointSingle point, float desiredPointDistance = Constants.DISTANCE_BETWEEN_SEGMENT_POINT_AND_USER_POINT_PIXELS)
         {
             var result = default(IPointGeometry);
@@ -114,8 +130,6 @@ namespace Modeling.Models.Drawing.Figures
 
             foreach (var segment in Segments)
             {
-                segment.CalculateBounds();
-
                 left = MathF.Min(left, segment.Bounds.Left);
                 top = MathF.Min(top, segment.Bounds.Top);
                 right = MathF.Max(right, segment.Bounds.Right);
@@ -131,8 +145,23 @@ namespace Modeling.Models.Drawing.Figures
             CalculateCenterPoint();
         }
 
+        public void CalculateDefaultPropertiesFromSegments()
+        {
+            _defaultCenterPoint = CenterPoint;
+
+            foreach (var segment in Segments)
+            {
+                segment.SetDefaultProperties();
+            }
+        }
+
         public void CalculateCenterPoint() => _centerPoint = new PointSingle(
                 x: _bounds.Width / 2,
                 y: _bounds.Height / 2);
+
+        public void UpdateAdjacentGeometriesBounds()
+        {
+
+        }
     }
 }

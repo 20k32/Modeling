@@ -1,19 +1,20 @@
 ﻿using Modeling.Core.Abstractions.Collections.Drawings;
 using Modeling.Core.CoreDelegates;
 using Modeling.Core.Drawing;
-using Modeling.Models.Abstractions.Drawing;
+using Modeling.Models.Abstractions.Collections.Drawings;
 using Modeling.Models.Drawing.Figures.PointGeometries.Enums;
 using System.Collections.Generic;
 
-namespace Modeling.Models.Drawing.Figures.PointGeometries
+namespace Modeling.Models.Abstractions.Drawing.Figure
 {
-    public interface IPointGeometry : IBounds
+    public interface IPointGeometry : IBounds, IAdjacentGeometriesProvider
     {
         event ActionEventHandler PointGeometryPropertyChanged;
 
         DimensionType DimensionType { get; }
         GeometryType GeometryType { get; }
 
+        IPointHashSetCollection DefaultPoints { get; }
         IPointHashSetCollection Points { get; }
 
         bool ContainsPoint(PointSingle point);
@@ -22,6 +23,6 @@ namespace Modeling.Models.Drawing.Figures.PointGeometries
         void ClearPoints();
 
         void CommitPropertyChanges();
-        void UpdateAdjacentGeometriesBounds();
+        void SetDefaultProperties();
     }
 }

@@ -1,5 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using Modeling.Models.Drawing.Figures.PointGeometries;
+using Modeling.Models.Abstractions.Drawing.Figure;
 using System.Linq;
 
 namespace Modeling.ViewModels.Pages.MainPage.Drawing
@@ -25,7 +25,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         IPointGeometry _nearestSegment;
 
         [ObservableProperty]
-        float _dimensionLength;
+        float _dimensionLengthCentimeters;
 
         partial void OnChangeFigurePositionChanged(bool value)
         {
@@ -51,11 +51,11 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             }
         }
 
-        partial void OnDimensionLengthChanged(float value)
+        partial void OnDimensionLengthCentimetersChanged(float value)
         {
             if (NearestSegment is not null)
             {
-                HandleDimensionLengthChanged(value);
+                HandleDimensionLengthCentimetersChanged(value);
             }
         }
 
