@@ -48,7 +48,7 @@
         <!--  Position editing panel  -->
         <CheckBox Grid.Row="0"
                   Content="Show rotation point"
-                  IsChecked="{Binding RotationPointVisible}"
+                  IsChecked="{Binding RotationPointVisible, Mode=TwoWay}"
                   Visibility="{Binding PositionEditingPanelVisible}" />
 
         <Slider Grid.Row="1"

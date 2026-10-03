@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Modeling.Core.Drawing;
 using Modeling.Models.Abstractions.Drawing.Figure;
 using Modeling.Models.Drawing.Figures.PointGeometries;
 using System.Linq;
@@ -43,6 +44,12 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         [ObservableProperty]
         float _dimensionLengthCentimeters;
 
+        partial void OnRotationPointVisibleChanged(bool value)
+        {
+            _canRedrawUserPoint = value;
+            RedrawFigure();
+        }
+
         partial void OnChangeFigurePositionChanged(bool value)
         {
             if (value)
@@ -51,6 +58,8 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
                 SizeEditingPanelVisible = false;
                 PositionEditingPanelVisible = true;
                 PickButtonsVisible = false;
+
+                _drawingAction = UserPointDrawingAction.AxisPointSelection;
             }
 
             CancelButtonVisible = value;

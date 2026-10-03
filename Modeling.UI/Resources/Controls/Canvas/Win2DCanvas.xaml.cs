@@ -12,6 +12,7 @@ using Microsoft.UI.Xaml.Input;
 using Modeling.Core.Abstractions.Collections;
 using Modeling.Core.Constants;
 using Modeling.Core.Drawing;
+using Modeling.Core.Enums;
 using Modeling.Core.Extensions;
 using Modeling.Core.Logging;
 using Modeling.Core.Messages.Canvas.Drawing;
@@ -21,6 +22,7 @@ using Modeling.Models.Drawing.DrawingMessageValues.Points;
 using Modeling.Models.Drawing.DrawingPipeline;
 using Modeling.Models.Enums;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Windows.System;
@@ -31,7 +33,10 @@ namespace Modeling.UI.Resources.Controls.Canvas
 {
     public sealed partial class Win2DCanvas : UserControl
     {
+        readonly Dictionary<MouseCursor, InputSystemCursor> _cursors;
+
         readonly IDrawingPipeline _drawingPipeline;
+
         CanvasRenderTarget _canvasRenderTarget;
         bool _isControlInitialized;
 
@@ -91,6 +96,13 @@ namespace Modeling.UI.Resources.Controls.Canvas
             WeakReferenceMessenger.Default.Register<DisposeCanvasControlMessage>(this, OnWin2DCanvasDisposeCanvasControlMessage);
 
             _drawingPipeline = Ioc.Default.GetRequiredService<IDrawingPipeline>();
+
+            _cursors = new Dictionary<MouseCursor, InputSystemCursor>()
+            {
+                { MouseCursor.Default, InputSystemCursor.Create(InputSystemCursorShape.Arrow) },
+                { MouseCursor.Move, InputSystemCursor.Create(InputSystemCursorShape.SizeAll) },
+                { MouseCursor.Finger, InputSystemCursor.Create(InputSystemCursorShape.Hand) }
+            };
         }
 
         void RegisterMessages()
@@ -103,6 +115,7 @@ namespace Modeling.UI.Resources.Controls.Canvas
             WeakReferenceMessenger.Default.Register<ChangeRedrawStatusMessage>(this, OnWin2DCanvasChangeRedrawStatusMessage);
             WeakReferenceMessenger.Default.Register<ChangeCanvasRefreshRateMessage>(this, OnWin2DCanvasChangeCanvasRefreshRateMessage);
             WeakReferenceMessenger.Default.Register<ChangeCanvasSizeMessage>(this, OnWin2DCanvasChangeCanvasSizeMessage);
+            WeakReferenceMessenger.Default.Register<ChangeCanvasCursorMessage>(this, OnWin2DCanvasChangeCanvasCursorMessage);
         }
 
         void OnWin2DCanvasChangeCanvasSizeMessage(object recipient, ChangeCanvasSizeMessage message)
@@ -124,6 +137,17 @@ namespace Modeling.UI.Resources.Controls.Canvas
             WeakReferenceMessenger.Default.Unregister<ChangeRedrawStatusMessage>(this);
             WeakReferenceMessenger.Default.Unregister<ChangeCanvasRefreshRateMessage>(this);
             WeakReferenceMessenger.Default.Unregister<ChangeCanvasSizeMessage>(this);
+            WeakReferenceMessenger.Default.Unregister<ChangeCanvasCursorMessage>(this);
+        }
+
+        void OnWin2DCanvasChangeCanvasCursorMessage(object recipient, ChangeCanvasCursorMessage message)
+        {
+            if (message.ApplyBasicMessageValidation(recipient)
+                && _cursors.TryGetValue(message.Value.MouseCursor, out var inputCursor)
+                && ProtectedCursor != inputCursor)
+            {
+                ProtectedCursor = inputCursor;
+            }
         }
 
         void OnWin2DCanvasChangeCanvasRefreshRateMessage(object recipient, ChangeCanvasRefreshRateMessage message)

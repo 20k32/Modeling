@@ -162,7 +162,36 @@ namespace Modeling.Core.Drawing
                 SymmetryType.AntiDiagonal => CreateAntiDiagonalFlipTransform(),
                 _ => new Matrix3x3Single()
             };
+
+        public static Matrix3x3Single Inverse(this Matrix3x3Single matrix)
+        {
+            float determinant = matrix.M11 * matrix.M22 - matrix.M12 * matrix.M21;
+
+            if (MathF.Abs(determinant) < 1e-6f)
+            {
+                throw new InvalidOperationException(
+                    "The matrix cannot be inverted because its determinant is zero.");
+            }
+
+            float inverseDeterminant = 1f / determinant;
+
+            return new Matrix3x3Single
+            {
+                M11 = matrix.M22 * inverseDeterminant,
+                M12 = -matrix.M12 * inverseDeterminant,
+                M13 = (matrix.M12 * matrix.M23 - matrix.M22 * matrix.M13) * inverseDeterminant,
+
+                M21 = -matrix.M21 * inverseDeterminant,
+                M22 = matrix.M11 * inverseDeterminant,
+                M23 = (matrix.M21 * matrix.M13 - matrix.M11 * matrix.M23) * inverseDeterminant,
+
+                M31 = 0f,
+                M32 = 0f,
+                M33 = 1f
+            };
+        }
     }
+
 
     public enum SymmetryType
     {

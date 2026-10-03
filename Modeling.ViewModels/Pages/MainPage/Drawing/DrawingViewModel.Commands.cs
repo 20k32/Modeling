@@ -45,7 +45,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         {
             switch (_drawingAction)
             {
-                case UserPointDrawingAction.AxisPointSelection: RedrawUserPointCore(point); break;
+                case UserPointDrawingAction.AxisPointSelection: StartUserPointRedrawing(point); break;
                 case UserPointDrawingAction.FigurePointSelection: EndSegmentSelection(); break;
                 default: break;
             }
@@ -61,11 +61,6 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             }
         }
 
-        private void EndUserPointRedrawing(PointSingle point)
-        {
-            _drawingAction = UserPointDrawingAction.None;
-        }
-
         [RelayCommand]
         async Task InitializeCanvasAsync()
         {
@@ -79,6 +74,8 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         [RelayCommand]
         void CancelPickingShape()
         {
+            _drawingAction = UserPointDrawingAction.None;
+
             PositionEditingPanelVisible = false;
             SizeEditingPanelVisible = false;
 
@@ -106,6 +103,8 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             ClearDrawingElements();
             InitializeDrawingElements(new SizeSingle(canvasSize.Width, canvasSize.Height),
                 pixelsPerCentimeter);
+
+            _shouldApplyGeneralTransformForUserPoint = true;
 
             RedrawFigure();
         }
