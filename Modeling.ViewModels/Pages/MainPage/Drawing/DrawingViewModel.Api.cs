@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.UI.Xaml.Media;
 using Modeling.Core.Abstractions;
+using Modeling.Core.Abstractions.Collections.Drawings;
 using Modeling.Core.Constants;
 using Modeling.Core.Drawing;
 using Modeling.Core.Drawing.Providers;
@@ -34,14 +35,14 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         readonly IDrawingSettingsProvider _drawingSettingsProvider;
         readonly INavigationProvider _navigationProvider;
 
-        readonly List<PointSingle> _grid;
-        readonly List<PointSingle> _horizontalAxis;
-        readonly List<PointSingle> _horizontalAxisArrows;
-        readonly List<PointSingle> _verticalAxisArrows;
-        readonly List<PointSingle> _verticalAxis;
-        readonly List<PointSingle> _horizontalAxisMarks;
-        readonly List<PointSingle> _verticalAxisMarks;
-        readonly List<PointSingle> _userPoint;
+        readonly IPointListCollection _grid;
+        readonly IPointListCollection _horizontalAxis;
+        readonly IPointListCollection _horizontalAxisArrows;
+        readonly IPointListCollection _verticalAxisArrows;
+        readonly IPointListCollection _verticalAxis;
+        readonly IPointListCollection _horizontalAxisMarks;
+        readonly IPointListCollection _verticalAxisMarks;
+        readonly IPointListCollection _userPoint;
         readonly IFigure _figure;
 
         PointSingle startDrawingPoint;
@@ -59,17 +60,17 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             _drawingAction = UserPointDrawingAction.None;
 
             _figure = Ioc.Default.GetRequiredService<IFigure>();
-            _grid = [];
+            _grid = Ioc.Default.GetRequiredService<IPointListCollection>();
 
-            _horizontalAxis = [];
-            _horizontalAxisArrows = [];
-            _horizontalAxisMarks = [];
+            _horizontalAxis = Ioc.Default.GetRequiredService<IPointListCollection>();
+            _horizontalAxisArrows = Ioc.Default.GetRequiredService<IPointListCollection>();
+            _horizontalAxisMarks = Ioc.Default.GetRequiredService<IPointListCollection>();
 
-            _verticalAxis = [];
-            _verticalAxisArrows = [];
-            _verticalAxisMarks = [];
+            _verticalAxis = Ioc.Default.GetRequiredService<IPointListCollection>();
+            _verticalAxisArrows = Ioc.Default.GetRequiredService<IPointListCollection>();
+            _verticalAxisMarks = Ioc.Default.GetRequiredService<IPointListCollection>();
 
-            _userPoint = [];
+            _userPoint = Ioc.Default.GetRequiredService<IPointListCollection>();
 
             _transform = DrawingConstants.NON_TRANSFORM_MATRIX;
 
@@ -212,7 +213,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
                 _pointerMoveNearestSegment = nearestSegment;
 
                 var segmentRedrawingMessageParameter = _lastDrawingMessage.With(
-                    points: [.. nearestSegment.Bounds.GetPointsFromBounds()],
+                    points: nearestSegment.Bounds.GetPointsFromBounds(),
                     color: new(_drawingSettingsProvider.Settings.FigureBoundsColor));
 
                 WeakReferenceMessenger.Default.Send(new TransformPointsMessage(this, segmentRedrawingMessageParameter));
@@ -288,7 +289,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             var thickness = _drawingSettingsProvider.Settings.GridDrawingThickness;
 
             var currentDrawingMessage = new PointListTransformMessageParameter(
-                    points: [],
+                    points: Ioc.Default.GetRequiredService<IPointListCollection>(),
                     color: drawingColor,
                     transformMatrix: _transform,
                     clearBeforeRedraw: true,
@@ -381,14 +382,14 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             var thickness = _drawingSettingsProvider.Settings.FigureDrawingThickness;
 
             var parentFigureComponentDrawingMessage = parentMessage
-                .With(points: [.. _figure.First().Points],
+                .With(points: _figure.First().Points,
                       color: drawingColor,
                       thickness: thickness);
 
             foreach (var figureComponent in _figure.Skip(1))
             {
                 parentFigureComponentDrawingMessage =
-                    parentFigureComponentDrawingMessage.With(points: [.. figureComponent.Points]);
+                    parentFigureComponentDrawingMessage.With(points: figureComponent.Points);
             }
 
             _figure.CalculatePropertiesFromSegments();
@@ -396,7 +397,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             if (_drawingSettingsProvider.Settings.DrawFigureBounds)
             {
                 parentFigureComponentDrawingMessage = parentFigureComponentDrawingMessage.With(
-                points: [.. _figure.Bounds.GetPointsFromBounds()],
+                points: _figure.Bounds.GetPointsFromBounds(),
                 color: new(_drawingSettingsProvider.Settings.FigureBoundsColor));
             }
 
@@ -406,7 +407,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
                 {
                     parentFigureComponentDrawingMessage =
                         parentFigureComponentDrawingMessage.With(
-                            points: [.. segment.Bounds.GetPointsFromBounds()],
+                            points: segment.Bounds.GetPointsFromBounds(),
                             color: new(_drawingSettingsProvider.Settings.FigureBoundsColor));
                 }
             }
@@ -441,7 +442,6 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
             var centerX = canvasSize.Width / 2f;
             var centerY = canvasSize.Height / 2f;
-
 
             _horizontalAxisMarks.AddRange(FigureExtensions.CreateAxisMarks(
                 canvasSize.Width,
@@ -546,13 +546,13 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
                 var newPoints = circleGeometry.CenterPoint.GetCirclePoints(newRadius);
 
-                circleGeometry.Points.Clear();
+                circleGeometry.ClearPoints();
 
                 circleGeometry.AddPointsRange(newPoints);
 
                 circleGeometry.CalculateBounds();
 
-                circleGeometry.Commit();
+                circleGeometry.CommitPropertyChanges();
             }
         }
 
@@ -560,7 +560,47 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         {
             if (NearestSegment is ILinePointGeometry lineGeometry)
             {
+                var pixelsPerCentimeter = _drawingSettingsProvider.Settings.PixelsPerCentimeter;
+                var pixelsPerMillimeter = pixelsPerCentimeter / 10;
+
+                var newLength = value * pixelsPerMillimeter;
+
                 var points = lineGeometry.Points;
+
+                var p1 = points.First();
+                var p2 = points.Last();
+
+                var dx = p2.X - p1.X;
+                var dy = p2.Y - p1.Y;
+
+                var distance = lineGeometry.Length * pixelsPerMillimeter;
+
+                if (distance > 0 || p1 == p2)
+                {
+                    // Unit vector from p1 -> p2
+                    var ux = dx / distance;
+                    var uy = dy / distance;
+
+                    // Move both points toward each other
+                    var shift = newLength / 2f;
+
+                    var newFirstPoint = new PointSingle(
+                        x: p1.X + ux * shift,
+                        y: p1.Y + uy * shift);
+
+                    var newSecondPoint = new PointSingle(
+                        x: p2.X - ux * shift,
+                        y: p2.Y - uy * shift);
+
+                    lineGeometry.Points.Clear();
+                    lineGeometry.Points.AddRange([newFirstPoint, newSecondPoint]);
+
+                    lineGeometry.CalculateBounds();
+
+                    Logger.Information($"distance: {lineGeometry.Length}");
+
+                    lineGeometry.CommitPropertyChanges();
+                }
             }
         }
 

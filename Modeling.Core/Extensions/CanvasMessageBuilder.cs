@@ -1,4 +1,6 @@
-﻿using Modeling.Core.Constants;
+﻿using Modeling.Core.Abstractions.Collections;
+using Modeling.Core.Abstractions.Collections.Drawings;
+using Modeling.Core.Constants;
 using Modeling.Core.Drawing;
 using Modeling.Core.Messages.Parameters.Canvas.Drawing;
 using System.Collections.Generic;
@@ -8,7 +10,7 @@ namespace Modeling.Core.Extensions
     public static class CanvasMessageBuilder
     {
         public static PointListTransformMessageParameter With(this PointListTransformMessageParameter parameter,
-            IReadOnlyList<PointSingle> points,
+            IBlockingCollection<PointSingle> points,
             DrawingColor? color = default,
             Matrix3x3Single? transformMatrix = default, bool? shouldFillGeometry = false,
             DrawingColor? fillColor = default, bool? clearBeforeRedraw = false,
@@ -25,7 +27,7 @@ namespace Modeling.Core.Extensions
                     parent: parameter);
 
         public static PointListTransformMessageParameter WithNoParent(this PointListTransformMessageParameter parameter,
-            IReadOnlyList<PointSingle> points,
+            IPointListCollection points,
             DrawingColor? color = default,
             Matrix3x3Single? transformMatrix = default, bool? shouldFillGeometry = false,
             DrawingColor? fillColor = default, bool? clearBeforeRedraw = false,

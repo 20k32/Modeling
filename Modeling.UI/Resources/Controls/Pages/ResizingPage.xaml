@@ -25,6 +25,12 @@
                       IsChecked="{Binding ChangeFigurePosition, Mode=TwoWay}"
                       Visibility="{Binding AdditionalPanelVisible, Converter={StaticResource CommunityToolkit.BoolToVisibilityConverter}, ConverterParameter=True}" />
 
+        <Button Grid.Row="2"
+                HorizontalAlignment="Stretch"
+                Command="{Binding ResetFigureCommand}"
+                Content="Reset Figure"
+                Visibility="{Binding AdditionalPanelVisible, Converter={StaticResource CommunityToolkit.BoolToVisibilityConverter}, ConverterParameter=True}" />
+
         <TextBlock Grid.Row="0" Visibility="{Binding AdditionalPanelVisible}">
             <TextBlock.Inlines>
                 <Run Text="You have picked:" />
@@ -44,8 +50,8 @@
 
         <Button Grid.Row="2"
                 HorizontalAlignment="Stretch"
-                Content="Cancel"
                 Command="{Binding CancelPickingShapeCommand}"
+                Content="Cancel"
                 Visibility="{Binding AdditionalPanelVisible}" />
     </Grid>
 </UserControl>

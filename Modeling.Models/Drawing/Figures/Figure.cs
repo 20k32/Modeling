@@ -1,5 +1,7 @@
-﻿using Modeling.Core.Drawing;
+﻿using CommunityToolkit.Mvvm.DependencyInjection;
+using Modeling.Core.Drawing;
 using Modeling.Core.Extensions;
+using Modeling.Models.Abstractions.Collections.Drawings;
 using Modeling.Models.Abstractions.Drawing.Figure;
 using Modeling.Models.Drawing.Figures.PointGeometries;
 using Modeling.Models.Miscellaneous;
@@ -13,11 +15,16 @@ namespace Modeling.Models.Drawing.Figures
     {
         PointSingle _centerPoint;
         RectangleSingle _bounds;
-
-        public LinkedList<IPointGeometry> Segments { get; private set; } = [];
+        
+        public IPointGeometryCollection Segments { get; private init; }
 
         public PointSingle CenterPoint => _centerPoint;
         public RectangleSingle Bounds => _bounds;
+
+        public Figure()
+        {
+            Segments = Ioc.Default.GetRequiredService<IPointGeometryCollection>();
+        }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
@@ -53,7 +60,7 @@ namespace Modeling.Models.Drawing.Figures
 
             foreach (var segment in Segments)
             {
-                if (segment.Points.Contains(point))
+                if (segment.ContainsPoint(point))
                 {
                     result = segment;
                     break;
@@ -63,7 +70,7 @@ namespace Modeling.Models.Drawing.Figures
             return result;
         }
 
-        public void AddSegment(IPointGeometry segment) => Segments.AddLast(segment);
+        public void AddSegment(IPointGeometry segment) => Segments.Add(segment);
 
         public void AddSegments(IEnumerable<IPointGeometry> segments)
         {

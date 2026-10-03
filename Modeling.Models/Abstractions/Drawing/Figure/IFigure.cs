@@ -1,4 +1,5 @@
 ﻿using Modeling.Core.Drawing;
+using Modeling.Models.Abstractions.Collections.Drawings;
 using Modeling.Models.Drawing.Figures.PointGeometries;
 using Modeling.Models.Miscellaneous;
 using System.Collections.Generic;
@@ -7,7 +8,7 @@ namespace Modeling.Models.Abstractions.Drawing.Figure
 {
     public interface IFigure : IEnumerable<IPointGeometry>, IBounds
     {
-        LinkedList<IPointGeometry> Segments { get; }
+        IPointGeometryCollection Segments { get; }
         PointSingle CenterPoint { get; }
 
         void CalculatePropertiesFromSegments();

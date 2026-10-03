@@ -1,4 +1,5 @@
-﻿using Modeling.Core.CoreDelegates;
+﻿using Modeling.Core.Abstractions.Collections.Drawings;
+using Modeling.Core.CoreDelegates;
 using Modeling.Core.Drawing;
 using Modeling.Models.Abstractions.Drawing;
 using Modeling.Models.Drawing.Figures.PointGeometries.Enums;
@@ -13,11 +14,14 @@ namespace Modeling.Models.Drawing.Figures.PointGeometries
         DimensionType DimensionType { get; }
         GeometryType GeometryType { get; }
 
-        HashSet<PointSingle> Points { get; }
-        
-        bool TryAddPoint(PointSingle point);
-        void AddPointsRange(IEnumerable<PointSingle> points);
+        IPointHashSetCollection Points { get; }
 
-        void Commit();
+        bool ContainsPoint(PointSingle point);
+        void AddPoint(PointSingle point);
+        void AddPointsRange(IEnumerable<PointSingle> points);
+        void ClearPoints();
+
+        void CommitPropertyChanges();
+        void UpdateAdjacentGeometriesBounds();
     }
 }

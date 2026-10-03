@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using Modeling.Core.Drawing;
 using Modeling.Core.Logging;
+using Modeling.Core.Messages.Base.SynchronousMessages;
 using System.Threading.Tasks;
 
 namespace Modeling.ViewModels.Pages.MainPage.Drawing
@@ -71,6 +72,19 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
                 NearestSegment = default;
                 RedrawFigure();
             }
+        }
+
+        [RelayCommand]
+        void ResetFigure()
+        {
+            var canvasSize = _drawingSettingsProvider.Settings.CanvasSize;
+            var pixelsPerCentimeter = _drawingSettingsProvider.Settings.PixelsPerCentimeter;
+
+            ClearDrawingElements();
+            InitializeDrawingElements(new SizeSingle(canvasSize.Width, canvasSize.Height),
+                pixelsPerCentimeter);
+
+            RedrawFigure();
         }
     }
 }

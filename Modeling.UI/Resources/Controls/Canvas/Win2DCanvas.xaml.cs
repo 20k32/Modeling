@@ -9,6 +9,8 @@ using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Modeling.Core.Abstractions.Collections;
+using Modeling.Core.Abstractions.Collections.Drawings;
 using Modeling.Core.Constants;
 using Modeling.Core.Drawing;
 using Modeling.Core.Extensions;
@@ -246,7 +248,7 @@ namespace Modeling.UI.Resources.Controls.Canvas
             {
                 return;
             }
-            
+
             try
             {
                 args.DrawingSession.DrawImage(_canvasRenderTarget);
@@ -282,14 +284,12 @@ namespace Modeling.UI.Resources.Controls.Canvas
             }
         }
 
-        static void DrawFigure(CanvasPathBuilder builder, IReadOnlyList<PointSingle> points, bool applyTransform, Matrix3x3Single transform)
+        static void DrawFigure(CanvasPathBuilder builder, IBlockingCollection<PointSingle> points, bool applyTransform, Matrix3x3Single transform)
         {
             bool figureStarted = false;
 
-            for (int i = 0; i < points.Count; i++)
+            foreach (var point in points)
             {
-                var point = points[i];
-
                 if (float.IsNaN(point.X) || float.IsNaN(point.Y))
                 {
                     if (figureStarted)

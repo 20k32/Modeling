@@ -1,5 +1,8 @@
-﻿using Modeling.Core.Drawing;
-using System.Collections.Generic;
+﻿using CommunityToolkit.Mvvm.DependencyInjection;
+using Modeling.Core.Abstractions.Collections;
+using Modeling.Core.Abstractions.Collections.Drawings;
+using Modeling.Core.Drawing;
+using System.Linq;
 
 namespace Modeling.Models.Drawing.DrawingMessageValues.Points
 {
@@ -10,10 +13,14 @@ namespace Modeling.Models.Drawing.DrawingMessageValues.Points
         public DrawTransformedPointsMessageValue(DrawingColor color, float thickness, bool shouldClearCanvas, DrawingColor backgroundColor, bool shouldFillGeometry, DrawingColor fillColor, Matrix3x3Single transform, params PointSingle[] points)
             : base(color, thickness, shouldClearCanvas, backgroundColor, shouldFillGeometry, fillColor, points)
         {
+            var pointCollection = Ioc.Default.GetRequiredService<IPointListCollection>();
+
+            pointCollection.AddRange(points ?? Enumerable.Empty<PointSingle>());
+
             Transform = transform;
         }
 
-        public DrawTransformedPointsMessageValue(DrawingColor color, float thickness, bool shouldClearCanvas, DrawingColor backgroundColor, bool shouldFillGeometry, DrawingColor fillColor, Matrix3x3Single transform, IReadOnlyList<PointSingle> points)
+        public DrawTransformedPointsMessageValue(DrawingColor color, float thickness, bool shouldClearCanvas, DrawingColor backgroundColor, bool shouldFillGeometry, DrawingColor fillColor, Matrix3x3Single transform, IBlockingCollection<PointSingle> points)
             : base(color, thickness, shouldClearCanvas, backgroundColor, shouldFillGeometry, fillColor, points)
         {
             Transform = transform;

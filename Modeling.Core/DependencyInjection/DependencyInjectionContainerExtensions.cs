@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Modeling.Core.Abstractions.Collections.Drawings;
 using Modeling.Core.Abstractions.Converters.PrimitivesConverters;
+using Modeling.Core.Collections.Drawings;
 using Modeling.Core.Dispatching;
 using Modeling.Core.Drawing.Providers;
 using Modeling.Core.Logging;
@@ -18,7 +20,10 @@ namespace Modeling.Core.DependencyInjection
         {
             LoggerInitializer.Initialize();
 
-            return services.AddTransient<IFloatScaleConverter, FloatScaleConverter>()
+            return services
+                .AddTransient<IPointHashSetCollection, PointHashSet>()
+                .AddTransient<IPointListCollection, PointList>()
+                .AddTransient<IFloatScaleConverter, FloatScaleConverter>()
                 .AddTransient<DrawingSettingsJsonConverter>()
                 .AddTransient<NewtonSoftSerializerContractResolver>()
                 .AddTransient<IDrawingSettings, DrawingSettings>()

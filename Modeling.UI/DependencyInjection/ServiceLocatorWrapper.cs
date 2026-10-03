@@ -2,6 +2,7 @@
 using Modeling.Models.UserInterface;
 using Modeling.ViewModels;
 using Modeling.ViewModels.Pages.MainPage.Drawing;
+using Modeling.ViewModels.Pages.MainPage.Settings;
 
 namespace Modeling.UI.DependencyInjection
 {
