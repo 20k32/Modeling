@@ -187,5 +187,22 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
                 await StopAnimatingRotationAsync();
             }
         }
+
+        partial void OnNearestSegmentChanged(IPointGeometry value)
+        {
+            if (value is not null)
+            {
+                PickShapeForResizing = false;
+                SizeEditingPanelVisible = true;
+                PositionEditingPanelVisible = false;
+                CancelButtonVisible = true;
+            }
+        }
+
+        void SetRotationPointSilent(bool value)
+        {
+            _rotationPointVisible = value;
+            OnPropertyChanged(nameof(RotationPointVisible));
+        }
     }
 }

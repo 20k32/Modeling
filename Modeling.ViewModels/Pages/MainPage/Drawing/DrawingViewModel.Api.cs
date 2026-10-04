@@ -20,11 +20,13 @@ using Modeling.Core.Messages.ViewModels;
 using Modeling.Core.Navigation;
 using Modeling.Models.Abstractions.Drawing;
 using Modeling.Models.Abstractions.Drawing.Figure;
+using Modeling.Models.Drawing.Figures;
 using Modeling.Models.Drawing.Figures.PointGeometries;
 using Modeling.Models.Drawing.Figures.PointGeometries.Abstractions;
 using Modeling.Models.Drawing.Figures.PointGeometries.Enums;
 using Modeling.Models.Drawing.Figures.PointGeometries.GeometryCreationFactory;
 using Modeling.Models.Extensions;
+using Modeling.Models.Miscellaneous;
 using Modeling.Models.UserInterface;
 using Modeling.ViewModels.Miscellaneous;
 using System;
@@ -105,7 +107,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             _pickButtonsVisible = true;
 
             _userPoint = Ioc.Default.GetService<IPointGeometryCreationFactory>()
-                .CreateCirclePointGeometry(DrawingConstants.DEFAULT_POINT);
+                .CreateCirclePointGeometry(DrawingConstants.DEFAULT_POINT, SegmentDimensionParameter.None);
         }
 
         void SetDimensionLengthCentimetersSilent(float newValuePixels)
@@ -231,7 +233,6 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         void EndSegmentSelection()
         {
             NearestSegment = _pointerMoveNearestSegment;
-            PickShapeForResizing = false;
         }
 
         void SelectSegmentOnFigure(PointSingle point)
@@ -470,17 +471,11 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
                 x: (canvasSize.Width / 2) - figureWidthPixels / 2 - halfCirclesRadiusPixels,
                 y: (canvasSize.Height / 2) - figureHeightPixels / 2 - halfCirclesRadiusPixels);
 
+            _figure.InitializeSegmentDimensions(pixelsPerCentimeter);
+
             _figure.AddSegments(
                 FigureExtensions.CreateCustomShape(startDrawingPoint,
-                pixelsPerCentimeter,
-                FigureRelatedConstants.HALF_CIRCLES_DIAMETER_MILLIMETERS,
-                FigureRelatedConstants.INNER_HALF_CIRCLES_DIAMETER_MILLIMETERS,
-                FigureRelatedConstants.DISTANCE_BETWEEN_HALF_CIRCLES_AND_LARGE_RECTANGLE,
-                FigureRelatedConstants.VERTICAL_DISTANCE_BETWEEN_HALF_CIRCLES_MILLIMETERS,
-                FigureRelatedConstants.LARGE_RECTANGLE_WIDTH_MILLIMETERS,
-                FigureRelatedConstants.SMALL_SQUARES_DIMENSION_SIZE_MILLIMETERS,
-                FigureRelatedConstants.LARGE_CIRCLE_DIAMETER_MILLIMETERS,
-                FigureRelatedConstants.SMALL_CIRCLE_DIAMETER_MILLIMETERS),
+                _figure.GetActualSegmentsDimensions()),
                 pixelsPerCentimeter);
 
             _figure.CalculatePropertiesFromSegments();
@@ -693,10 +688,10 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
                 return;
             }
 
-            var pixelsPerMillimeter = _drawingSettingsProvider.Settings.PixelsPerCentimeter / 10f;
-            var newLength = value * pixelsPerMillimeter;
+            var pixelsPerCentimeter = _drawingSettingsProvider.Settings.PixelsPerCentimeter;
+            var newLength = value * pixelsPerCentimeter;
 
-            var p1 = lineGeometry.DefaultPoints.First();
+            /*var p1 = lineGeometry.DefaultPoints.First();
             var p2 = lineGeometry.DefaultPoints.Last();
 
             var dx = p2.X - p1.X;
@@ -716,13 +711,14 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
             var newSecondPoint = new PointSingle(
                 x: midX + ux * half,
-                y: midY + uy * half);
+                y: midY + uy * half
 
             lineGeometry.Points.Clear();
             lineGeometry.Points.AddRange([newFirstPoint, newSecondPoint]);
 
             lineGeometry.CalculateBounds();
-            lineGeometry.CommitPropertyChanges();
+
+            lineGeometry.CommitPropertyChanges(););*/
         }
 
         void OnNearestSegmentDimensionChanged()

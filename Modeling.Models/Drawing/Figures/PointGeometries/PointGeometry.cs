@@ -5,8 +5,6 @@ using Modeling.Core.CoreDelegates;
 using Modeling.Core.Drawing;
 using Modeling.Core.Enums;
 using Modeling.Core.Extensions;
-using Modeling.Models.Abstractions.Collections.Drawings;
-using Modeling.Models.Abstractions.Drawing.Figure;
 using Modeling.Models.Drawing.Figures.PointGeometries.Enums;
 using Modeling.Models.Extensions;
 using Modeling.Models.Miscellaneous;
@@ -30,7 +28,8 @@ abstract class PointGeometry(float minimumAcceptableDistance = Constants.MINIMUM
 
     public IPointHashSetCollection DefaultPoints { get; private init; } = Ioc.Default.GetRequiredService<IPointHashSetCollection>();
     public IPointHashSetCollection Points { get; private init; } = Ioc.Default.GetRequiredService<IPointHashSetCollection>();
-    public IAdjacentPointGeometryCollection AdjacentGeometries { get; private init; } = Ioc.Default.GetRequiredService<IAdjacentPointGeometryCollection>();
+
+    public SegmentDimensionParameter SegmentDimensionParameter { get; private set; }
 
     public PointSingle DefaultCenterPoint => _defaultCenterPoint;
     public PointSingle CenterPoint => _centerPoint;
@@ -56,6 +55,8 @@ abstract class PointGeometry(float minimumAcceptableDistance = Constants.MINIMUM
             }
         }
     }
+
+    public SegmentDimensionParameter SegmentDimension => throw new NotImplementedException();
 
     public void AddPoint(PointSingle point) => Points.Add(point);
     public void AddPointsRange(IEnumerable<PointSingle> points)
@@ -93,9 +94,6 @@ abstract class PointGeometry(float minimumAcceptableDistance = Constants.MINIMUM
 
     public void CommitPropertyChanges() => InvokePointGeometryPropertyChanged();
 
-    public void UpdateAdjacentGeometriesBounds()
-    { }
-
     public bool ContainsPoint(PointSingle point) => Points.Contains(point);
 
     public void SetDefaultProperties()
@@ -115,57 +113,6 @@ abstract class PointGeometry(float minimumAcceptableDistance = Constants.MINIMUM
     protected virtual PointSingle CalculateCenterPointCore()
         => new PointSingle((Bounds.Left + Bounds.Right) / 2, (Bounds.Top + Bounds.Bottom) / 2);
 
-    public void AddAdjacentGeometry(IPointGeometry geometry, AdjacentType adjacentType)
-    {
-        var firstAdjacentGeometry = Ioc.Default.GetRequiredService<IAdjacentPointGeometry>();
-
-        firstAdjacentGeometry.AdjacentType = adjacentType;
-        firstAdjacentGeometry.Geometry = geometry;
-
-        AdjacentGeometries.AddUnique(firstAdjacentGeometry);
-
-        var secondAdjacentGeometry = Ioc.Default.GetRequiredService<IAdjacentPointGeometry>();
-
-        secondAdjacentGeometry.AdjacentType = adjacentType.Invert();
-        secondAdjacentGeometry.Geometry = geometry;
-
-        geometry.AdjacentGeometries.AddUnique(secondAdjacentGeometry);
-    }
-
-    public void RemoveAdjacentGeometry(IPointGeometry geometry)
-    {
-        var geometriesToRemove = (ICollection<IAdjacentPointGeometry>)[.. AdjacentGeometries.Where(existing => existing.Geometry == geometry)];
-
-        AdjacentGeometries.RemoveRange(geometriesToRemove);
-
-        geometriesToRemove = [.. geometry.AdjacentGeometries.Where(existing => existing.Geometry == geometry)];
-        geometry.AdjacentGeometries.RemoveRange(geometriesToRemove);
-    }
-
-    public void ClearAdjacentGeometries()
-    {
-        foreach (var adjacentGeometry in AdjacentGeometries)
-        {
-            if (adjacentGeometry.Geometry.AdjacentGeometries.Select(existing => existing.Geometry).Contains(this))
-            {
-                var geometriesToRemove = (ICollection<IAdjacentPointGeometry>)[.. adjacentGeometry.Geometry.AdjacentGeometries.Where(existing => existing.Geometry == adjacentGeometry)];
-
-                adjacentGeometry.Geometry.AdjacentGeometries.RemoveRange(geometriesToRemove);
-            }
-        }
-
-        AdjacentGeometries.Clear();
-    }
-
-    public void AddAdjacentGeometriesRange(IEnumerable<IPointGeometry> geometries, AdjacentType adjacentType)
-    {
-        foreach (var geometry in geometries)
-        {
-            var adjacentGeometry = Ioc.Default.GetRequiredService<IAdjacentPointGeometry>();
-            adjacentGeometry.AdjacentType = adjacentType;
-            adjacentGeometry.Geometry = geometry;
-
-            AdjacentGeometries.Add(adjacentGeometry);
-        }
-    }
+    public void SetSegmentDimension(SegmentDimensionParameter segmentDimension)
+        => SegmentDimensionParameter = segmentDimension;
 }

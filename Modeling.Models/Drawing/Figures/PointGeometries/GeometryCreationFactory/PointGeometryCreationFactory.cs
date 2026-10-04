@@ -1,14 +1,16 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
 using Modeling.Core.Drawing;
-using Modeling.Models.Abstractions.Drawing.Figure;
+using Modeling.Models.Miscellaneous;
 
 namespace Modeling.Models.Drawing.Figures.PointGeometries.GeometryCreationFactory
 {
     sealed class PointGeometryCreationFactory : IPointGeometryCreationFactory
     {
-        public IPointGeometry CreateCirclePointGeometry(PointSingle centerCirclePoint, float startAngle = 0, float endAngle = 360)
+        public IPointGeometry CreateCirclePointGeometry(PointSingle centerCirclePoint, SegmentDimensionParameter segmentDimension, float startAngle = 0, float endAngle = 360)
         {
             var circlePointGeometry = Ioc.Default.GetRequiredService<CirclePointGeometry>();
+
+            circlePointGeometry.SetSegmentDimension(segmentDimension);
 
             circlePointGeometry.StartAngle = startAngle;
             circlePointGeometry.EndAngle = endAngle;
@@ -17,6 +19,12 @@ namespace Modeling.Models.Drawing.Figures.PointGeometries.GeometryCreationFactor
             return circlePointGeometry;
         }
 
-        public IPointGeometry CreateLinePointGeometry() => Ioc.Default.GetRequiredService<LinePointGeometry>();
+        public IPointGeometry CreateLinePointGeometry(SegmentDimensionParameter segmentDimension)
+        {
+            var lineGeometry = Ioc.Default.GetRequiredService<LinePointGeometry>();
+            lineGeometry.SetSegmentDimension(segmentDimension);
+
+            return lineGeometry;
+        }
     }
 }

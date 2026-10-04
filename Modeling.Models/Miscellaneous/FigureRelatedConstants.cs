@@ -1,4 +1,4 @@
-﻿namespace Modeling.ViewModels.Miscellaneous
+﻿namespace Modeling.Models.Miscellaneous
 {
     static class FigureRelatedConstants
     {

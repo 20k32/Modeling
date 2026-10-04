@@ -3,16 +3,17 @@ using Modeling.Core.Drawing;
 using Modeling.Models.Abstractions.Drawing.Figure;
 using Modeling.Models.Drawing.Figures.PointGeometries;
 using Modeling.Models.Drawing.Figures.PointGeometries.GeometryCreationFactory;
+using Modeling.Models.Miscellaneous;
 using System.Collections.Generic;
 
 namespace Modeling.Models.Extensions
 {
     public static class PointGeometryExtensions
     {
-        public static IPointGeometry ToLinePointGeometry(this ICollection<PointSingle> points)
+        public static IPointGeometry ToLinePointGeometry(this ICollection<PointSingle> points, SegmentDimensionParameter parameter)
         {
             var pointGeometry = Ioc.Default.GetRequiredService<IPointGeometryCreationFactory>()
-                .CreateLinePointGeometry();
+                .CreateLinePointGeometry(parameter);
 
             pointGeometry.AddPointsRange(points);
 
@@ -22,10 +23,23 @@ namespace Modeling.Models.Extensions
             return pointGeometry;
         }
 
-        public static IPointGeometry ToCirclePointGeometry(this ICollection<PointSingle> points, PointSingle centerPoint, float startAngle = 0, float endAngle = 360)
+        public static IPointGeometry ToCirclePointGeometry(this ICollection<PointSingle> points, PointSingle centerPoint, SegmentDimensionParameter parameter)
         {
             var pointGeometry = Ioc.Default.GetRequiredService<IPointGeometryCreationFactory>()
-                .CreateCirclePointGeometry(centerPoint, startAngle, endAngle);
+                .CreateCirclePointGeometry(centerPoint, parameter, 0, 360);
+
+            pointGeometry.AddPointsRange(points);
+
+            pointGeometry.CalculateBounds();
+            pointGeometry.CalculateCenterPoint();
+
+            return pointGeometry;
+        }
+
+        public static IPointGeometry ToCirclePointGeometry(this ICollection<PointSingle> points, PointSingle centerPoint, float startAngle, float endAngle, SegmentDimensionParameter parameter)
+        {
+            var pointGeometry = Ioc.Default.GetRequiredService<IPointGeometryCreationFactory>()
+                .CreateCirclePointGeometry(centerPoint, parameter, startAngle, endAngle);
 
             pointGeometry.AddPointsRange(points);
 

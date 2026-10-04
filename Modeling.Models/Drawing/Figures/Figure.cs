@@ -6,7 +6,9 @@ using Modeling.Core.Extensions;
 using Modeling.Core.Logging;
 using Modeling.Models.Abstractions.Collections.Drawings;
 using Modeling.Models.Abstractions.Drawing.Figure;
+using Modeling.Models.Abstractions.SegmentDiemnsions;
 using Modeling.Models.Drawing.Figures.PointGeometries;
+using Modeling.Models.Extensions;
 using Modeling.Models.Miscellaneous;
 using System;
 using System.Collections;
@@ -22,6 +24,9 @@ namespace Modeling.Models.Drawing.Figures
         RectangleSingle _bounds;
 
         public IPointGeometryCollection Segments { get; private init; }
+        public ISegmentDimension DefaultSegmentDimensions { get; private init; }
+        public ISegmentDimension SegmentDimensions { get; private init; }
+
 
         public PointSingle DefaultCenterPoint => _defaultCenterPoint;
         public PointSingle CenterPoint => _centerPoint;
@@ -30,6 +35,8 @@ namespace Modeling.Models.Drawing.Figures
         public Figure()
         {
             Segments = Ioc.Default.GetRequiredService<IPointGeometryCollection>();
+            DefaultSegmentDimensions = Ioc.Default.GetRequiredService<ISegmentDimension>();
+            SegmentDimensions = Ioc.Default.GetRequiredService<ISegmentDimension>();
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -80,16 +87,6 @@ namespace Modeling.Models.Drawing.Figures
         {
             if (!Segments.Contains(segment))
             {
-                foreach (var existingSegment in Segments)
-                {
-                    var adjacentType = existingSegment.Bounds.DetermineAdjacentType(segment.Bounds, pixelsPerCentimeter);
-
-                    if (adjacentType != AdjacentType.None)
-                    {
-                        segment.AddAdjacentGeometry(existingSegment, adjacentType);
-                    }
-                }
-
                 Segments.Add(segment);
             }
         }
@@ -166,78 +163,334 @@ namespace Modeling.Models.Drawing.Figures
                 x: _bounds.Width / 2,
                 y: _bounds.Height / 2);
 
-        public void UpdateAdjacentGeometriesBounds(float pixelsPerCentimeter)
+        public void InitializeSegmentDimensions(float pixelsPerCentimeter)
         {
-            var visitedAdjacentElements = new HashSet<IAdjacentPointGeometry>();
+            var pixelsPerMillimeter = pixelsPerCentimeter / 10f;
 
-            foreach (var geometry in Segments)
+            var halfCircleDiameter =
+                FigureRelatedConstants.HALF_CIRCLES_DIAMETER_MILLIMETERS
+                * pixelsPerMillimeter;
+
+            var innerCircleDiameter =
+                FigureRelatedConstants.INNER_HALF_CIRCLES_DIAMETER_MILLIMETERS
+                * pixelsPerMillimeter;
+
+            var halfCircleRadius =
+                halfCircleDiameter / 2f;
+
+            var verticalDistance =
+                FigureRelatedConstants.VERTICAL_DISTANCE_BETWEEN_HALF_CIRCLES_MILLIMETERS
+                * pixelsPerMillimeter;
+
+            var rectangleWidth =
+                FigureRelatedConstants.LARGE_RECTANGLE_WIDTH_MILLIMETERS
+                * pixelsPerMillimeter;
+
+            var smallSquareSize =
+                FigureRelatedConstants.SMALL_SQUARES_DIMENSION_SIZE_MILLIMETERS
+                * pixelsPerMillimeter;
+
+            var largeCircleDiameter =
+                FigureRelatedConstants.LARGE_CIRCLE_DIAMETER_MILLIMETERS
+                * pixelsPerMillimeter;
+
+            var smallCircleDiameter =
+                FigureRelatedConstants.SMALL_CIRCLE_DIAMETER_MILLIMETERS
+                * pixelsPerMillimeter;
+
+            var distanceToRectangle =
+                FigureRelatedConstants.DISTANCE_BETWEEN_HALF_CIRCLES_AND_LARGE_RECTANGLE
+                * pixelsPerMillimeter;
+
+
+            // Circles
+
+            ChangeSegmentDimension(
+                SegmentDimensionParameter.TopLeftHalfCircleDiameter,
+                halfCircleDiameter);
+
+            ChangeSegmentDimension(
+                SegmentDimensionParameter.TopLeftInnerCircleDiameter,
+                innerCircleDiameter);
+
+            ChangeSegmentDimension(
+                SegmentDimensionParameter.BottomLeftInnerCircleDiameter,
+                innerCircleDiameter);
+
+            ChangeSegmentDimension(
+                SegmentDimensionParameter.BottomLeftHalfCircleDiameter,
+                halfCircleDiameter);
+
+            ChangeSegmentDimension(
+                SegmentDimensionParameter.LargeCircleDiameter,
+                largeCircleDiameter);
+
+            ChangeSegmentDimension(
+                SegmentDimensionParameter.SmallCircleDiameter,
+                smallCircleDiameter);
+
+            ChangeSegmentDimension(
+                SegmentDimensionParameter.TopRightInnerCircleDiameter,
+                innerCircleDiameter);
+
+            ChangeSegmentDimension(
+                SegmentDimensionParameter.TopRightHalfCircleDiameter,
+                halfCircleDiameter);
+
+            ChangeSegmentDimension(
+                SegmentDimensionParameter.BottomRightHalfCircleDiameter,
+                halfCircleDiameter);
+
+            ChangeSegmentDimension(
+                SegmentDimensionParameter.BottomRightInnerCircleDiameter,
+                innerCircleDiameter);
+
+
+            // Left side
+
+            ChangeSegmentDimension(
+                SegmentDimensionParameter.TopHorizontalLineLength,
+                rectangleWidth);
+
+            ChangeSegmentDimension(
+                SegmentDimensionParameter.BottomHorizontalLineLength,
+                rectangleWidth);
+
+            ChangeSegmentDimension(
+                SegmentDimensionParameter.LeftUpperVerticalLineLength,
+                (verticalDistance - halfCircleDiameter) / 2f);
+
+            ChangeSegmentDimension(
+                SegmentDimensionParameter.LeftMiddleVerticalLineLength,
+                verticalDistance - halfCircleDiameter);
+
+            ChangeSegmentDimension(
+                SegmentDimensionParameter.LeftLowerVerticalLineLength,
+                (verticalDistance - halfCircleDiameter) / 2f);
+
+
+            // Small squares
+
+            ChangeSegmentDimension(
+                SegmentDimensionParameter.LeftSquareVerticalLineLength,
+                smallSquareSize);
+
+            ChangeSegmentDimension(
+                SegmentDimensionParameter.LeftSquareHorizontalLineLength,
+                smallSquareSize);
+
+            ChangeSegmentDimension(
+                SegmentDimensionParameter.RightSquareVerticalLineLength,
+                smallSquareSize);
+
+            ChangeSegmentDimension(
+                SegmentDimensionParameter.RightSquareHorizontalLineLength,
+                smallSquareSize);
+
+            ChangeSegmentDimension(
+                SegmentDimensionParameter.BottomSquareHorizontalLineLength,
+                smallSquareSize);
+
+            ChangeSegmentDimension(
+                SegmentDimensionParameter.BottomLeftSquareHorizontalLineLength,
+                smallSquareSize);
+
+
+            // Top-right connection
+
+            ChangeSegmentDimension(
+                SegmentDimensionParameter.TopRightConnectionLineLength,
+                distanceToRectangle);
+
+            ChangeSegmentDimension(
+                SegmentDimensionParameter.TopRightLowerConnectionLineLength,
+                distanceToRectangle);
+
+            ChangeSegmentDimension(
+                SegmentDimensionParameter.TopRightVerticalLineLength,
+                halfCircleDiameter);
+
+
+            // Bottom-right connection
+
+            ChangeSegmentDimension(
+                SegmentDimensionParameter.BottomRightConnectionLineLength,
+                distanceToRectangle);
+
+            ChangeSegmentDimension(
+                SegmentDimensionParameter.BottomRightVerticalLineLength,
+                halfCircleDiameter);
+
+
+            // Circle connection
+
+            ChangeSegmentDimension(
+                SegmentDimensionParameter.TopLeftCircleConnectionLineLength,
+                distanceToRectangle);
+
+            ChangeSegmentDimension(
+                SegmentDimensionParameter.RightMiddleVerticalLineLength,
+                verticalDistance);
+
+
+            // Half-circle top lines
+
+            ChangeSegmentDimension(
+                SegmentDimensionParameter.TopLeftHalfCircleTopLineLength,
+                distanceToRectangle);
+
+            ChangeSegmentDimension(
+                SegmentDimensionParameter.BottomLeftHalfCircleTopLineLength,
+                distanceToRectangle);
+
+            ChangeSegmentDimension(
+                SegmentDimensionParameter.BottomTopLeftHalfCircleTopLineLength,
+                distanceToRectangle);
+
+            ChangeSegmentDimension(
+                SegmentDimensionParameter.BottomBottomLeftHalfCircleTopLineLength,
+                distanceToRectangle);
+        }
+
+        public void ChangeSegmentDimension(SegmentDimensionParameter dimension, float valuePixels)
+        {
+            var segmentDimension = SegmentDimensions;
+
+            switch (dimension)
             {
-                foreach (var adjacentGeometry in geometry.AdjacentGeometries)
-                {
-                    HandleGeometryAdjustment(geometry, adjacentGeometry.Geometry, adjacentGeometry.AdjacentType, pixelsPerCentimeter);
-                }
+                case SegmentDimensionParameter.TopLeftHalfCircleDiameter:
+                    segmentDimension.SetTopLeftHalfCircleDiameter(valuePixels);
+                    break;
+
+                case SegmentDimensionParameter.TopLeftInnerCircleDiameter:
+                    segmentDimension.SetTopLeftInnerCircleDiameter(valuePixels);
+                    break;
+
+                case SegmentDimensionParameter.BottomLeftInnerCircleDiameter:
+                    segmentDimension.SetBottomLeftInnerCircleDiameter(valuePixels);
+                    break;
+
+                case SegmentDimensionParameter.BottomLeftHalfCircleDiameter:
+                    segmentDimension.SetBottomLeftHalfCircleDiameter(valuePixels);
+                    break;
+
+                case SegmentDimensionParameter.LargeCircleDiameter:
+                    segmentDimension.SetLargeCircleDiameter(valuePixels);
+                    break;
+
+                case SegmentDimensionParameter.SmallCircleDiameter:
+                    segmentDimension.SetSmallCircleDiameter(valuePixels);
+                    break;
+
+                case SegmentDimensionParameter.TopRightInnerCircleDiameter:
+                    segmentDimension.SetTopRightInnerCircleDiameter(valuePixels);
+                    break;
+
+                case SegmentDimensionParameter.TopRightHalfCircleDiameter:
+                    segmentDimension.SetTopRightHalfCircleDiameter(valuePixels);
+                    break;
+
+                case SegmentDimensionParameter.BottomRightHalfCircleDiameter:
+                    segmentDimension.SetBottomRightHalfCircleDiameter(valuePixels);
+                    break;
+
+                case SegmentDimensionParameter.BottomRightInnerCircleDiameter:
+                    segmentDimension.SetBottomRightInnerCircleDiameter(valuePixels);
+                    break;
+
+                case SegmentDimensionParameter.TopHorizontalLineLength:
+                    segmentDimension.SetTopHorizontalLineLength(valuePixels);
+                    break;
+
+                case SegmentDimensionParameter.BottomHorizontalLineLength:
+                    segmentDimension.SetBottomHorizontalLineLength(valuePixels);
+                    break;
+
+                case SegmentDimensionParameter.LeftUpperVerticalLineLength:
+                    segmentDimension.SetLeftUpperVerticalLineLength(valuePixels);
+                    break;
+
+                case SegmentDimensionParameter.LeftMiddleVerticalLineLength:
+                    segmentDimension.SetLeftMiddleVerticalLineLength(valuePixels);
+                    break;
+
+                case SegmentDimensionParameter.LeftLowerVerticalLineLength:
+                    segmentDimension.SetLeftLowerVerticalLineLength(valuePixels);
+                    break;
+
+                case SegmentDimensionParameter.LeftSquareVerticalLineLength:
+                    segmentDimension.SetLeftSquareVerticalLineLength(valuePixels);
+                    break;
+
+                case SegmentDimensionParameter.LeftSquareHorizontalLineLength:
+                    segmentDimension.SetLeftSquareHorizontalLineLength(valuePixels);
+                    break;
+
+                case SegmentDimensionParameter.RightSquareVerticalLineLength:
+                    segmentDimension.SetRightSquareVerticalLineLength(valuePixels);
+                    break;
+
+                case SegmentDimensionParameter.RightSquareHorizontalLineLength:
+                    segmentDimension.SetRightSquareHorizontalLineLength(valuePixels);
+                    break;
+
+                case SegmentDimensionParameter.BottomSquareHorizontalLineLength:
+                    segmentDimension.SetBottomSquareHorizontalLineLength(valuePixels);
+                    break;
+
+                case SegmentDimensionParameter.BottomLeftSquareHorizontalLineLength:
+                    segmentDimension.SetBottomLeftSquareHorizontalLineLength(valuePixels);
+                    break;
+
+                case SegmentDimensionParameter.TopRightConnectionLineLength:
+                    segmentDimension.SetTopRightConnectionLineLength(valuePixels);
+                    break;
+
+                case SegmentDimensionParameter.TopRightLowerConnectionLineLength:
+                    segmentDimension.SetTopRightLowerConnectionLineLength(valuePixels);
+                    break;
+
+                case SegmentDimensionParameter.TopRightVerticalLineLength:
+                    segmentDimension.SetTopRightVerticalLineLength(valuePixels);
+                    break;
+
+                case SegmentDimensionParameter.BottomRightConnectionLineLength:
+                    segmentDimension.SetBottomRightConnectionLineLength(valuePixels);
+                    break;
+
+                case SegmentDimensionParameter.TopLeftCircleConnectionLineLength:
+                    segmentDimension.SetTopLeftCircleConnectionLineLength(valuePixels);
+                    break;
+
+                case SegmentDimensionParameter.RightMiddleVerticalLineLength:
+                    segmentDimension.SetRightMiddleVerticalLineLength(valuePixels);
+                    break;
+
+                case SegmentDimensionParameter.BottomRightVerticalLineLength:
+                    segmentDimension.SetBottomRightVerticalLineLength(valuePixels);
+                    break;
+
+                case SegmentDimensionParameter.TopLeftHalfCircleTopLineLength:
+                    segmentDimension.SetTopLeftHalfCircleTopLineLength(valuePixels);
+                    break;
+
+                case SegmentDimensionParameter.BottomLeftHalfCircleTopLineLength:
+                    segmentDimension.SetBottomLeftHalfCircleTopLineLength(valuePixels);
+                    break;
+
+                case SegmentDimensionParameter.BottomTopLeftHalfCircleTopLineLength:
+                    segmentDimension.SetBottomTopLeftHalfCircleTopLineLength(valuePixels);
+                    break;
+
+                case SegmentDimensionParameter.BottomBottomLeftHalfCircleTopLineLength:
+                    segmentDimension.SetBottomBottomLeftHalfCircleTopLineLength(valuePixels);
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(dimension), dimension, null);
             }
         }
 
-        void HandleGeometryAdjustment(IPointGeometry changedGeometry, IPointGeometry geometryToAdjust, AdjacentType geometryToAdjustType, float pixelsPerCentimeter)
-        {
-            switch (geometryToAdjustType)
-            {
-                case AdjacentType.Inner: CollapseInnerGeometry(changedGeometry, geometryToAdjust); break;
-                case AdjacentType.Outer: ExpandOuterGeometry(changedGeometry, geometryToAdjust); break;
-                case AdjacentType.Nearby: ConnectTwoGeometries(changedGeometry, geometryToAdjust, pixelsPerCentimeter); break;
-                default: break;
-            }
-        }
-
-        void ConnectTwoGeometries(IPointGeometry changedGeometry, IPointGeometry geometryToAdjust, float pixelsPerCentimeter)
-        {
-            var pointsCount = Math.Min(changedGeometry.Points.Count, changedGeometry.DefaultPoints.Count);
-
-            for (var i = 0; i < pointsCount; i++)
-            {
-                var defaultPoint = changedGeometry.DefaultPoints[i];
-                var changedPoint = changedGeometry.Points[i];
-
-                if (defaultPoint != changedPoint)
-                {
-                    if (geometryToAdjust.Points.Contains(defaultPoint))
-                    {
-                        geometryToAdjust.Points.Remove(defaultPoint);
-                        geometryToAdjust.Points.Add(changedPoint);
-                    }
-                    else
-                    {
-                        var pointsToRemove = Ioc.Default.GetService<IPointListCollection>();
-
-                        foreach (var oldPoint in geometryToAdjust.Points)
-                        {
-                            if (changedGeometry.Bounds.Contains(oldPoint, pixelsPerCentimeter))
-                            {
-                                pointsToRemove.Add(oldPoint);
-                            }
-                        }
-
-                        if (pointsToRemove.Count > 0)
-                        {
-                            geometryToAdjust.Points.RemoveRange(pointsToRemove);
-                            geometryToAdjust.AddPoint(changedPoint);
-                        }
-                    }
-
-                    pointsCount = Math.Min(changedGeometry.Points.Count, changedGeometry.DefaultPoints.Count);
-                }
-            }
-        }
-
-        void ExpandOuterGeometry(IPointGeometry changedGeometry, IPointGeometry geometryToAdjust)
-        {
-
-        }
-
-        void CollapseInnerGeometry(IPointGeometry changedGeometry, IPointGeometry geometryToCollapse)
-        {
-
-        }
+        public ISegmentDimension GetActualSegmentsDimensions() => SegmentDimensions;
     }
 }

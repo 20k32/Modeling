@@ -4,7 +4,10 @@ using Modeling.Core.Abstractions.Collections.Drawings;
 using Modeling.Core.DependencyInjection;
 using Modeling.Models.Abstractions.Collections.Drawings;
 using Modeling.Models.Abstractions.Drawing.Figure;
+using Modeling.Models.Abstractions.SegmentDiemnsions;
+using Modeling.Models.Collections;
 using Modeling.Models.Collections.Drawings;
+using Modeling.Models.Drawing;
 using Modeling.Models.Drawing.DrawingMessageInterpreter;
 using Modeling.Models.Drawing.DrawingPipeline;
 using Modeling.Models.Drawing.Figures;
@@ -19,8 +22,7 @@ namespace Modeling.Models.DependencyInjection
     public static class DependencyInjectionContainerExtensions
     {
         public static IServiceCollection RegisterModelsServices(this IServiceCollection services)
-            => services.AddTransient<IAdjacentPointGeometry, AdjacentPointGeometry>()
-            .AddTransient<IAdjacentPointGeometryCollection, AdjacentPointGeometriesCollection>()
+            => services.AddTransient<ISegmentDimension, SegmentDimension>()
             .AddTransient<IPointGeometryCollection, PointGeometryCollection>()
             .AddTransient<CirclePointGeometry, CirclePointGeometry>()
             .AddTransient<LinePointGeometry, LinePointGeometry>()

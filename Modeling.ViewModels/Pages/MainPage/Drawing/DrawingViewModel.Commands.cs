@@ -120,9 +120,13 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
             _shouldApplyGeneralTransformForUserPoint = true;
 
+            _canRedrawUserPoint = false;
+
             _figureTransform = DrawingConstants.NON_TRANSFORM_MATRIX;
             _userPointTransform = DrawingConstants.NON_TRANSFORM_MATRIX;
             _gridTransform = DrawingConstants.NON_TRANSFORM_MATRIX;
+
+            SetRotationPointSilent(false);
 
             RedrawAll();
         }
