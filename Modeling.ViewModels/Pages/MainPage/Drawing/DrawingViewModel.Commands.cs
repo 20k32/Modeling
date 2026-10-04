@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Modeling.Core.Constants;
 using Modeling.Core.Drawing;
 using Modeling.Core.Logging;
 using Modeling.Core.Messages.Base.SynchronousMessages;
@@ -26,7 +27,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         void DrawLines()
         {
             _drawingAction = UserPointDrawingAction.AxisPointSelection;
-            RedrawFigure();
+            RedrawAll();
         }
 
         [RelayCommand]
@@ -36,6 +37,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             {
                 case UserPointDrawingAction.AxisPointSelection: RedrawUserPointCore(point); break;
                 case UserPointDrawingAction.FigurePointSelection: SelectSegmentOnFigure(point); break;
+                case UserPointDrawingAction.EntireFigureSelection: SelectEntireFigure(point); break;
                 default: break;
             }
         }
@@ -45,8 +47,9 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         {
             switch (_drawingAction)
             {
-                case UserPointDrawingAction.AxisPointSelection: StartUserPointRedrawing(point); break;
+                case UserPointDrawingAction.AxisPointSelection: StartUserPointSelection(point); break;
                 case UserPointDrawingAction.FigurePointSelection: EndSegmentSelection(); break;
+                case UserPointDrawingAction.EntireFigureSelection: StartFigureSelection(point); break;
                 default: break;
             }
         }
@@ -57,6 +60,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             switch (_drawingAction)
             {
                 case UserPointDrawingAction.AxisPointSelection: EndUserPointRedrawing(point); break;
+                case UserPointDrawingAction.EntireFigureSelection: EndFigureSelection(point); break;
                 default: break;
             }
         }
@@ -68,12 +72,20 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
             LoadCanvasState();
 
-            RedrawFigure();
+            RedrawAll();
         }
 
         [RelayCommand]
         void CancelPickingShape()
         {
+            _previousMovedPoint = DrawingConstants.BREAK_POINT;
+
+            _shouldChangeFigurePosition = false;
+            _canRedrawUserPoint = false;
+
+            _wasPositionEditingControlVisible = false;
+            _wasRotationPointVisible = false;
+
             _drawingAction = UserPointDrawingAction.None;
 
             PositionEditingPanelVisible = false;
@@ -90,7 +102,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             if (NearestSegment is not null)
             {
                 NearestSegment = default;
-                RedrawFigure();
+                RedrawAll();
             }
         }
 
@@ -106,7 +118,11 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
             _shouldApplyGeneralTransformForUserPoint = true;
 
-            RedrawFigure();
+            _figureTransform = DrawingConstants.NON_TRANSFORM_MATRIX;
+            _userPointTransform = DrawingConstants.NON_TRANSFORM_MATRIX;
+            _gridTransform = DrawingConstants.NON_TRANSFORM_MATRIX;
+
+            RedrawAll();
         }
     }
 }

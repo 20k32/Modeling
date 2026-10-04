@@ -4,6 +4,7 @@
     {
         None,
         FigurePointSelection,
-        AxisPointSelection
+        AxisPointSelection,
+        EntireFigureSelection,
     }
 }

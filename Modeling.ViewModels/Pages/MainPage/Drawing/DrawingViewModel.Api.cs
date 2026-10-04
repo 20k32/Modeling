@@ -18,6 +18,7 @@ using Modeling.Core.Messages.Parameters.Canvas.Settings;
 using Modeling.Core.Messages.Settings;
 using Modeling.Core.Messages.ViewModels;
 using Modeling.Core.Navigation;
+using Modeling.Models.Abstractions.Drawing;
 using Modeling.Models.Abstractions.Drawing.Figure;
 using Modeling.Models.Drawing.Figures.PointGeometries;
 using Modeling.Models.Drawing.Figures.PointGeometries.Abstractions;
@@ -29,6 +30,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Windows.Graphics;
 
 namespace Modeling.ViewModels.Pages.MainPage.Drawing
 {
@@ -51,13 +53,16 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
         UserPointDrawingAction _drawingAction;
         PointSingle _previousMovedPoint;
-        Matrix3x3Single _transform;
-        Matrix3x3Single _circleTransform;
+
+        Matrix3x3Single _gridTransform;
+        Matrix3x3Single _userPointTransform;
+        Matrix3x3Single _figureTransform;
 
         IPointGeometry _pointerMoveNearestSegment;
 
         PointListTransformMessageParameter _lastDrawingMessage;
 
+        bool _shouldChangeFigurePosition;
         bool _shouldApplyGeneralTransformForUserPoint;
         bool _canChangePositionForUserPoint;
         bool _canRedrawUserPoint;
@@ -79,7 +84,9 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             _verticalAxisArrows = Ioc.Default.GetRequiredService<IPointListCollection>();
             _verticalAxisMarks = Ioc.Default.GetRequiredService<IPointListCollection>();
 
-            _transform = DrawingConstants.NON_TRANSFORM_MATRIX;
+            _gridTransform = DrawingConstants.NON_TRANSFORM_MATRIX;
+            _userPointTransform = DrawingConstants.NON_TRANSFORM_MATRIX;
+            _figureTransform = DrawingConstants.NON_TRANSFORM_MATRIX;
 
             _drawingSettingsProvider = Ioc.Default.GetRequiredService<IDrawingSettingsProvider>();
             _drawingSettingsProvider.SettingsChanged += OnDrawingSettingsProviderSettingsChanged;
@@ -159,8 +166,21 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
         void ResetStateForResizingSubPage()
         {
-            PickShapeForResizing = true;
-            _drawingAction = UserPointDrawingAction.FigurePointSelection;
+            CircleEditingPanelVisible = false;
+            LineEditingPanelVisible = false;
+
+            PositionEditingPanelVisible = false;
+            SizeEditingPanelVisible = false;
+
+            PickButtonsVisible = true;
+            ChangeFigurePosition = false;
+            PickShapeForResizing = false;
+            CancelButtonVisible = false;
+            RotationPointVisible = false;
+
+            _canRedrawUserPoint = false;
+            _shouldApplyGeneralTransformForUserPoint = true;
+            _drawingAction = UserPointDrawingAction.None;
         }
 
         void HandleResizingSubPageNavigation()
@@ -198,7 +218,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         {
             if (_figure.Any())
             {
-                RedrawFigure();
+                RedrawAll();
             }
         }
 
@@ -236,7 +256,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             }
         }
 
-        void StartUserPointRedrawing(PointSingle point)
+        void StartUserPointSelection(PointSingle point)
         {
             if (_canChangePositionForUserPoint)
             {
@@ -247,15 +267,52 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
             if (!_shouldApplyGeneralTransformForUserPoint)
             {
-                point = _circleTransform.Inverse() * point;
+                point = _userPointTransform.Inverse() * point;
             }
 
-            if (_userPoint.Bounds.Contains(point, pixelsPerCentimeter) && _cursorState != MouseCursor.Default)
+            if (_userPoint.Bounds.Contains(point, pixelsPerCentimeter))
             {
                 _canChangePositionForUserPoint = true;
 
-                var changeCursorParameter = new CanvasCursorMessageParameter(MouseCursor.Move);
-                WeakReferenceMessenger.Default.Send(new ChangeCanvasCursorMessage(this, changeCursorParameter));
+                ChangeMouseCursor(MouseCursor.Move);
+            }
+        }
+
+        void ChangeMouseCursorForUserPoint(IBounds boundsEntity, PointSingle point)
+        {
+            if (!_shouldApplyGeneralTransformForUserPoint)
+            {
+                point = _userPointTransform.Inverse() * point;
+            }
+
+            var pixelsPerCentimeter = _drawingSettingsProvider.Settings.PixelsPerCentimeter;
+
+            if (_canRedrawUserPoint)
+            {
+                if (boundsEntity.Bounds.Contains(point, pixelsPerCentimeter))
+                {
+                    ChangeMouseCursor(MouseCursor.Finger);
+                }
+                else if (_cursorState != MouseCursor.Default)
+                {
+                    ChangeMouseCursor(MouseCursor.Default);
+                }
+            }
+        }
+
+        void ChangeMouseCursorForEntireFigurePoint(IBounds boundsEntity, PointSingle point)
+        {
+            point = _figureTransform.Inverse() * point;
+
+            var pixelsPerCentimeter = _drawingSettingsProvider.Settings.PixelsPerCentimeter;
+
+            if (boundsEntity.Bounds.Contains(point, pixelsPerCentimeter))
+            {
+                ChangeMouseCursor(MouseCursor.Finger);
+            }
+            else
+            {
+                ChangeMouseCursor(MouseCursor.Default);
             }
         }
 
@@ -263,27 +320,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         {
             if (!_canChangePositionForUserPoint)
             {
-                if (!_shouldApplyGeneralTransformForUserPoint)
-                {
-                    point = _circleTransform.Inverse() * point;
-                }
-
-                var pixelsPerCentimeter = _drawingSettingsProvider.Settings.PixelsPerCentimeter;
-
-                if (_canRedrawUserPoint)
-                {
-                    if (_userPoint.Bounds.Contains(point, pixelsPerCentimeter) && _cursorState != MouseCursor.Finger)
-                    {
-                        var changeCursorParameter = new CanvasCursorMessageParameter(MouseCursor.Finger);
-                        WeakReferenceMessenger.Default.Send(new ChangeCanvasCursorMessage(this, changeCursorParameter));
-                    }
-                    else if (_cursorState != MouseCursor.Default)
-                    {
-                        var changeCursorParameter = new CanvasCursorMessageParameter(MouseCursor.Default);
-                        WeakReferenceMessenger.Default.Send(new ChangeCanvasCursorMessage(this, changeCursorParameter));
-                    }
-                }
-
+                ChangeMouseCursorForUserPoint(_userPoint, point);
                 return;
             }
 
@@ -297,7 +334,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
                 var offsetX = point.X - centerX;
                 var offsetY = point.Y - centerY;
 
-                _circleTransform = MatrixExtensions.CreateTranslationTransform(
+                _userPointTransform = MatrixExtensions.CreateTranslationTransform(
                     offsetX,
                     offsetY);
 
@@ -307,11 +344,11 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
                 _shouldApplyGeneralTransformForUserPoint = false;
 
-                RedrawFigure();
+                RedrawAll();
             }
         }
 
-        void RedrawFigure()
+        void RedrawAll()
         {
             var rawBackgroundColor = _drawingSettingsProvider.Settings.BackgroundColor;
             var backgroundColor = new DrawingColor(rawBackgroundColor);
@@ -339,7 +376,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             var currentDrawingMessage = new PointListTransformMessageParameter(
                     points: Ioc.Default.GetRequiredService<IPointListCollection>(),
                     color: drawingColor,
-                    transformMatrix: _transform,
+                    transformMatrix: _gridTransform,
                     clearBeforeRedraw: true,
                     backgroundColor: backgroundColor,
                     thickness: thickness);
@@ -393,7 +430,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
                 currentDrawingMessage = currentDrawingMessage.With(
                      points: _userPoint.Points,
                      color: circleDrawingColor,
-                     transformMatrix: _shouldApplyGeneralTransformForUserPoint ? _transform : _circleTransform,
+                     transformMatrix: _shouldApplyGeneralTransformForUserPoint ? _gridTransform : _userPointTransform,
                      shouldFillGeometry: true,
                      fillColor: new DrawingColor(_drawingSettingsProvider.Settings.HorizontalAxisColor),
                      clearBeforeRedraw: false,
@@ -457,6 +494,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             var parentFigureComponentDrawingMessage = parentMessage
                 .With(points: _figure.First().Points,
                       color: drawingColor,
+                      transformMatrix: _figureTransform,
                       thickness: thickness);
 
             foreach (var figureComponent in _figure.Skip(1))
@@ -539,10 +577,13 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             _canChangePositionForUserPoint = false;
             _shouldApplyGeneralTransformForUserPoint = true;
 
-            var pixelsPerCentimeter = _drawingSettingsProvider.Settings.PixelsPerCentimeter;
-            var pixelsPerMillimeter = pixelsPerCentimeter / 10;
+            var userPointRadius = 10;
 
-            var userPointRadius = 2.5f * pixelsPerMillimeter;
+            if (_userPoint.GeometryType == GeometryType.Circle && _userPoint is ICirclePointGeometry circleGeometry)
+            {
+                circleGeometry.CenterCirclePoint = centerPoint;
+                circleGeometry.Diameter = userPointRadius;
+            }
 
             _userPoint.Points.AddRange(centerPoint.GetCirclePoints(userPointRadius));
             _userPoint.CalculateBounds();
@@ -680,16 +721,79 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
         void OnNearestSegmentDimensionChanged()
         {
-            RedrawFigure();
+            RedrawAll();
         }
 
         void EndUserPointRedrawing(PointSingle point)
         {
             _canChangePositionForUserPoint = false;
+            ChangeMouseCursor(MouseCursor.Default);
+        }
 
-            var changeCursorParameter = new CanvasCursorMessageParameter(MouseCursor.Default);
+        void ChangeMouseCursor(MouseCursor newState)
+        {
+            if (_cursorState != newState)
+            {
+                var changeCursorParameter = new CanvasCursorMessageParameter(newState);
+                WeakReferenceMessenger.Default.Send(new ChangeCanvasCursorMessage(this, changeCursorParameter));
+            }
+        }
 
-            WeakReferenceMessenger.Default.Send(new ChangeCanvasCursorMessage(this, changeCursorParameter));
+        void StartFigureSelection(PointSingle point)
+        {
+            if (_shouldChangeFigurePosition)
+            {
+                return;
+            }
+
+            var pixelsPerCentimeter = _drawingSettingsProvider.Settings.PixelsPerCentimeter;
+
+            point = _figureTransform.Inverse() * point;
+
+            if (_figure.Bounds.Contains(point, pixelsPerCentimeter))
+            {
+                _shouldChangeFigurePosition = true;
+
+                ChangeMouseCursor(MouseCursor.Move);
+            }
+        }
+
+        void SelectEntireFigure(PointSingle point)
+        {
+            if (!_shouldChangeFigurePosition)
+            {
+                ChangeMouseCursorForEntireFigurePoint(_figure, point);
+                return;
+            }
+
+            if (point != _previousMovedPoint)
+            {
+                var canvasSize = _drawingSettingsProvider.Settings.CanvasSize;
+
+                var centerX = canvasSize.Width / 2f;
+                var centerY = canvasSize.Height / 2f;
+
+                var offsetX = point.X - centerX;
+                var offsetY = point.Y - centerY;
+
+                _figureTransform = MatrixExtensions.CreateTranslationTransform(
+                    offsetX,
+                    offsetY);
+
+                _previousMovedPoint = point;
+
+                Logger.Information($"X: {point.X} Y: ; {point.Y}");
+
+                _shouldApplyGeneralTransformForUserPoint = false;
+
+                RedrawAll();
+            }
+        }
+
+        void EndFigureSelection(PointSingle point)
+        {
+            _shouldChangeFigurePosition = false;
+            ChangeMouseCursor(MouseCursor.Default);
         }
     }
 }

@@ -56,6 +56,7 @@
                 Header="Rotation angle (degrees):"
                 Maximum="360"
                 Minimum="0"
+                Value="{Binding RotationAngle, Mode=TwoWay}"
                 StepFrequency="0.5"
                 Visibility="{Binding PositionEditingPanelVisible}" />
 

@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Modeling.Core.Drawing;
+using Modeling.Core.Extensions;
 using Modeling.Models.Abstractions.Drawing.Figure;
 using Modeling.Models.Drawing.Figures.PointGeometries;
 using System.Linq;
@@ -44,10 +45,34 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         [ObservableProperty]
         float _dimensionLengthCentimeters;
 
+        [ObservableProperty]
+        float _rotationAngle;
+
+        bool _wasRotationPointVisible;
+        bool _wasPositionEditingControlVisible;
+
         partial void OnRotationPointVisibleChanged(bool value)
         {
+            if (value)
+            {
+                _wasPositionEditingControlVisible = PositionEditingControlVisible;
+
+                if (PositionEditingControlVisible)
+                {
+                    _positionEditingControlVisible = false;
+                    OnPropertyChanged(nameof(PositionEditingControlVisible));
+                }
+
+                _drawingAction = UserPointDrawingAction.AxisPointSelection;
+            }
+            else
+            {
+                PositionEditingControlVisible = _wasPositionEditingControlVisible;
+            }
+
             _canRedrawUserPoint = value;
-            RedrawFigure();
+
+            RedrawAll();
         }
 
         partial void OnChangeFigurePositionChanged(bool value)
@@ -58,8 +83,6 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
                 SizeEditingPanelVisible = false;
                 PositionEditingPanelVisible = true;
                 PickButtonsVisible = false;
-
-                _drawingAction = UserPointDrawingAction.AxisPointSelection;
             }
 
             CancelButtonVisible = value;
@@ -76,6 +99,14 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             {
                 newValue.PointGeometryPropertyChanged -= OnNearestSegmentDimensionChanged;
                 newValue.PointGeometryPropertyChanged += OnNearestSegmentDimensionChanged;
+
+                SizeEditingPanelVisible = true;
+                PickButtonsVisible = false;
+
+                PositionEditingPanelVisible = false;
+                PositionEditingControlVisible = false;
+
+                CancelButtonVisible = true;
 
                 HandleDistanceDisplaying(newValue);
             }
@@ -95,20 +126,49 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
                 && (_nearestSegment is not null || _pointerMoveNearestSegment is not null)
                 && _figure.Any())
             {
-                RedrawFigure();
-
-                PickButtonsVisible = false;
-                PositionEditingPanelVisible = false;
-                SizeEditingPanelVisible = true;
-                CancelButtonVisible = true;
+                RedrawAll();
 
                 _pointerMoveNearestSegment = default;
+                _drawingAction = UserPointDrawingAction.None;
             }
 
             if (value)
             {
                 ChangeFigurePosition = false;
+                _drawingAction = UserPointDrawingAction.FigurePointSelection;
             }
+        }
+
+        partial void OnPositionEditingControlVisibleChanged(bool value)
+        {
+            if (value)
+            {
+                _wasRotationPointVisible = RotationPointVisible;
+
+                if (RotationPointVisible)
+                {
+                    _rotationPointVisible = false;
+                    OnPropertyChanged(nameof(RotationPointVisible));
+                }
+
+                _drawingAction = UserPointDrawingAction.EntireFigureSelection;
+            }
+            else
+            {
+                _drawingAction = UserPointDrawingAction.None;
+                RotationPointVisible = _wasRotationPointVisible;
+            }
+
+            RedrawAll();
+        }
+
+        partial void OnRotationAngleChanged(float newValue)
+        {
+            newValue = newValue / 10;
+            var transformedUserPoint = _userPoint.CenterPoint;
+            _figureTransform = MatrixExtensions.CreateRotationTransform(transformedUserPoint, newValue.RadianToDegrees()) * _figureTransform;
+
+            RedrawAll();
         }
     }
 }
