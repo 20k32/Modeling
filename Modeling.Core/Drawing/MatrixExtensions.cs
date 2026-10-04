@@ -13,14 +13,14 @@ namespace Modeling.Core.Drawing
             {
                 M11 = cos,
                 M12 = sin,
-                M13 = 0,
+                M13 = -centerPoint.X * (cos - 1) - centerPoint.Y * sin,
 
                 M21 = -sin,
                 M22 = cos,
-                M23 = 0,
+                M23 = centerPoint.X * sin - centerPoint.Y * (cos - 1),
 
-                M31 = -centerPoint.X * (cos - 1) + centerPoint.Y * sin,
-                M32 = -centerPoint.X * sin - centerPoint.Y * (cos - 1),
+                M31 = 0,
+                M32 = 0,
                 M33 = 1
             };
         }

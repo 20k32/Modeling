@@ -99,6 +99,8 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
             PositionEditingControlVisible = false;
 
+            AnimateRotation = false;
+
             if (NearestSegment is not null)
             {
                 NearestSegment = default;

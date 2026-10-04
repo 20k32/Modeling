@@ -25,10 +25,12 @@ using Modeling.Models.Drawing.Figures.PointGeometries.Abstractions;
 using Modeling.Models.Drawing.Figures.PointGeometries.Enums;
 using Modeling.Models.Drawing.Figures.PointGeometries.GeometryCreationFactory;
 using Modeling.Models.Extensions;
+using Modeling.Models.UserInterface;
 using Modeling.ViewModels.Miscellaneous;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Windows.Graphics;
 
@@ -66,6 +68,10 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         bool _shouldApplyGeneralTransformForUserPoint;
         bool _canChangePositionForUserPoint;
         bool _canRedrawUserPoint;
+
+        float _lastRotationAngle;
+
+        CancellationTokenSource _rotateAnimationCancellationSource;
 
         MouseCursor _cursorState;
 
@@ -794,6 +800,103 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         {
             _shouldChangeFigurePosition = false;
             ChangeMouseCursor(MouseCursor.Default);
+        }
+
+        void RotateFigure(float angleDegrees)
+        {
+            _lastRotationAngle = angleDegrees;
+
+            var transformedUserPoint = _userPointTransform * _userPoint.CenterPoint;
+            _figureTransform = MatrixExtensions.CreateRotationTransform(transformedUserPoint, -angleDegrees.DegreesToRadian()) * _figureTransform;
+
+            RedrawAll();
+        }
+
+        async Task StartAnimatingRotationAsync()
+        {
+            using (var animationCancellationSource = new CancellationTokenSource())
+            {
+                try
+                {
+                    var token = animationCancellationSource.Token;
+
+                    _rotateAnimationCancellationSource = animationCancellationSource;
+
+                    await AnimateRotationAsync(token);
+                }
+                catch (Exception ex)
+                {
+                    if (ex is not OperationCanceledException)
+                    {
+                        Logger.Exception(ex);
+                    }
+                }
+            }
+        }
+
+        async Task AnimateRotationAsync(CancellationToken token)
+        {
+            var userInterfaceConstants = Ioc.Default.GetRequiredService<IUserInterfaceConstantsProvider>();
+
+            var stepFrequency = userInterfaceConstants.SlidersStepFrequency;
+            var animationTimeoutMilliseconds = userInterfaceConstants.AnimationTimeoutMilliseconds;
+
+            var rotationAngle = _lastRotationAngle;
+
+            var needToIncreaseAngle = rotationAngle + 1 < DrawingConstants.CIRCLE_END_ANGLE_DEGREES;
+            var needToDecreaseAngle = !needToIncreaseAngle;
+
+            while (!token.IsCancellationRequested)
+            {
+                token.ThrowIfCancellationRequested();
+
+                SetRotationAngleSilent(rotationAngle);
+
+                RotateFigure(rotationAngle);
+
+                if (needToDecreaseAngle)
+                {
+                    needToDecreaseAngle = rotationAngle - stepFrequency >= DrawingConstants.CIRCLE_START_ANGLE_DEGREES;
+
+                    if (needToDecreaseAngle)
+                    {
+                        rotationAngle -= stepFrequency;
+                    }
+                    else
+                    {
+                        needToDecreaseAngle = false;
+                        needToIncreaseAngle = true;
+                    }
+                }
+                else if (needToIncreaseAngle)
+                {
+                    needToIncreaseAngle = rotationAngle + stepFrequency <= DrawingConstants.CIRCLE_END_ANGLE_DEGREES;
+
+                    if (needToIncreaseAngle)
+                    {
+                        rotationAngle += stepFrequency;
+                    }
+                    else
+                    {
+                        needToIncreaseAngle = false;
+                        needToDecreaseAngle = true;
+                    }
+                }
+
+                await Task.Delay(animationTimeoutMilliseconds, token);
+            }
+        }
+
+        async Task StopAnimatingRotationAsync()
+        {
+            try
+            {
+                await _rotateAnimationCancellationSource.CancelAsync();
+            }
+            catch (Exception ex)
+            {
+                Logger.Exception(ex);
+            }
         }
     }
 }

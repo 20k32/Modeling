@@ -37,6 +37,9 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         bool _positionEditingControlVisible;
 
         [ObservableProperty]
+        bool _animateRotation;
+
+        [ObservableProperty]
         bool _rotationPointVisible;
 
         [ObservableProperty]
@@ -164,11 +167,25 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
         partial void OnRotationAngleChanged(float newValue)
         {
-            newValue = newValue / 10;
-            var transformedUserPoint = _userPoint.CenterPoint;
-            _figureTransform = MatrixExtensions.CreateRotationTransform(transformedUserPoint, newValue.RadianToDegrees()) * _figureTransform;
+            RotateFigure(newValue);
+        }
 
-            RedrawAll();
+        private void SetRotationAngleSilent(float newValue)
+        {
+            _rotationAngle = newValue;
+            OnPropertyChanged(nameof(RotationAngle));
+        }
+
+        async partial void OnAnimateRotationChanged(bool newValue)
+        {
+            if (newValue)
+            {
+                await StartAnimatingRotationAsync();
+            }
+            else
+            {
+                await StopAnimatingRotationAsync();
+            }
         }
     }
 }

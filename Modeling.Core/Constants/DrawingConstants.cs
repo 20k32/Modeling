@@ -76,5 +76,8 @@ namespace Modeling.Core.Constants
         public const float MINIMUM_CANVAS_PIXELS_PER_CENTIMETER = 1;
 
         public const int DEFAULT_CANVAS_REFRESH_RATE = 60;
+
+        public const float CIRCLE_START_ANGLE_DEGREES = 0f;
+        public const float CIRCLE_END_ANGLE_DEGREES = 360;
     }
 }
