@@ -29,12 +29,12 @@ abstract class PointGeometry(float minimumAcceptableDistance = Constants.MINIMUM
     public IPointHashSetCollection DefaultPoints { get; private init; } = Ioc.Default.GetRequiredService<IPointHashSetCollection>();
     public IPointHashSetCollection Points { get; private init; } = Ioc.Default.GetRequiredService<IPointHashSetCollection>();
 
-    public SegmentDimensionParameter SegmentDimensionParameter { get; private set; }
 
     public PointSingle DefaultCenterPoint => _defaultCenterPoint;
     public PointSingle CenterPoint => _centerPoint;
     public RectangleSingle Bounds => _bounds;
 
+    public SegmentDimensionParameter SegmentDimension { get; set; }
     public abstract GeometryType GeometryType { get; protected set; }
     public abstract DimensionType DimensionType { get; protected set; }
 
@@ -55,8 +55,6 @@ abstract class PointGeometry(float minimumAcceptableDistance = Constants.MINIMUM
             }
         }
     }
-
-    public SegmentDimensionParameter SegmentDimension => throw new NotImplementedException();
 
     public void AddPoint(PointSingle point) => Points.Add(point);
     public void AddPointsRange(IEnumerable<PointSingle> points)
@@ -112,7 +110,4 @@ abstract class PointGeometry(float minimumAcceptableDistance = Constants.MINIMUM
 
     protected virtual PointSingle CalculateCenterPointCore()
         => new PointSingle((Bounds.Left + Bounds.Right) / 2, (Bounds.Top + Bounds.Bottom) / 2);
-
-    public void SetSegmentDimension(SegmentDimensionParameter segmentDimension)
-        => SegmentDimensionParameter = segmentDimension;
 }

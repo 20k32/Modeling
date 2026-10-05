@@ -12,7 +12,7 @@ namespace Modeling.Models.Drawing.Figures.PointGeometries
     {
         event ActionEventHandler PointGeometryPropertyChanged;
 
-        SegmentDimensionParameter SegmentDimension { get; }
+        SegmentDimensionParameter SegmentDimension { get; set;  }
 
         DimensionType DimensionType { get; }
         GeometryType GeometryType { get; }
@@ -27,7 +27,5 @@ namespace Modeling.Models.Drawing.Figures.PointGeometries
 
         void CommitPropertyChanges();
         void SetDefaultProperties();
-
-        void SetSegmentDimension(SegmentDimensionParameter segmentDimension);
     }
 }

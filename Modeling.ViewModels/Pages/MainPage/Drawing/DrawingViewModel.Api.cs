@@ -53,7 +53,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         readonly IPointGeometry _userPoint;
         readonly IFigure _figure;
 
-        PointSingle startDrawingPoint;
+        PointSingle _startDrawingPoint;
 
         UserPointDrawingAction _drawingAction;
         PointSingle _previousMovedPoint;
@@ -467,22 +467,28 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
             var halfCirclesRadiusPixels = FigureRelatedConstants.HALF_CIRCLES_DIAMETER_MILLIMETERS * pixelsPerMillimeter / 2;
 
-            startDrawingPoint = new PointSingle(
+            _startDrawingPoint = new PointSingle(
                 x: (canvasSize.Width / 2) - figureWidthPixels / 2 - halfCirclesRadiusPixels,
                 y: (canvasSize.Height / 2) - figureHeightPixels / 2 - halfCirclesRadiusPixels);
 
             _figure.InitializeSegmentDimensions(pixelsPerCentimeter);
 
+            InitializeFigureSegments(pixelsPerCentimeter);
+
+            _figure.CalculateDefaultPropertiesFromSegments();
+        }
+
+        void InitializeFigureSegments(float pixelsPerCentimeter)
+        {
             _figure.AddSegments(
-                FigureExtensions.CreateCustomShape(startDrawingPoint,
+                FigureExtensions.CreateCustomShape(_startDrawingPoint,
                 _figure.GetActualSegmentsDimensions()),
                 pixelsPerCentimeter);
 
             _figure.CalculatePropertiesFromSegments();
-            _figure.CalculateDefaultPropertiesFromSegments();
         }
 
-        private PointListTransformMessageParameter GetDrawingFigureMessage(PointListTransformMessageParameter parentMessage)
+        PointListTransformMessageParameter GetDrawingFigureMessage(PointListTransformMessageParameter parentMessage)
         {
             var rawBackgroundColor = _drawingSettingsProvider.Settings.BackgroundColor;
             var backgroundColor = new DrawingColor(rawBackgroundColor);
@@ -663,62 +669,41 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
         void HandleCircleLengthChanged(float value)
         {
-            if (NearestSegment is ICirclePointGeometry circleGeometry)
-            {
-                var pixelsPerCentimeter = _drawingSettingsProvider.Settings.PixelsPerCentimeter;
-
-                var newRadius = value * pixelsPerCentimeter;
-
-                var newPoints = circleGeometry.CenterPoint.GetCirclePoints(newRadius);
-
-                circleGeometry.ClearPoints();
-
-                circleGeometry.AddPointsRange(newPoints);
-
-                circleGeometry.CalculateBounds();
-
-                circleGeometry.CommitPropertyChanges();
-            }
-        }
-
-        void HandleLineLengthChanged(float value)
-        {
-            if (NearestSegment is not ILinePointGeometry lineGeometry || value < 0)
+            if (NearestSegment is not ICirclePointGeometry || value < 0)
             {
                 return;
             }
 
             var pixelsPerCentimeter = _drawingSettingsProvider.Settings.PixelsPerCentimeter;
+
+            var newLength = value * 2 * pixelsPerCentimeter;
+
+            HandleSegmentSizeChanged(NearestSegment, pixelsPerCentimeter, newLength);
+        }
+
+        void HandleLineLengthChanged(float value)
+        {
+            if (NearestSegment is not ILinePointGeometry || value < 0)
+            {
+                return;
+            }
+
+            var pixelsPerCentimeter = _drawingSettingsProvider.Settings.PixelsPerCentimeter;
+
             var newLength = value * pixelsPerCentimeter;
 
-            /*var p1 = lineGeometry.DefaultPoints.First();
-            var p2 = lineGeometry.DefaultPoints.Last();
+            HandleSegmentSizeChanged(NearestSegment, pixelsPerCentimeter, newLength);
+        }
 
-            var dx = p2.X - p1.X;
-            var dy = p2.Y - p1.Y;
-            var distance = MathF.Sqrt(dx * dx + dy * dy);
+        void HandleSegmentSizeChanged(IPointGeometry segment, float pixelsPerCentimeter, float value)
+        {
+            _figure.Segments.Clear();
 
-            var ux = distance > 0 ? dx / distance : 1f;
-            var uy = distance > 0 ? dy / distance : 0f;
+            _figure.ChangeSegmentDimension(NearestSegment.SegmentDimension, value);
 
-            var midX = (p1.X + p2.X) / 2f;
-            var midY = (p1.Y + p2.Y) / 2f;
-            var half = newLength / 2f;
+            InitializeFigureSegments(pixelsPerCentimeter);
 
-            var newFirstPoint = new PointSingle(
-                x: midX - ux * half,
-                y: midY - uy * half);
-
-            var newSecondPoint = new PointSingle(
-                x: midX + ux * half,
-                y: midY + uy * half
-
-            lineGeometry.Points.Clear();
-            lineGeometry.Points.AddRange([newFirstPoint, newSecondPoint]);
-
-            lineGeometry.CalculateBounds();
-
-            lineGeometry.CommitPropertyChanges(););*/
+            RedrawAll();
         }
 
         void OnNearestSegmentDimensionChanged()

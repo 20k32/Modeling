@@ -10,7 +10,7 @@ namespace Modeling.Models.Drawing.Figures.PointGeometries.GeometryCreationFactor
         {
             var circlePointGeometry = Ioc.Default.GetRequiredService<CirclePointGeometry>();
 
-            circlePointGeometry.SetSegmentDimension(segmentDimension);
+            circlePointGeometry.SegmentDimension = segmentDimension;
 
             circlePointGeometry.StartAngle = startAngle;
             circlePointGeometry.EndAngle = endAngle;
@@ -22,7 +22,7 @@ namespace Modeling.Models.Drawing.Figures.PointGeometries.GeometryCreationFactor
         public IPointGeometry CreateLinePointGeometry(SegmentDimensionParameter segmentDimension)
         {
             var lineGeometry = Ioc.Default.GetRequiredService<LinePointGeometry>();
-            lineGeometry.SetSegmentDimension(segmentDimension);
+            lineGeometry.SegmentDimension = segmentDimension;
 
             return lineGeometry;
         }
