@@ -215,8 +215,8 @@ namespace Modeling.Models.Extensions
             var rightHalfCirclesStartAngleDegrees = -90f;
             var rightHalfCirclesEndAngleDegrees = 90f;
 
-            var topLargeVerticalLineWidth = dimension.TopLargeVerticalLineLength;
-            var bottomLargeVerticalLineWidth = dimension.BottomLargeVerticalLineLength;
+            var topLargeVerticalLineWidth = MathF.Min(dimension.TopLargeVerticalLineLength, dimension.BottomLargeVerticalLineLength);
+            var bottomLargeVerticalLineWidth = topLargeVerticalLineWidth;
 
             var topLeftHorizontalSmallLineFirstWidth = dimension.TopLeftHorizontalSmallLineFirstLength;
             var topLeftHorizontalSmallLineSecondWidth = dimension.TopLeftHorizontalSmallLineSecondLength;
@@ -228,7 +228,9 @@ namespace Modeling.Models.Extensions
             var bottomRightHorizontalSmallLineFirstWidth = dimension.BottomRightHorizontalSmallLineFirstLength;
             var bottomRightHorizontalSmallLineSecondWidth = dimension.BottomRightHorizontalSmallLineSecondLength;
 
-            var topLeftVerticalLineHeight = dimension.TopLeftVerticalSmallLineLength;
+            var newTopLeftHalfCircleDiameter = Math.Max(dimension.TopLeftVerticalSmallLineLength, dimension.TopLeftHalfCircleDiameter);
+
+            var topLeftVerticalLineHeight = newTopLeftHalfCircleDiameter;//dimension.TopLeftVerticalSmallLineLength;
             var centerLeftLargeVerticalLineHeight = dimension.CenterLeftVerticalLargeLineLength;
             var bottomLeftVerticalSmallLineHeight = dimension.BottomLeftVerticalSmallLineLength;
 
@@ -236,7 +238,7 @@ namespace Modeling.Models.Extensions
             var centerRightLargeVerticalLineHeight = dimension.CenterRightVerticalLargeLineLength;
             var bottomRightVerticalSmallLineHeight = dimension.BottomRightVerticalSmallLineLength;
 
-            var topLeftHalfCircleRadius = dimension.TopLeftHalfCircleDiameter / 2;
+            var topLeftHalfCircleRadius = newTopLeftHalfCircleDiameter / 2;//dimension.TopLeftHalfCircleDiameter / 2;
             var topRightHalfCircleRadius = dimension.TopRightHalfCircleDiameter / 2;
             var bottomLeftHalfCircleRadius = dimension.BottomLeftHalfCircleDiameter / 2;
             var bottomRightHalfCircleRadius = dimension.BottomRightHalfCircleDiameter / 2;
@@ -524,8 +526,12 @@ namespace Modeling.Models.Extensions
             yield return smallCircle.ToCirclePointGeometry(largeCenterCircleCenterPoint,
                 parameter: SegmentDimensionParameter.CenterSmallCircleDiameter);
 
+            // ------------------------------------------------------------
+            // LEFT SIDE
+            // ------------------------------------------------------------
+
             var horizontalDistanceBetweenLeftSmallVerticalLineAndLargeCircle =
-    centerLeftHorizontalLineFirstWidth;
+                centerLeftHorizontalLineFirstWidth;
 
             var leftSmallVerticalCenterLineStartPoint = new PointSingle(
                 x: horizontalOffset
@@ -544,54 +550,60 @@ namespace Modeling.Models.Extensions
                 .ToLinePointGeometry(
                     SegmentDimensionParameter.CenterLeftVerticalLineLength);
 
-            var topSquareDistanceFromCircleCenter =
+
+            // LEFT TOP
+            var leftTopDistanceFromCircleCenter =
                 leftSmallVerticalCenterLineStartPoint.Y - verticalOffset;
 
-            var bottomSquareDistanceFromCircleCenter =
-                leftSmallVerticalCenterLineSecondPoint.Y - verticalOffset;
-
-            var topCircleHorizontalOffset = MathF.Sqrt(
+            var leftTopCircleHorizontalOffset = MathF.Sqrt(
                 MathF.Max(
                     0f,
                     largeCenterCircleRadius * largeCenterCircleRadius
-                    - topSquareDistanceFromCircleCenter * topSquareDistanceFromCircleCenter));
-
-            var bottomCircleHorizontalOffset = MathF.Sqrt(
-                MathF.Max(
-                    0f,
-                    largeCenterCircleRadius * largeCenterCircleRadius
-                    - bottomSquareDistanceFromCircleCenter * bottomSquareDistanceFromCircleCenter));
-
-            var leftSmallCenterHorizonalFirstLineFistPoint =
-                leftSmallVerticalCenterLineStartPoint;
+                    - leftTopDistanceFromCircleCenter * leftTopDistanceFromCircleCenter));
 
             var leftTopCircleIntersectionPoint = new PointSingle(
-                x: horizontalOffset - topCircleHorizontalOffset,
-                y: leftSmallCenterHorizonalFirstLineFistPoint.Y);
+                x: horizontalOffset - leftTopCircleHorizontalOffset,
+                y: leftSmallVerticalCenterLineStartPoint.Y);
 
             yield return ((ICollection<PointSingle>)[
-                    leftSmallCenterHorizonalFirstLineFistPoint,
+                    leftSmallVerticalCenterLineStartPoint,
         leftTopCircleIntersectionPoint])
                 .ToLinePointGeometry(
                     SegmentDimensionParameter.CenterLeftTopHorizontalLineLength);
 
-            var leftSmallCenterHorizonalSecondLineFistPoint =
-                leftSmallVerticalCenterLineSecondPoint;
+
+            // LEFT BOTTOM
+            var leftBottomDistanceFromCircleCenter =
+                leftSmallVerticalCenterLineSecondPoint.Y - verticalOffset;
+
+            var leftBottomCircleHorizontalOffset = MathF.Sqrt(
+                MathF.Max(
+                    0f,
+                    largeCenterCircleRadius * largeCenterCircleRadius
+                    - leftBottomDistanceFromCircleCenter * leftBottomDistanceFromCircleCenter));
 
             var leftBottomCircleIntersectionPoint = new PointSingle(
-                x: horizontalOffset - bottomCircleHorizontalOffset,
-                y: leftSmallCenterHorizonalSecondLineFistPoint.Y);
+                x: horizontalOffset - leftBottomCircleHorizontalOffset,
+                y: leftSmallVerticalCenterLineSecondPoint.Y);
 
             yield return ((ICollection<PointSingle>)[
-                    leftSmallCenterHorizonalSecondLineFistPoint,
+                    leftSmallVerticalCenterLineSecondPoint,
         leftBottomCircleIntersectionPoint])
                 .ToLinePointGeometry(
                     SegmentDimensionParameter.CenterLeftBottomHorizontalLineLength);
 
+
+            // ------------------------------------------------------------
+            // RIGHT SIDE
+            // ------------------------------------------------------------
+
+            var horizontalDistanceBetweenRightSmallVerticalLineAndLargeCircle =
+                centerRightHorizontalLineFirstWidth;
+
             var rightSmallVerticalCenterLineStartPoint = new PointSingle(
                 x: horizontalOffset
                    + largeCenterCircleRadius
-                   + horizontalDistanceBetweenLeftSmallVerticalLineAndLargeCircle,
+                   + horizontalDistanceBetweenRightSmallVerticalLineAndLargeCircle,
                 y: verticalOffset - (centerRightVerticalLineHeight / 2));
 
             var rightSmallVerticalCenterLineEndPoint = new PointSingle(
@@ -605,28 +617,43 @@ namespace Modeling.Models.Extensions
                 .ToLinePointGeometry(
                     SegmentDimensionParameter.CenterRightVerticalLineLength);
 
-            var rightSmallCenterHorizontalLineFirstPoint =
-                rightSmallVerticalCenterLineStartPoint;
+            // RIGHT TOP
+            var rightTopDistanceFromCircleCenter =
+                rightSmallVerticalCenterLineStartPoint.Y - verticalOffset;
+
+            var rightTopCircleHorizontalOffset = MathF.Sqrt(
+                MathF.Max(
+                    0f,
+                    largeCenterCircleRadius * largeCenterCircleRadius
+                    - rightTopDistanceFromCircleCenter * rightTopDistanceFromCircleCenter));
 
             var rightTopCircleIntersectionPoint = new PointSingle(
-                x: horizontalOffset + topCircleHorizontalOffset,
-                y: rightSmallCenterHorizontalLineFirstPoint.Y);
+                x: horizontalOffset + rightTopCircleHorizontalOffset,
+                y: rightSmallVerticalCenterLineStartPoint.Y);
 
             yield return ((ICollection<PointSingle>)[
-                    rightSmallCenterHorizontalLineFirstPoint,
+                    rightSmallVerticalCenterLineStartPoint,
         rightTopCircleIntersectionPoint])
                 .ToLinePointGeometry(
                     SegmentDimensionParameter.CenterRightTopHorizontalLineLength);
 
-            var rightSmallCenterHorizontalSecondLineFirstPoint =
-                rightSmallVerticalCenterLineEndPoint;
+
+            // RIGHT BOTTOM
+            var rightBottomDistanceFromCircleCenter =
+                rightSmallVerticalCenterLineEndPoint.Y - verticalOffset;
+
+            var rightBottomCircleHorizontalOffset = MathF.Sqrt(
+                MathF.Max(
+                    0f,
+                    largeCenterCircleRadius * largeCenterCircleRadius
+                    - rightBottomDistanceFromCircleCenter * rightBottomDistanceFromCircleCenter));
 
             var rightBottomCircleIntersectionPoint = new PointSingle(
-                x: horizontalOffset + bottomCircleHorizontalOffset,
-                y: rightSmallCenterHorizontalSecondLineFirstPoint.Y);
+                x: horizontalOffset + rightBottomCircleHorizontalOffset,
+                y: rightSmallVerticalCenterLineEndPoint.Y);
 
             yield return ((ICollection<PointSingle>)[
-                    rightSmallCenterHorizontalSecondLineFirstPoint,
+                    rightSmallVerticalCenterLineEndPoint,
         rightBottomCircleIntersectionPoint])
                 .ToLinePointGeometry(
                     SegmentDimensionParameter.CenterRightBottomHorizontalLineLength);
