@@ -3,49 +3,46 @@
     public enum SegmentDimensionParameter
     {
         None,
+
+        TopLeftHorizontalSmallLineFirstLength,
+        TopLeftHorizontalSmallLineSecondLength,
+        TopRightHorizontalSmallLineFirstLength,
+        TopRightHorizontalSmallLineSecondLength,
+        BottomLeftHorizontalSmallLineFirstLength,
+        BottomLeftHorizontalSmallLineSecondLength,
+        BottomRightHorizontalSmallLineFirstLength,
+        BottomRightHorizontalSmallLineSecondLength,
+
+        TopLeftVerticalSmallLineLength,
+        CenterLeftVerticalLargeLineLength,
+        BottomLeftVerticalSmallLineLength,
+        TopRightVerticalSmallLineLength,
+        CenterRightVerticalLargeLineLength,
+        BottomRightVerticalSmallLineLength,
+
         TopLeftHalfCircleDiameter,
-        TopLeftInnerCircleDiameter,
-        BottomLeftInnerCircleDiameter,
         BottomLeftHalfCircleDiameter,
-
-        LargeCircleDiameter,
-        SmallCircleDiameter,
-
-        TopRightInnerCircleDiameter,
         TopRightHalfCircleDiameter,
-
         BottomRightHalfCircleDiameter,
-        BottomRightInnerCircleDiameter,
 
-        TopHorizontalLineLength,
-        BottomHorizontalLineLength,
+        TopLeftSmallCircleDiameter,
+        BottomLeftSmallCircleDiameter,
+        TopRightSmallCircleDiameter,
+        BottomRightSmallCircleDiameter,
 
-        LeftUpperVerticalLineLength,
-        LeftMiddleVerticalLineLength,
-        LeftLowerVerticalLineLength,
+        CenterSmallCircleDiameter,
+        CenterLargeCircleDiameter,
 
-        LeftSquareVerticalLineLength,
-        LeftSquareHorizontalLineLength,
+        CenterLeftTopHorizontalLineLength,
+        CenterLeftBottomHorizontalLineLength,
+        CenterLeftVerticalLineLength,
 
-        RightSquareVerticalLineLength,
-        RightSquareHorizontalLineLength,
 
-        BottomSquareHorizontalLineLength,
-        BottomLeftSquareHorizontalLineLength,
+        CenterRightTopHorizontalLineLength,
+        CenterRightBottomHorizontalLineLength,
+        CenterRightVerticalLineLength,
 
-        TopRightConnectionLineLength,
-        TopRightLowerConnectionLineLength,
-        TopRightVerticalLineLength,
-
-        BottomRightConnectionLineLength,
-
-        TopLeftCircleConnectionLineLength,
-        RightMiddleVerticalLineLength,
-        BottomRightVerticalLineLength,
-
-        TopLeftHalfCircleTopLineLength,
-        BottomLeftHalfCircleTopLineLength,
-        BottomTopLeftHalfCircleTopLineLength,
-        BottomBottomLeftHalfCircleTopLineLength
+        TopLargeVerticalLineLength,
+        BottomLargeVerticalLineLength
     }
 }

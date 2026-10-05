@@ -4,7 +4,7 @@ using Modeling.Core.Abstractions.Collections.Drawings;
 using Modeling.Core.DependencyInjection;
 using Modeling.Models.Abstractions.Collections.Drawings;
 using Modeling.Models.Abstractions.Drawing.Figure;
-using Modeling.Models.Abstractions.SegmentDiemnsions;
+using Modeling.Models.Abstractions.SegmentDimensions;
 using Modeling.Models.Collections;
 using Modeling.Models.Collections.Drawings;
 using Modeling.Models.Drawing;

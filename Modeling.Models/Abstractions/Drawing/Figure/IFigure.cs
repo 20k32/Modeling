@@ -1,6 +1,6 @@
 ﻿using Modeling.Core.Drawing;
 using Modeling.Models.Abstractions.Collections.Drawings;
-using Modeling.Models.Abstractions.SegmentDiemnsions;
+using Modeling.Models.Abstractions.SegmentDimensions;
 using Modeling.Models.Drawing.Figures.PointGeometries;
 using Modeling.Models.Miscellaneous;
 using System.Collections.Generic;

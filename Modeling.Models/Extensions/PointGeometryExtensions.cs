@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
+using Modeling.Core.Constants;
 using Modeling.Core.Drawing;
 using Modeling.Models.Abstractions.Drawing.Figure;
 using Modeling.Models.Drawing.Figures.PointGeometries;
@@ -10,7 +11,7 @@ namespace Modeling.Models.Extensions
 {
     public static class PointGeometryExtensions
     {
-        public static IPointGeometry ToLinePointGeometry(this ICollection<PointSingle> points, SegmentDimensionParameter parameter)
+        public static IPointGeometry ToLinePointGeometry(this ICollection<PointSingle> points, SegmentDimensionParameter parameter = SegmentDimensionParameter.None)
         {
             var pointGeometry = Ioc.Default.GetRequiredService<IPointGeometryCreationFactory>()
                 .CreateLinePointGeometry(parameter);
@@ -23,20 +24,10 @@ namespace Modeling.Models.Extensions
             return pointGeometry;
         }
 
-        public static IPointGeometry ToCirclePointGeometry(this ICollection<PointSingle> points, PointSingle centerPoint, SegmentDimensionParameter parameter)
-        {
-            var pointGeometry = Ioc.Default.GetRequiredService<IPointGeometryCreationFactory>()
-                .CreateCirclePointGeometry(centerPoint, parameter, 0, 360);
-
-            pointGeometry.AddPointsRange(points);
-
-            pointGeometry.CalculateBounds();
-            pointGeometry.CalculateCenterPoint();
-
-            return pointGeometry;
-        }
-
-        public static IPointGeometry ToCirclePointGeometry(this ICollection<PointSingle> points, PointSingle centerPoint, float startAngle, float endAngle, SegmentDimensionParameter parameter)
+        public static IPointGeometry ToCirclePointGeometry(this ICollection<PointSingle> points, PointSingle centerPoint, 
+            float startAngle = DrawingConstants.CIRCLE_START_ANGLE_DEGREES, 
+            float endAngle = DrawingConstants.CIRCLE_END_ANGLE_DEGREES, 
+            SegmentDimensionParameter parameter = SegmentDimensionParameter.None)
         {
             var pointGeometry = Ioc.Default.GetRequiredService<IPointGeometryCreationFactory>()
                 .CreateCirclePointGeometry(centerPoint, parameter, startAngle, endAngle);

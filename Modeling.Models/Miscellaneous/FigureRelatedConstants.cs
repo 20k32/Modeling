@@ -5,7 +5,7 @@
         public const float FIGURE_HEIGHT_MILLIMETERS = 60;
         public const float FIGURE_WIDTH_MILLIMETERS = 110;
         public const float HALF_CIRCLES_DIAMETER_MILLIMETERS = 10;
-        public const float INNER_HALF_CIRCLES_DIAMETER_MILLIMETERS = 5;
+        public const float INNER_CIRCLES_DIAMETER_MILLIMETERS = 5;
         public const float HORIZONTAL_DISTANCE_BETWEEN_HALF_CIRCLES_MILLIMETERS = 100;
         public const float VERTICAL_DISTANCE_BETWEEN_HALF_CIRCLES_MILLIMETERS = 50;
         public const float LARGE_RECTANGLE_WIDTH_MILLIMETERS = 80;

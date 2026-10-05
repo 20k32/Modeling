@@ -1,97 +1,93 @@
-﻿namespace Modeling.Models.Abstractions.SegmentDiemnsions
+﻿namespace Modeling.Models.Abstractions.SegmentDimensions
 {
     public interface ISegmentDimension
     {
-        // Circles
+        public float TopLeftHorizontalSmallLineFirstLength { get; }
+        public float TopLeftHorizontalSmallLineSecondLength { get; }
+
+        public float TopRightHorizontalSmallLineFirstLength { get; }
+        public float TopRightHorizontalSmallLineSecondLength { get; }
+
+        public float BottomLeftHorizontalSmallLineFirstLength { get; }
+        public float BottomLeftHorizontalSmallLineSecondLength { get; }
+
+        public float BottomRightHorizontalSmallLineFirstLength { get; }
+        public float BottomRightHorizontalSmallLineSecondLength { get; }
+
+        public float TopLeftVerticalSmallLineLength { get; }
+        public float CenterLeftVerticalLargeLineLength { get; }
+        public float BottomLeftVerticalSmallLineLength { get; }
+
+        public float TopRightVerticalSmallLineLength { get; }
+        public float CenterRightVerticalLargeLineLength { get; }
+        public float BottomRightVerticalSmallLineLength { get; }
+
         public float TopLeftHalfCircleDiameter { get; }
-        public float TopLeftInnerCircleDiameter { get; }
-        public float BottomLeftInnerCircleDiameter { get; }
         public float BottomLeftHalfCircleDiameter { get; }
-
-        public float LargeCircleDiameter { get; }
-        public float SmallCircleDiameter { get; }
-
-        public float TopRightInnerCircleDiameter { get; }
         public float TopRightHalfCircleDiameter { get; }
-
         public float BottomRightHalfCircleDiameter { get; }
-        public float BottomRightInnerCircleDiameter { get; }
 
-        // Lines
-        public float TopLeftHorizontalLineLength { get; }
-        public float BottomHorizontalLineLength { get; }
+        public float TopLeftSmallCircleDiameter { get; }
+        public float BottomLeftSmallCircleDiameter { get; }
+        public float TopRightSmallCircleDiameter { get; }
+        public float BottomRightSmallCircleDiameter { get; }
 
-        public float LeftUpperVerticalLineLength { get; }
-        public float LeftMiddleVerticalLineLength { get; }
-        public float LeftLowerVerticalLineLength { get; }
+        public float CenterSmallCircleDiameter { get; }
+        public float CenterLargeCircleDiameter { get; }
 
-        public float LeftSquareVerticalLineLength { get; }
-        public float LeftSquareHorizontalLineLength { get; }
+        public float CenterLeftTopHorizontalLineLength { get; }
+        public float CenterLeftBottomHorizontalLineLength { get; }
+        public float CenterLeftVerticalLineLength { get; }
 
-        public float RightSquareVerticalLineLength { get; }
-        public float RightSquareHorizontalLineLength { get; }
+        public float CenterRightTopHorizontalLineLength { get; }
+        public float CenterRightBottomHorizontalLineLength { get; }
+        public float CenterRightVerticalLineLength { get; }
 
-        public float BottomSquareHorizontalLineLength { get; }
-        public float BottomLeftSquareHorizontalLineLength { get; }
+        public float TopLargeVerticalLineLength { get; }
+        public float BottomLargeVerticalLineLength { get; }
 
-        public float TopRightConnectionLineLength { get; }
-        public float TopRightLowerConnectionLineLength { get; }
-        public float TopRightVerticalLineLength { get; }
+        ISegmentDimension SetTopLeftHorizontalSmallLineFirstLength(float value);
+        ISegmentDimension SetTopLeftHorizontalSmallLineSecondLength(float value);
 
-        public float BottomRightConnectionLineLength { get; }
+        ISegmentDimension SetTopRightHorizontalSmallLineFirstLength(float value);
+        ISegmentDimension SetTopRightHorizontalSmallLineSecondLength(float value);
 
-        public float TopLeftCircleConnectionLineLength { get; }
-        public float RightMiddleVerticalLineLength { get; }
-        public float BottomRightVerticalLineLength { get; }
+        ISegmentDimension SetBottomLeftHorizontalSmallLineFirstLength(float value);
+        ISegmentDimension SetBottomLeftHorizontalSmallLineSecondLength(float value);
 
-        public float TopTopLeftHalfCircleTopLineLength { get; }
-        public float TopBottomLeftHalfCircleTopLineLength { get; }
-        public float BottomTopLeftHalfCircleTopLineLength { get; }
-        public float BottomBottomLeftHalfCircleTopLineLength { get; }
+        ISegmentDimension SetBottomRightHorizontalSmallLineFirstLength(float value);
+        ISegmentDimension SetBottomRightHorizontalSmallLineSecondLength(float value);
+
+        ISegmentDimension SetTopLeftVerticalSmallLineLength(float value);
+        ISegmentDimension SetCenterLeftVerticalLargeLineLength(float value);
+        ISegmentDimension SetBottomLeftVerticalSmallLineLength(float value);
+
+        ISegmentDimension SetTopRightVerticalSmallLineLength(float value);
+        ISegmentDimension SetCenterRightVerticalLargeLineLength(float value);
+        ISegmentDimension SetBottomRightVerticalSmallLineLength(float value);
 
         ISegmentDimension SetTopLeftHalfCircleDiameter(float value);
-        ISegmentDimension SetTopLeftInnerCircleDiameter(float value);
-        ISegmentDimension SetBottomLeftInnerCircleDiameter(float value);
         ISegmentDimension SetBottomLeftHalfCircleDiameter(float value);
-
-        ISegmentDimension SetLargeCircleDiameter(float value);
-        ISegmentDimension SetSmallCircleDiameter(float value);
-
-        ISegmentDimension SetTopRightInnerCircleDiameter(float value);
         ISegmentDimension SetTopRightHalfCircleDiameter(float value);
-
         ISegmentDimension SetBottomRightHalfCircleDiameter(float value);
-        ISegmentDimension SetBottomRightInnerCircleDiameter(float value);
 
-        ISegmentDimension SetTopHorizontalLineLength(float value);
-        ISegmentDimension SetBottomHorizontalLineLength(float value);
+        ISegmentDimension SetTopLeftSmallCircleDiameter(float value);
+        ISegmentDimension SetBottomLeftSmallCircleDiameter(float value);
+        ISegmentDimension SetTopRightSmallCircleDiameter(float value);
+        ISegmentDimension SetBottomRightSmallCircleDiameter(float value);
 
-        ISegmentDimension SetLeftUpperVerticalLineLength(float value);
-        ISegmentDimension SetLeftMiddleVerticalLineLength(float value);
-        ISegmentDimension SetLeftLowerVerticalLineLength(float value);
+        ISegmentDimension SetCenterSmallCircleDiameter(float value);
+        ISegmentDimension SetCenterLargeCircleDiameter(float value);
 
-        ISegmentDimension SetLeftSquareVerticalLineLength(float value);
-        ISegmentDimension SetLeftSquareHorizontalLineLength(float value);
+        ISegmentDimension SetCenterLeftTopHorizontalLineLength(float value);
+        ISegmentDimension SetCenterLeftBottomHorizontalLineLength(float value);
+        ISegmentDimension SetCenterLeftVerticalLineLength(float value);
 
-        ISegmentDimension SetRightSquareVerticalLineLength(float value);
-        ISegmentDimension SetRightSquareHorizontalLineLength(float value);
+        ISegmentDimension SetCenterRightTopHorizontalLineLength(float value);
+        ISegmentDimension SetCenterRightBottomHorizontalLineLength(float value);
+        ISegmentDimension SetCenterRightVerticalLineLength(float value);
 
-        ISegmentDimension SetBottomSquareHorizontalLineLength(float value);
-        ISegmentDimension SetBottomLeftSquareHorizontalLineLength(float value);
-
-        ISegmentDimension SetTopRightConnectionLineLength(float value);
-        ISegmentDimension SetTopRightLowerConnectionLineLength(float value);
-        ISegmentDimension SetTopRightVerticalLineLength(float value);
-
-        ISegmentDimension SetBottomRightConnectionLineLength(float value);
-
-        ISegmentDimension SetTopLeftCircleConnectionLineLength(float value);
-        ISegmentDimension SetRightMiddleVerticalLineLength(float value);
-        ISegmentDimension SetBottomRightVerticalLineLength(float value);
-
-        ISegmentDimension SetTopLeftHalfCircleTopLineLength(float value);
-        ISegmentDimension SetBottomLeftHalfCircleTopLineLength(float value);
-        ISegmentDimension SetBottomTopLeftHalfCircleTopLineLength(float value);
-        ISegmentDimension SetBottomBottomLeftHalfCircleTopLineLength(float value);
+        ISegmentDimension SetTopLargeVerticalLineLength(float value);
+        ISegmentDimension SetBottomLargeVerticalLineLength(float value);
     }
 }

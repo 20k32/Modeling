@@ -800,10 +800,15 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
         void RotateFigure(float angleDegrees)
         {
+
+            var pixelsPerCentimeter = _drawingSettingsProvider.Settings.PixelsPerCentimeter;
+            var pixelsPerMillimeter = pixelsPerCentimeter / 10;
+
+            var rotationAngle = angleDegrees - _lastRotationAngle;
             _lastRotationAngle = angleDegrees;
 
             var transformedUserPoint = _userPointTransform * _userPoint.CenterPoint;
-            _figureTransform = MatrixExtensions.CreateRotationTransform(transformedUserPoint, -angleDegrees.DegreesToRadian()) * _figureTransform;
+            _figureTransform = MatrixExtensions.CreateRotationTransform(transformedUserPoint, -rotationAngle.DegreesToRadian()) * _figureTransform;
 
             RedrawAll();
         }
@@ -834,7 +839,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         {
             var userInterfaceConstants = Ioc.Default.GetRequiredService<IUserInterfaceConstantsProvider>();
 
-            var stepFrequency = userInterfaceConstants.SlidersStepFrequency;
+            var stepFrequency = 1;//userInterfaceConstants.SlidersStepFrequency;
             var animationTimeoutMilliseconds = userInterfaceConstants.AnimationTimeoutMilliseconds;
 
             var rotationAngle = _lastRotationAngle;
