@@ -259,7 +259,7 @@ namespace Modeling.Models.Extensions
             var centerRightHorizontalLineFirstWidth = dimension.CenterRightTopHorizontalLineLength;
             var centerRightHorizontalLineSecondWidth = dimension.CenterRightBottomHorizontalLineLength;
 
-            var topLeftHalfCircleCenterPoint = startDrawingPoint;
+            var topLeftHalfCircleCenterPoint = startDrawingPoint + topLeftHalfCircleRadius;
 
             var topLeftHalfCircle = topLeftHalfCircleCenterPoint.GetCirclePoints(
                 topLeftHalfCircleRadius,

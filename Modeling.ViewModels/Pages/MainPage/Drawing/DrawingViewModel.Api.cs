@@ -467,11 +467,11 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             var figureWidthPixels = FigureRelatedConstants.FIGURE_WIDTH_MILLIMETERS * pixelsPerMillimeter;
             var figureHeightPixels = FigureRelatedConstants.FIGURE_HEIGHT_MILLIMETERS * pixelsPerMillimeter;
 
-            var halfCirclesRadiusPixels = FigureRelatedConstants.HALF_CIRCLES_DIAMETER_MILLIMETERS * pixelsPerMillimeter / 2;
+            var halfCirclesRadiusPixels = FigureRelatedConstants.HALF_CIRCLES_DIAMETER_MILLIMETERS * pixelsPerMillimeter;
 
             _startDrawingPoint = new PointSingle(
-                x: (canvasSize.Width / 2) - figureWidthPixels / 2 - halfCirclesRadiusPixels,
-                y: (canvasSize.Height / 2) - figureHeightPixels / 2 - halfCirclesRadiusPixels);
+                x: (canvasSize.Width - figureWidthPixels) / 2,
+                y: (canvasSize.Height - figureHeightPixels) / 2);
 
             _figure.InitializeSegmentDimensions(pixelsPerCentimeter);
 
