@@ -237,6 +237,8 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
         void SelectSegmentOnFigure(PointSingle point)
         {
+            point = _figureTransform.Inverse() * point;
+
             var pixelsPerCentimeter = _drawingSettingsProvider.Settings.PixelsPerCentimeter;
 
             var shouldHandlePoint = PickShapeForResizing && _figure.Bounds.Contains(point, pixelsPerCentimeter);
