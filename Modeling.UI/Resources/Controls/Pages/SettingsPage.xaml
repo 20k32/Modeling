@@ -146,7 +146,7 @@
                    HorizontalAlignment="Right"
                    VerticalAlignment="Center"
                    Style="{StaticResource ApplicationTextBlockStyle}"
-                   Text="Refresh rate" />
+                   Text="Frames per second" />
         <ComboBox Grid.Row="10"
                   Grid.Column="1"
                   HorizontalAlignment="Stretch"

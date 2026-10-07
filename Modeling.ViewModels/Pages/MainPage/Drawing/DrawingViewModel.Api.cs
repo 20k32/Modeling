@@ -30,11 +30,9 @@ using Modeling.Models.Miscellaneous;
 using Modeling.Models.UserInterface;
 using Modeling.ViewModels.Miscellaneous;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Windows.Graphics;
 
 namespace Modeling.ViewModels.Pages.MainPage.Drawing
 {
@@ -61,6 +59,8 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         Matrix3x3Single _gridTransform;
         Matrix3x3Single _userPointTransform;
         Matrix3x3Single _figureTransform;
+        Matrix3x3Single _figureTransformCopy;
+        Matrix3x3Single _gridTransformCopy;
 
         IPointGeometry _pointerMoveNearestSegment;
 
@@ -70,6 +70,8 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         bool _shouldApplyGeneralTransformForUserPoint;
         bool _canChangePositionForUserPoint;
         bool _canRedrawUserPoint;
+        bool _wasRotationPointVisible;
+        bool _wasPositionEditingControlVisible;
 
         float _lastRotationAngle;
 
@@ -93,8 +95,12 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             _verticalAxisMarks = Ioc.Default.GetRequiredService<IPointListCollection>();
 
             _gridTransform = DrawingConstants.NON_TRANSFORM_MATRIX;
+            _gridTransformCopy = DrawingConstants.NON_TRANSFORM_MATRIX;
+
             _userPointTransform = DrawingConstants.NON_TRANSFORM_MATRIX;
+
             _figureTransform = DrawingConstants.NON_TRANSFORM_MATRIX;
+            _figureTransformCopy = DrawingConstants.NON_TRANSFORM_MATRIX;
 
             _drawingSettingsProvider = Ioc.Default.GetRequiredService<IDrawingSettingsProvider>();
             _drawingSettingsProvider.SettingsChanged += OnDrawingSettingsProviderSettingsChanged;
@@ -222,11 +228,11 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             }
         }
 
-        void OnDrawingSettingsProviderSettingsChanged()
+        async void OnDrawingSettingsProviderSettingsChanged()
         {
             if (_figure.Any())
             {
-                RedrawAll();
+                await RedrawAllAsync();
             }
         }
 
@@ -325,7 +331,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             }
         }
 
-        void RedrawUserPointCore(PointSingle point)
+        async Task RedrawUserPointCoreAsync(PointSingle point)
         {
             if (!_canChangePositionForUserPoint)
             {
@@ -353,11 +359,11 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
                 _shouldApplyGeneralTransformForUserPoint = false;
 
-                RedrawAll();
+                await RedrawAllAsync();
             }
         }
 
-        void RedrawAll()
+        async Task RedrawAllAsync()
         {
             var rawBackgroundColor = _drawingSettingsProvider.Settings.BackgroundColor;
             var backgroundColor = new DrawingColor(rawBackgroundColor);
@@ -426,7 +432,8 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
                       clearBeforeRedraw: false,
                       color: horizontalAxisTicksDrawingColor,
                       thickness: axisTickThickness)
-                .With(points: _verticalAxisMarks);
+                .With(points: _verticalAxisMarks,
+                      color: verticalAxisTicksDrawingColor);
             }
 
             currentDrawingMessage = GetDrawingFigureMessage(currentDrawingMessage);
@@ -455,7 +462,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
                 }
             }
 
-            WeakReferenceMessenger.Default.Send(new TransformPointsMessage(this, currentDrawingMessage));
+            await WeakReferenceMessenger.Default.Send(new TransformPointsMessage(this, currentDrawingMessage));
 
             _lastDrawingMessage = currentDrawingMessage;
         }
@@ -669,7 +676,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             }
         }
 
-        void HandleCircleLengthChanged(float value)
+        async Task HandleCircleLengthChanged(float value)
         {
             if (NearestSegment is not ICirclePointGeometry || value < 0)
             {
@@ -680,10 +687,10 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
             var newLength = value * 2 * pixelsPerCentimeter;
 
-            HandleSegmentSizeChanged(NearestSegment, pixelsPerCentimeter, newLength);
+            await HandleSegmentSizeChangedAsync(NearestSegment, pixelsPerCentimeter, newLength);
         }
 
-        void HandleLineLengthChanged(float value)
+        async Task HandleLineLengthChanged(float value)
         {
             if (NearestSegment is not ILinePointGeometry || value < 0)
             {
@@ -694,10 +701,10 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
             var newLength = value * pixelsPerCentimeter;
 
-            HandleSegmentSizeChanged(NearestSegment, pixelsPerCentimeter, newLength);
+            await HandleSegmentSizeChangedAsync(NearestSegment, pixelsPerCentimeter, newLength);
         }
 
-        void HandleSegmentSizeChanged(IPointGeometry segment, float pixelsPerCentimeter, float value)
+        async Task HandleSegmentSizeChangedAsync(IPointGeometry segment, float pixelsPerCentimeter, float value)
         {
             _figure.Segments.Clear();
 
@@ -705,12 +712,12 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
             InitializeFigureSegments(pixelsPerCentimeter);
 
-            RedrawAll();
+            await RedrawAllAsync();
         }
 
-        void OnNearestSegmentDimensionChanged()
+        async void OnNearestSegmentDimensionChanged()
         {
-            RedrawAll();
+            await RedrawAllAsync();
         }
 
         void EndUserPointRedrawing(PointSingle point)
@@ -747,7 +754,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             }
         }
 
-        void SelectEntireFigure(PointSingle point)
+        async Task SelectEntireFigureAsync(PointSingle point)
         {
             if (!_shouldChangeFigurePosition)
             {
@@ -769,13 +776,15 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
                     offsetX,
                     offsetY);
 
+                _figureTransformCopy = _figureTransform;
+
                 _previousMovedPoint = point;
 
                 Logger.Information($"X: {point.X} Y: ; {point.Y}");
 
                 _shouldApplyGeneralTransformForUserPoint = false;
 
-                RedrawAll();
+                await RedrawAllAsync();
             }
         }
 
@@ -785,7 +794,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             ChangeMouseCursor(MouseCursor.Default);
         }
 
-        void RotateFigure(float angleDegrees)
+        async Task RotateFigureAsync(float angleDegrees)
         {
 
             var pixelsPerCentimeter = _drawingSettingsProvider.Settings.PixelsPerCentimeter;
@@ -795,9 +804,11 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             _lastRotationAngle = angleDegrees;
 
             var transformedUserPoint = _userPointTransform * _userPoint.CenterPoint;
-            _figureTransform = MatrixExtensions.CreateRotationTransform(transformedUserPoint, -rotationAngle.DegreesToRadian()) * _figureTransform;
 
-            RedrawAll();
+            _figureTransform = MatrixExtensions.CreateRotationTransform(transformedUserPoint, -rotationAngle.DegreesToRadian()) * _figureTransform;
+            _figureTransformCopy = _figureTransform;
+
+            await RedrawAllAsync();
         }
 
         async Task StartAnimatingRotationAsync()
@@ -840,7 +851,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
                 SetRotationAngleSilent(rotationAngle);
 
-                RotateFigure(rotationAngle);
+                await RotateFigureAsync(rotationAngle);
 
                 if (needToDecreaseAngle)
                 {

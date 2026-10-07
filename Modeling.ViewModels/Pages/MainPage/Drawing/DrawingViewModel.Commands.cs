@@ -24,20 +24,20 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         }
 
         [RelayCommand]
-        void DrawLines()
+        async Task DrawLinesAsync()
         {
             _drawingAction = UserPointDrawingAction.AxisPointSelection;
-            RedrawAll();
+            await RedrawAllAsync();
         }
 
         [RelayCommand]
-        void CanvasPointerMoved(PointSingle point)
+        async Task CanvasPointerMovedAsync(PointSingle point)
         {
             switch (_drawingAction)
             {
-                case UserPointDrawingAction.AxisPointSelection: RedrawUserPointCore(point); break;
+                case UserPointDrawingAction.AxisPointSelection: await RedrawUserPointCoreAsync(point); break;
                 case UserPointDrawingAction.FigurePointSelection: SelectSegmentOnFigure(point); break;
-                case UserPointDrawingAction.EntireFigureSelection: SelectEntireFigure(point); break;
+                case UserPointDrawingAction.EntireFigureSelection: await SelectEntireFigureAsync(point); break;
                 default: break;
             }
         }
@@ -72,11 +72,11 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
             LoadCanvasState();
 
-            RedrawAll();
+            await RedrawAllAsync();
         }
 
         [RelayCommand]
-        void CancelPickingShape()
+        async Task CancelPickingShape()
         {
             _previousMovedPoint = DrawingConstants.BREAK_POINT;
 
@@ -104,12 +104,12 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             if (NearestSegment is not null)
             {
                 NearestSegment = default;
-                RedrawAll();
+                await RedrawAllAsync();
             }
         }
 
         [RelayCommand]
-        void ResetFigure()
+        async Task ResetFigureAsync()
         {
             var canvasSize = _drawingSettingsProvider.Settings.CanvasSize;
             var pixelsPerCentimeter = _drawingSettingsProvider.Settings.PixelsPerCentimeter;
@@ -123,12 +123,33 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             _canRedrawUserPoint = false;
 
             _figureTransform = DrawingConstants.NON_TRANSFORM_MATRIX;
+            _figureTransformCopy = DrawingConstants.NON_TRANSFORM_MATRIX;
+
             _userPointTransform = DrawingConstants.NON_TRANSFORM_MATRIX;
+
             _gridTransform = DrawingConstants.NON_TRANSFORM_MATRIX;
+            _gridTransformCopy = DrawingConstants.NON_TRANSFORM_MATRIX;
 
             SetRotationPointSilent(false);
 
-            RedrawAll();
+            await RedrawAllAsync();
+        }
+
+        [RelayCommand]
+        async Task ApplyAffineTransform()
+        {
+            var origin = new PointSingle(AffineStartPointX, AffineStartPointY);
+
+            var xAxis = new PointSingle(1 + AffineNewXPointX, AffineNewXPointY);
+
+            var yAxis = new PointSingle(AffineNewYPointX, 1 + AffineNewYPointY);
+
+            var affineTransformMatrix = MatrixExtensions.CreateAffineTransform(origin, xAxis, yAxis);
+
+            _figureTransform = affineTransformMatrix * _figureTransformCopy;
+            _gridTransform = affineTransformMatrix * _gridTransformCopy;
+
+            await RedrawAllAsync();
         }
     }
 }

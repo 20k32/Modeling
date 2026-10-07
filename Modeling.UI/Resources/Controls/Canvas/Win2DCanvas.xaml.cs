@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using CommunityToolkit.Mvvm.Messaging.Messages;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Geometry;
 using Microsoft.Graphics.Canvas.UI;
@@ -11,12 +12,15 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Modeling.Core.Abstractions.Collections;
 using Modeling.Core.Constants;
+using Modeling.Core.CoreDelegates;
 using Modeling.Core.Drawing;
 using Modeling.Core.Enums;
 using Modeling.Core.Extensions;
 using Modeling.Core.Logging;
+using Modeling.Core.Messages.Base.AsynchronousMessages;
 using Modeling.Core.Messages.Canvas.Drawing;
 using Modeling.Core.Messages.Canvas.Settings;
+using Modeling.Core.Miscellaneous;
 using Modeling.Models.Drawing.DrawingMessageValues;
 using Modeling.Models.Drawing.DrawingMessageValues.Points;
 using Modeling.Models.Drawing.DrawingPipeline;
@@ -24,6 +28,7 @@ using Modeling.Models.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Windows.System;
 using Windows.UI.Core;
@@ -33,11 +38,16 @@ namespace Modeling.UI.Resources.Controls.Canvas
 {
     public sealed partial class Win2DCanvas : UserControl
     {
+        readonly SemaphoreSlim _processingPointsLock;
+
         readonly Dictionary<MouseCursor, InputSystemCursor> _cursors;
 
         readonly IDrawingPipeline _drawingPipeline;
 
+        CancellationTokenSource _processingPointsSource;
+
         CanvasRenderTarget _canvasRenderTarget;
+
         bool _isControlInitialized;
 
         public static readonly DependencyProperty InitializeProperty =
@@ -92,6 +102,8 @@ namespace Modeling.UI.Resources.Controls.Canvas
         {
             InitializeComponent();
 
+            _processingPointsLock = new SemaphoreSlim(1, 1);
+
             WeakReferenceMessenger.Default.Register<InitializeCanvasControlMessage>(this, OnWin2DCanvasInitializeCanvasControlMessage);
             WeakReferenceMessenger.Default.Register<DisposeCanvasControlMessage>(this, OnWin2DCanvasDisposeCanvasControlMessage);
 
@@ -103,6 +115,40 @@ namespace Modeling.UI.Resources.Controls.Canvas
                 { MouseCursor.Move, InputSystemCursor.Create(InputSystemCursorShape.SizeAll) },
                 { MouseCursor.Finger, InputSystemCursor.Create(InputSystemCursorShape.Hand) }
             };
+        }
+
+        async Task TryExecuteActionAsync(ActionEventHandler<CancellationToken> action)
+        {
+            try
+            {
+                await _processingPointsSource.TryCancelAsync();
+
+                using (var processingPointsSource = new CancellationTokenSource())
+                {
+                    var token = processingPointsSource.Token;
+
+                    _processingPointsSource = processingPointsSource;
+
+                    try
+                    {
+                        await _processingPointsLock.WaitAsync(token);
+
+                        action(token);
+                    }
+                    finally
+                    {
+                        _processingPointsLock.ReleaseSafe();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                if (ex is not OperationCanceledException
+                    && ex is not ObjectDisposedException)
+                {
+                    Logger.Exception(ex);
+                }
+            }
         }
 
         void RegisterMessages()
@@ -206,25 +252,27 @@ namespace Modeling.UI.Resources.Controls.Canvas
             }
         }
 
-        void EnqueueMessageToPipeline(object recipient, Core.Messages.Base.SynchronousMessages.Message message)
+        async Task<Unit> EnqueueMessageToPipelineAsync(object recipient, AsyncMessage message)
         {
             if (message.ApplyBasicMessageValidation(recipient))
             {
-                EnqueueMessageToPipelineCore(message);
+                await EnqueueMessageToPipelineCoreAsync(message);
             }
+
+            return Unit.Default;
         }
 
-        void EnqueueMessageToPipelineCore(Core.Messages.Base.SynchronousMessages.Message message)
+        async Task EnqueueMessageToPipelineCoreAsync(AsyncMessage message)
         {
-            if (!_drawingPipeline.TryEnqueue(message))
+            if (!await _drawingPipeline.TryEnqueueAsync(message))
             {
                 Logger.Information($"Cannot enqueue message: {message.GetType()}");
             }
         }
 
-        void OnWin2DCanvasReceivedDrawingMessage(object recipient, Core.Messages.Base.SynchronousMessages.Message message)
+        void OnWin2DCanvasReceivedDrawingMessage(object recipient, AsyncMessage message)
         {
-            EnqueueMessageToPipeline(recipient, message);
+            message.Reply(EnqueueMessageToPipelineAsync(recipient, message));
         }
 
         void OnWin2DCanvasEndDrawingSessionMessage(object recipient, EndDrawingSessionMessage message)
@@ -294,7 +342,7 @@ namespace Modeling.UI.Resources.Controls.Canvas
             }
         }
 
-        void HandlePipelineMessage(DrawingMessageValue message)
+        async Task HandlePipelineMessageAsync(DrawingMessageValue message)
         {
             if (message.IsDefault())
             {
@@ -303,28 +351,36 @@ namespace Modeling.UI.Resources.Controls.Canvas
 
             switch (message.MessageType)
             {
-                case DrawingMessageType.ClearAll: HandleClearCanvasMessage((ClearCanvasMessageValue)message); break;
-                case DrawingMessageType.Draw: HandleConnectPointsCanvasMessage((ConnectPointsMessageValue)message); break;
-                case DrawingMessageType.Transform: HandleTransformPointsCanvasMessage((TransformPointsMessageValue)message); break;
+                case DrawingMessageType.ClearAll: await HandleClearCanvasMessageAsync((ClearCanvasMessageValue)message); break;
+                case DrawingMessageType.Draw: await HandleConnectPointsCanvasMessageAsync((ConnectPointsMessageValue)message); break;
+                case DrawingMessageType.Transform: await HandleTransformPointsCanvasMessageAsync((TransformPointsMessageValue)message); break;
                 case DrawingMessageType.NoAction: break;
             }
         }
 
-        void HandleClearCanvasMessage(ClearCanvasMessageValue message)
+        async Task HandleClearCanvasMessageAsync(ClearCanvasMessageValue message)
         {
-            using var drawingSession = _canvasRenderTarget.CreateDrawingSession();
-            foreach (var drawingParameter in message.DrawingParameters.Where(parameter => parameter.ShouldClearBeforeRedraw))
+            await TryExecuteActionAsync((token) =>
             {
-                drawingSession.Clear(drawingParameter.BackgroundColor.WindowsUIColor);
-            }
+                using var drawingSession = _canvasRenderTarget.CreateDrawingSession();
+
+                foreach (var drawingParameter in message.DrawingParameters.Where(parameter => parameter.ShouldClearBeforeRedraw))
+                {
+                    token.ThrowIfCancellationRequested();
+
+                    drawingSession.Clear(drawingParameter.BackgroundColor.WindowsUIColor);
+                }
+            });
         }
 
-        static void DrawFigure(CanvasPathBuilder builder, IBlockingCollection<PointSingle> points, bool applyTransform, Matrix3x3Single transform)
+        static void DrawFigure(CanvasPathBuilder builder, IBlockingCollection<PointSingle> points, bool applyTransform, Matrix3x3Single transform, CancellationToken token = default)
         {
             bool figureStarted = false;
 
             foreach (var point in points)
             {
+                token.ThrowIfCancellationRequested();
+
                 if (float.IsNaN(point.X) || float.IsNaN(point.Y))
                 {
                     if (figureStarted)
@@ -349,30 +405,39 @@ namespace Modeling.UI.Resources.Controls.Canvas
                 }
             }
 
+            token.ThrowIfCancellationRequested();
+
             if (figureStarted)
             {
                 builder.EndFigure(CanvasFigureLoop.Open);
             }
         }
 
-        void HandleConnectPointsCanvasMessage(ConnectPointsMessageValue message)
+        async Task HandleConnectPointsCanvasMessageAsync(ConnectPointsMessageValue message)
         {
-            using var drawingSession = _canvasRenderTarget.CreateDrawingSession();
-            foreach (var drawingParameter in message.DrawingParameters.OfType<DrawPointsMessageValue>())
+            await TryExecuteActionAsync((token) =>
             {
-                HandleConnectPointsCanvasMessageCore(drawingSession, drawingParameter);
-            }
+                using var drawingSession = _canvasRenderTarget.CreateDrawingSession();
+                foreach (var drawingParameter in message.DrawingParameters.OfType<DrawPointsMessageValue>())
+                {
+                    token.ThrowIfCancellationRequested();
+
+                    HandleConnectPointsCanvasMessageCore(drawingSession, drawingParameter, token);
+                }
+            });
         }
 
-        void HandleConnectPointsCanvasMessageCore(CanvasDrawingSession drawingSession, DrawPointsMessageValue message)
+        void HandleConnectPointsCanvasMessageCore(CanvasDrawingSession drawingSession, DrawPointsMessageValue message, CancellationToken token)
         {
             if (message.ShouldClearBeforeRedraw)
             {
                 drawingSession.Clear(message.BackgroundColor.WindowsUIColor);
             }
 
+            token.ThrowIfCancellationRequested();
+
             using var builder = new CanvasPathBuilder(_canvasRenderTarget);
-            DrawFigure(builder, message.Points, applyTransform: false, DrawingConstants.NON_TRANSFORM_MATRIX);
+            DrawFigure(builder, message.Points, applyTransform: false, DrawingConstants.NON_TRANSFORM_MATRIX, token);
 
             using var geometry = CanvasGeometry.CreatePath(builder);
             using var strokeStyle = new CanvasStrokeStyle
@@ -381,13 +446,18 @@ namespace Modeling.UI.Resources.Controls.Canvas
                 StartCap = CanvasCapStyle.Round,
                 EndCap = CanvasCapStyle.Round
             };
+
+            token.ThrowIfCancellationRequested();
+
             if (message.ShouldFillGeometry)
             {
                 drawingSession.FillGeometry(
                 geometry,
                 message.FillColor.WindowsUIColor);
             }
-            
+
+            token.ThrowIfCancellationRequested();
+
             drawingSession.DrawGeometry(
                 geometry,
                 message.Color.WindowsUIColor,
@@ -395,22 +465,27 @@ namespace Modeling.UI.Resources.Controls.Canvas
                 strokeStyle);
         }
 
-        void HandleTransformPointsCanvasMessage(TransformPointsMessageValue message)
+        async Task HandleTransformPointsCanvasMessageAsync(TransformPointsMessageValue message)
         {
-            using var drawingSession = _canvasRenderTarget.CreateDrawingSession();
-            foreach (var drawingParameter in message.DrawingParameters.OfType<DrawTransformedPointsMessageValue>())
+            await TryExecuteActionAsync((token) =>
             {
-                HandleTransformPointsCanvasMessageCore(drawingSession, drawingParameter);
-            }
+                using var drawingSession = _canvasRenderTarget.CreateDrawingSession();
+                foreach (var drawingParameter in message.DrawingParameters.OfType<DrawTransformedPointsMessageValue>())
+                {
+                    token.ThrowIfCancellationRequested();
+
+                    HandleTransformPointsCanvasMessageCore(drawingSession, drawingParameter, token);
+                }
+            });
         }
 
-        void HandleTransformPointsCanvasMessageCore(CanvasDrawingSession drawingSession, DrawTransformedPointsMessageValue message)
+        void HandleTransformPointsCanvasMessageCore(CanvasDrawingSession drawingSession, DrawTransformedPointsMessageValue message, CancellationToken token)
         {
             var shouldApplyTransform = message.Transform != default
                 && message.Transform != DrawingConstants.NON_TRANSFORM_MATRIX;
 
             using var builder = new CanvasPathBuilder(_canvasRenderTarget);
-            DrawFigure(builder, message.Points, shouldApplyTransform, message.Transform);
+            DrawFigure(builder, message.Points, shouldApplyTransform, message.Transform, token);
 
             using var geometry = CanvasGeometry.CreatePath(builder);
             using var strokeStyle = new CanvasStrokeStyle
@@ -419,10 +494,15 @@ namespace Modeling.UI.Resources.Controls.Canvas
                 StartCap = CanvasCapStyle.Round,
                 EndCap = CanvasCapStyle.Round
             };
+
+            token.ThrowIfCancellationRequested();
+
             if (message.ShouldClearBeforeRedraw)
             {
                 drawingSession.Clear(message.BackgroundColor.WindowsUIColor);
             }
+
+            token.ThrowIfCancellationRequested();
 
             if (message.ShouldFillGeometry)
             {
@@ -430,6 +510,8 @@ namespace Modeling.UI.Resources.Controls.Canvas
                 geometry,
                 message.FillColor.WindowsUIColor);
             }
+
+            token.ThrowIfCancellationRequested();
 
             drawingSession.DrawGeometry(
                 geometry,
@@ -449,11 +531,11 @@ namespace Modeling.UI.Resources.Controls.Canvas
             _drawingPipeline.MessageReceived -= OnDrawingPipelineMessageReceived;
         }
 
-        void OnDrawingPipelineMessageReceived(DrawingMessageValue value)
+        async Task OnDrawingPipelineMessageReceived(DrawingMessageValue value)
         {
             try
             {
-                HandlePipelineMessage(value);
+                await HandlePipelineMessageAsync(value);
             }
             catch (Exception ex)
             {

@@ -190,6 +190,24 @@ namespace Modeling.Core.Drawing
                 M33 = 1f
             };
         }
+
+        public static Matrix3x3Single CreateAffineTransform(PointSingle origin, PointSingle xAxisPoint, PointSingle yAxisPoint)
+        {
+            return new Matrix3x3Single
+            {
+                M11 = xAxisPoint.X,
+                M12 = yAxisPoint.X,
+                M13 = origin.X,
+
+                M21 = xAxisPoint.Y,
+                M22 = yAxisPoint.Y,
+                M23 = origin.Y,
+
+                M31 = 0,
+                M32 = 0,
+                M33 = 1
+            };
+        }
     }
 
 

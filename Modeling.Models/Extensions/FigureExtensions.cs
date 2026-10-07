@@ -196,17 +196,6 @@ namespace Modeling.Models.Extensions
             yield return DrawingConstants.BREAK_POINT;
         }
 
-        /* public static IEnumerable<IPointGeometry> CreateCustomShape(PointSingle startDrawingPoint, ISegmentDimension dimension)
-         {
-             var leftHalfCirclesStartAngleDegrees = 90f;
-             var leftHalfCirclesEndAngleDegrees = 270f;
-
-             var rightHalfCirclesStartAngleDegrees = -90f;
-             var rightHalfCirclesEndAngleDegrees = 90f;
-
-
-         }*/
-
         public static IEnumerable<IPointGeometry> CreateCustomShape(PointSingle startDrawingPoint, ISegmentDimension dimension)
         {
             var leftHalfCirclesStartAngleDegrees = 90f;
@@ -228,20 +217,24 @@ namespace Modeling.Models.Extensions
             var bottomRightHorizontalSmallLineFirstWidth = dimension.BottomRightHorizontalSmallLineFirstLength;
             var bottomRightHorizontalSmallLineSecondWidth = dimension.BottomRightHorizontalSmallLineSecondLength;
 
-            var newTopLeftHalfCircleDiameter = Math.Max(dimension.TopLeftVerticalSmallLineLength, dimension.TopLeftHalfCircleDiameter);
+            var newTopLeftHalfCircleDiameter = MathF.Max(dimension.TopLeftVerticalSmallLineLength, dimension.TopLeftHalfCircleDiameter);
+            var newBottomLeftHalfCircleDiameter = MathF.Max(dimension.BottomLeftHalfCircleDiameter, dimension.BottomLeftVerticalSmallLineLength);
+            var newBottomRightHalfCircleDiameter = MathF.Max(dimension.BottomRightHalfCircleDiameter, dimension.BottomRightVerticalSmallLineLength);
+
+            var newCenterLeftRightVerticalLinesHeight = MathF.Min(dimension.CenterLeftVerticalLargeLineLength, dimension.CenterRightVerticalLargeLineLength);
 
             var topLeftVerticalLineHeight = newTopLeftHalfCircleDiameter;//dimension.TopLeftVerticalSmallLineLength;
-            var centerLeftLargeVerticalLineHeight = dimension.CenterLeftVerticalLargeLineLength;
-            var bottomLeftVerticalSmallLineHeight = dimension.BottomLeftVerticalSmallLineLength;
+            var centerLeftLargeVerticalLineHeight = newCenterLeftRightVerticalLinesHeight; //dimension.CenterLeftVerticalLargeLineLength;
+            var bottomLeftVerticalSmallLineHeight = newBottomLeftHalfCircleDiameter;//dimension.BottomLeftVerticalSmallLineLength;
 
             var topRightVerticalSmallLineHeight = dimension.TopRightVerticalSmallLineLength;
-            var centerRightLargeVerticalLineHeight = dimension.CenterRightVerticalLargeLineLength;
-            var bottomRightVerticalSmallLineHeight = dimension.BottomRightVerticalSmallLineLength;
+            var centerRightLargeVerticalLineHeight = newCenterLeftRightVerticalLinesHeight; //dimension.CenterRightVerticalLargeLineLength
+            var bottomRightVerticalSmallLineHeight = newBottomRightHalfCircleDiameter;//dimension.BottomRightVerticalSmallLineLength;
 
             var topLeftHalfCircleRadius = newTopLeftHalfCircleDiameter / 2;//dimension.TopLeftHalfCircleDiameter / 2;
             var topRightHalfCircleRadius = dimension.TopRightHalfCircleDiameter / 2;
-            var bottomLeftHalfCircleRadius = dimension.BottomLeftHalfCircleDiameter / 2;
-            var bottomRightHalfCircleRadius = dimension.BottomRightHalfCircleDiameter / 2;
+            var bottomLeftHalfCircleRadius = newBottomLeftHalfCircleDiameter / 2;//dimension.BottomLeftHalfCircleDiameter / 2;
+            var bottomRightHalfCircleRadius = newBottomRightHalfCircleDiameter / 2;//dimension.BottomRightHalfCircleDiameter / 2;
 
             var smallCenterCircleRadius = dimension.CenterSmallCircleDiameter / 2;
             var largeCenterCircleRadius = dimension.CenterLargeCircleDiameter / 2;
@@ -466,23 +459,23 @@ namespace Modeling.Models.Extensions
                 bottomTopRightHorizontalSmallLineSecondPoint])
                 .ToLinePointGeometry(SegmentDimensionParameter.BottomRightHorizontalSmallLineFirstLength);
 
-            var bottomBottomRightHorizontalSmallLineFirstPoint = new PointSingle(
+            var bottomBottomRightHorizontalSmallLineFirstPoint = bottomLargeLineSecondPoint; /*new PointSingle(
                 x: rightVerticalLineSecondPoint.X,
-                y: rightVerticalLineSecondPoint.Y + bottomRightVerticalSmallLineHeight);
+                y: rightVerticalLineSecondPoint.Y + bottomRightVerticalSmallLineHeight);*/
 
             var bottomBottomRightHorizontalSmallLineSecondPoint = new PointSingle(
                 x: bottomBottomRightHorizontalSmallLineFirstPoint.X + bottomRightHorizontalSmallLineSecondWidth,
                 y: bottomBottomRightHorizontalSmallLineFirstPoint.Y);
 
             yield return ((ICollection<PointSingle>)[bottomBottomRightHorizontalSmallLineFirstPoint,
-                bottomBottomRightHorizontalSmallLineSecondPoint])
+                 bottomBottomRightHorizontalSmallLineSecondPoint])
                 .ToLinePointGeometry(SegmentDimensionParameter.BottomRightHorizontalSmallLineSecondLength);
 
             var bottomRightVerticalSmallLineFirstPoint = rightVerticalLineSecondPoint;
 
-            var bottomRightVerticalSmallLineSecondPoint = new PointSingle(
+            var bottomRightVerticalSmallLineSecondPoint = bottomLargeLineSecondPoint;/* new PointSingle(
                 x: bottomRightVerticalSmallLineFirstPoint.X,
-                y: bottomRightVerticalSmallLineFirstPoint.Y + bottomRightVerticalSmallLineHeight);
+                y: bottomRightVerticalSmallLineFirstPoint.Y + bottomRightVerticalSmallLineHeight);*/
 
             yield return ((ICollection<PointSingle>)[bottomRightVerticalSmallLineFirstPoint,
                 bottomRightVerticalSmallLineSecondPoint])

@@ -51,10 +51,25 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         [ObservableProperty]
         float _rotationAngle;
 
-        bool _wasRotationPointVisible;
-        bool _wasPositionEditingControlVisible;
+        [ObservableProperty]
+        float affineStartPointX;
 
-        partial void OnRotationPointVisibleChanged(bool value)
+        [ObservableProperty]
+        float affineStartPointY;
+
+        [ObservableProperty]
+        float affineNewXPointX;
+
+        [ObservableProperty]
+        float affineNewXPointY;
+
+        [ObservableProperty]
+        float affineNewYPointX;
+
+        [ObservableProperty]
+        float affineNewYPointY;
+
+        async partial void OnRotationPointVisibleChanged(bool value)
         {
             if (value)
             {
@@ -75,7 +90,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
             _canRedrawUserPoint = value;
 
-            RedrawAll();
+            await RedrawAllAsync();
         }
 
         partial void OnChangeFigurePositionChanged(bool value)
@@ -123,13 +138,13 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             }
         }
 
-        partial void OnPickShapeForResizingChanged(bool value)
+        async partial void OnPickShapeForResizingChanged(bool value)
         {
             if (!value
                 && (_nearestSegment is not null || _pointerMoveNearestSegment is not null)
                 && _figure.Any())
             {
-                RedrawAll();
+                await RedrawAllAsync();
 
                 _pointerMoveNearestSegment = default;
                 _drawingAction = UserPointDrawingAction.None;
@@ -142,7 +157,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             }
         }
 
-        partial void OnPositionEditingControlVisibleChanged(bool value)
+        async partial void OnPositionEditingControlVisibleChanged(bool value)
         {
             if (value)
             {
@@ -162,12 +177,12 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
                 RotationPointVisible = _wasRotationPointVisible;
             }
 
-            RedrawAll();
+            await RedrawAllAsync();
         }
 
-        partial void OnRotationAngleChanged(float newValue)
+        async partial void OnRotationAngleChanged(float newValue)
         {
-            RotateFigure(newValue);
+            await RotateFigureAsync(newValue);
         }
 
         private void SetRotationAngleSilent(float newValue)

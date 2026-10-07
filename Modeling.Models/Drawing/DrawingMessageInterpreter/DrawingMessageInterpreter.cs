@@ -1,9 +1,9 @@
-﻿using Modeling.Core.Messages.Base.SynchronousMessages;
-using Modeling.Core.Messages.Canvas.Drawing;
+﻿using Modeling.Core.Messages.Canvas.Drawing;
 using Modeling.Models.Drawing.DrawingMessageValues;
 using Modeling.Core.Extensions;
 using Modeling.Models.Drawing.DrawingMessageValues.Points;
 using Modeling.Core.Messages.Parameters.Canvas.Drawing;
+using Modeling.Core.Messages.Base.AsynchronousMessages;
 
 namespace Modeling.Models.Drawing.DrawingMessageInterpreter
 {
@@ -74,7 +74,7 @@ namespace Modeling.Models.Drawing.DrawingMessageInterpreter
             return result;
         }
 
-        public bool TryInterpretMessage(Message message, out DrawingMessageValue result)
+        public bool TryInterpretMessage(AsyncMessage message, out DrawingMessageValue result)
         {
             result = default;
 
