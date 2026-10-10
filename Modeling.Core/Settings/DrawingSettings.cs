@@ -521,5 +521,33 @@ namespace Modeling.Core.Settings
                 }
             }
         }
+
+        private bool _applyAntiAliasingToGrid;
+        public bool ApplyAntiAliasingToGrid
+        {
+            get => _applyAntiAliasingToGrid;
+            set
+            {
+                if (_applyAntiAliasingToGrid != value)
+                {
+                    _applyAntiAliasingToGrid = value;
+                    InvokeSettingsChanged();
+                }
+            }
+        }
+
+        private bool _applyAntiAliasingToDrawings;
+        public bool ApplyAntiAliasingToDrawings
+        {
+            get => _applyAntiAliasingToDrawings;
+            set
+            {
+                if (_applyAntiAliasingToDrawings != value)
+                {
+                    _applyAntiAliasingToDrawings = value;
+                    InvokeSettingsChanged();
+                }
+            }
+        }
     }
 }

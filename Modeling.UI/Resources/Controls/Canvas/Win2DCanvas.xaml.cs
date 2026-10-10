@@ -25,6 +25,8 @@ using Modeling.Models.Drawing.DrawingMessageValues;
 using Modeling.Models.Drawing.DrawingMessageValues.Points;
 using Modeling.Models.Drawing.DrawingPipeline;
 using Modeling.Models.Enums;
+using Modeling.Models.Extensions;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -369,7 +371,10 @@ namespace Modeling.UI.Resources.Controls.Canvas
                 {
                     token.ThrowIfCancellationRequested();
 
-                    drawingSession.Clear(drawingParameter.BackgroundColor.WindowsUIColor);
+                    ExecuteWithParameterCheck(() =>
+                    {
+                        drawingSession.Clear(drawingParameter.BackgroundColor.WindowsUIColor);
+                    }, drawingSession, drawingParameter);
                 }
             });
         }
@@ -414,16 +419,42 @@ namespace Modeling.UI.Resources.Controls.Canvas
             }
         }
 
+        void ExecuteWithParameterCheck(ActionEventHandler handler, CanvasDrawingSession drawingSession, DrawMessageValue drawingParameter)
+        {
+            var previousAliasing = default(CanvasAntialiasing?);
+
+            var needToApplyAliasing = drawingParameter.ShouldApplyAliasing;
+
+            if (needToApplyAliasing)
+            {
+                previousAliasing = drawingSession.Antialiasing;
+
+                drawingSession.Antialiasing = drawingParameter.DrawingAliasing.ToCanvasAntialiasing();
+            }
+
+            handler();
+
+            if (needToApplyAliasing)
+            {
+                drawingSession.Antialiasing = previousAliasing!.Value;
+            }
+        }
+
         async Task HandleConnectPointsCanvasMessageAsync(ConnectPointsMessageValue message)
         {
             await TryExecuteActionAsync((token) =>
             {
-                using var drawingSession = _canvasRenderTarget.CreateDrawingSession();
-                foreach (var drawingParameter in message.DrawingParameters.OfType<DrawPointsMessageValue>())
+                using (var drawingSession = _canvasRenderTarget.CreateDrawingSession())
                 {
-                    token.ThrowIfCancellationRequested();
+                    foreach (var drawingParameter in message.DrawingParameters.OfType<DrawPointsMessageValue>())
+                    {
+                        token.ThrowIfCancellationRequested();
 
-                    HandleConnectPointsCanvasMessageCore(drawingSession, drawingParameter, token);
+                        ExecuteWithParameterCheck(() =>
+                        {
+                            HandleConnectPointsCanvasMessageCore(drawingSession, drawingParameter, token);
+                        }, drawingSession, drawingParameter);
+                    }
                 }
             });
         }
@@ -473,11 +504,12 @@ namespace Modeling.UI.Resources.Controls.Canvas
                 using var drawingSession = _canvasRenderTarget.CreateDrawingSession();
                 foreach (var drawingParameter in message.DrawingParameters.OfType<DrawTransformedPointsMessageValue>())
                 {
-                    drawingSession.Antialiasing = CanvasAntialiasing.Antialiased;
-
                     token.ThrowIfCancellationRequested();
 
-                    HandleTransformPointsCanvasMessageCore(drawingSession, drawingParameter, token);
+                    ExecuteWithParameterCheck(() =>
+                    {
+                        HandleTransformPointsCanvasMessageCore(drawingSession, drawingParameter, token);
+                    }, drawingSession, drawingParameter);
                 }
             });
         }

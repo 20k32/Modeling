@@ -19,7 +19,9 @@ namespace Modeling.Models.Drawing.DrawingMessageInterpreter
 
                 var drawingParameter = new DrawMessageValue(
                     connectPointsParameter.Color,
-                    connectPointsParameter.ClearBeforeRedraw);
+                    connectPointsParameter.ClearBeforeRedraw,
+                    connectPointsParameter.ApplyAliasing,
+                    connectPointsParameter.Aliasing);
 
                 result.AddDrawingParameter(drawingParameter);
             }
@@ -42,6 +44,8 @@ namespace Modeling.Models.Drawing.DrawingMessageInterpreter
                     connectPointsParameter.BackgroundColor,
                     connectPointsParameter.ShouldFillGeometry,
                     connectPointsParameter.FillColor,
+                    connectPointsParameter.ApplyAliasing,
+                    connectPointsParameter.Aliasing,
                     connectPointsParameter.Points);
 
                 result.AddDrawingParameter(drawingParameter);
@@ -66,6 +70,8 @@ namespace Modeling.Models.Drawing.DrawingMessageInterpreter
                     connectPointsParameter.ShouldFillGeometry,
                     connectPointsParameter.FillColor,
                     connectPointsParameter.TransformMatrix,
+                    connectPointsParameter.ApplyAliasing,
+                    connectPointsParameter.Aliasing,
                     connectPointsParameter.Points);
 
                 result.AddDrawingParameter(drawingParameter);

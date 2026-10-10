@@ -11,12 +11,14 @@ using Modeling.Core.Drawing.Providers;
 using Modeling.Core.Enums;
 using Modeling.Core.Extensions;
 using Modeling.Core.Logging;
+using Modeling.Core.Messages.Base.SynchronousMessages;
 using Modeling.Core.Messages.Canvas.Drawing;
 using Modeling.Core.Messages.Canvas.Settings;
 using Modeling.Core.Messages.Parameters.Canvas.Drawing;
 using Modeling.Core.Messages.Parameters.Canvas.Settings;
 using Modeling.Core.Messages.Settings;
 using Modeling.Core.Messages.ViewModels;
+using Modeling.Core.Miscellaneous;
 using Modeling.Core.Navigation;
 using Modeling.Models.Abstractions.Drawing;
 using Modeling.Models.Abstractions.Drawing.Figure;
@@ -187,26 +189,38 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         {
             if (message.ApplyBasicMessageValidation(recipient))
             {
-                if (message.Value.ShouldUpdateCanvasSize)
-                {
-                    var changeCanvasSizeMessage = new ChangeCanvasSizeMessage(this, message.Value);
-                    WeakReferenceMessenger.Default.Send(changeCanvasSizeMessage);
-                }
-
-                if (message.Value.ShouldRecreateFigure)
-                {
-                    ClearDrawingElements();
-                    InitializeDrawingElements(message.Value.Size, message.Value.PixelsPerCentimeter);
-                }
-
-                if (message.Value.ShouldUpdateRefreshRate)
-                {
-                    var newRefreshRate = TimeSpan.FromSeconds(1 / (double)message.Value.RefreshRate);
-                    var refreshRateParameter = new RefreshRateParameter(newRefreshRate);
-                    var changeRefreshRateMessage = new ChangeCanvasRefreshRateMessage(this, refreshRateParameter);
-                    WeakReferenceMessenger.Default.Send(changeRefreshRateMessage);
-                }
+                message.Reply(ChangeCanvasSettingsCoreAsync(message));
             }
+        }
+
+        async Task<Unit> ChangeCanvasSettingsCoreAsync(ChangeCanvasSettingsMessage message)
+        {
+            if (message.Value.ShouldUpdateCanvasSize)
+            {
+                var changeCanvasSizeMessage = new ChangeCanvasSizeMessage(this, message.Value);
+                WeakReferenceMessenger.Default.Send(changeCanvasSizeMessage);
+            }
+
+            if (message.Value.ShouldRecreateFigure)
+            {
+                ClearDrawingElements();
+                InitializeDrawingElements(message.Value.Size, message.Value.PixelsPerCentimeter);
+            }
+
+            if (message.Value.ShouldUpdateRefreshRate)
+            {
+                var newRefreshRate = TimeSpan.FromSeconds(1 / (double)message.Value.RefreshRate);
+                var refreshRateParameter = new RefreshRateParameter(newRefreshRate);
+                var changeRefreshRateMessage = new ChangeCanvasRefreshRateMessage(this, refreshRateParameter);
+                WeakReferenceMessenger.Default.Send(changeRefreshRateMessage);
+            }
+
+            if (message.Value.ShouldApplyAntiAliasing)
+            {
+                await RedrawAllAsync();
+            }
+
+            return Unit.Default;
         }
 
         async void OnDrawingSettingsProviderSettingsChanged()
@@ -331,6 +345,9 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
         async Task RedrawAllAsync()
         {
+            var applyAliasingToDrawings = _drawingSettingsProvider.Settings.ApplyAntiAliasingToDrawings;
+            var applyAliasingToGrid = _drawingSettingsProvider.Settings.ApplyAntiAliasingToGrid;
+
             var rawBackgroundColor = _drawingSettingsProvider.Settings.BackgroundColor;
             var backgroundColor = new DrawingColor(rawBackgroundColor);
 
@@ -366,15 +383,21 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             {
                 currentDrawingMessage = currentDrawingMessage.With(
                     points: _grid,
-                    clearBeforeRedraw: false);
+                    applyAliasing: applyAliasingToGrid,
+                    drawingAliasing: applyAliasingToGrid ? DrawingAliasing.Aliased : DrawingAliasing.AntiAliased);
             }
+
+            currentDrawingMessage = currentDrawingMessage.With(
+                points: Ioc.Default.GetRequiredService<IPointListCollection>(),
+                clearBeforeRedraw: false,
+                applyAliasing: applyAliasingToDrawings,
+                drawingAliasing: applyAliasingToDrawings ? DrawingAliasing.Aliased : DrawingAliasing.AntiAliased);
 
             if (_drawingSettingsProvider.Settings.DrawAxis)
             {
                 currentDrawingMessage = currentDrawingMessage
                 .With(points: _horizontalAxis,
                       color: horizontalAxisDrawingColor,
-                      clearBeforeRedraw: false,
                       thickness: axisThickness)
                 .With(points: _verticalAxis,
                       color: verticalAxisDrawingColor);
@@ -385,7 +408,6 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
                 currentDrawingMessage = currentDrawingMessage
                 .With(points: _horizontalAxisArrows,
                       color: horizontalAxisDrawingColor,
-                      clearBeforeRedraw: false,
                       thickness: axisThickness)
                 .With(points: _verticalAxisArrows,
                       color: verticalAxisDrawingColor);
@@ -395,7 +417,6 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             {
                 currentDrawingMessage = currentDrawingMessage
                  .With(points: _horizontalAxisMarks,
-                      clearBeforeRedraw: false,
                       color: horizontalAxisTicksDrawingColor,
                       thickness: axisTickThickness)
                 .With(points: _verticalAxisMarks,
@@ -415,7 +436,6 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
                      transformMatrix: _shouldApplyGeneralTransformForUserPoint ? _gridTransform : _userPointTransform,
                      shouldFillGeometry: true,
                      fillColor: new DrawingColor(_drawingSettingsProvider.Settings.HorizontalAxisColor),
-                     clearBeforeRedraw: false,
                      backgroundColor: backgroundColor,
                      thickness: thickness);
 
@@ -423,6 +443,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
                 {
                     currentDrawingMessage = currentDrawingMessage.With(
                         points: _userPoint.Bounds.GetPointsFromBounds(),
+                        shouldFillGeometry: false,
                         color: new(_drawingSettingsProvider.Settings.FigureBoundsColor),
                         thickness: _drawingSettingsProvider.Settings.FigureDrawingThickness);
                 }
@@ -592,7 +613,8 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
         void ClearCanvas(DrawingColor color)
         {
-            var message = new ClearCanvasMessageParameter(color, clearBeforeRedraw: true);
+            var message = new ClearCanvasMessageParameter(color,
+                clearBeforeRedraw: true);
             WeakReferenceMessenger.Default.Send(new ClearCanvasMessage(this, message));
         }
 

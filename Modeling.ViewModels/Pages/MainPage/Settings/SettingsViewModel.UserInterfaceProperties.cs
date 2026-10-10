@@ -40,6 +40,12 @@ namespace Modeling.ViewModels.Pages.MainPage.Settings
         bool _attachGridToFigure;
 
         [ObservableProperty]
+        bool _applyAntiAliasingToGrid;
+
+        [ObservableProperty]
+        bool _applyAntiAliasingToDrawings;
+
+        [ObservableProperty]
         float _pixelsPerCentimeter;
 
         [ObservableProperty]
@@ -47,6 +53,26 @@ namespace Modeling.ViewModels.Pages.MainPage.Settings
 
         [ObservableProperty]
         ObservableCollection<RefreshRateItem> _refreshRates;
+
+        async partial void OnApplyAntiAliasingToDrawingsChanged(bool value)
+        {
+            await WaitBeforeExecutionAsync(async () =>
+            {
+                _drawingSettingsProvider.Settings.ApplyAntiAliasingToDrawings = value;
+
+                await SendAntiAliasingChangedMessageAsync();
+            });
+        }
+
+        async partial void OnApplyAntiAliasingToGridChanged(bool value)
+        {
+            await WaitBeforeExecutionAsync(async () =>
+            {
+                _drawingSettingsProvider.Settings.ApplyAntiAliasingToGrid = value;
+
+                await SendAntiAliasingChangedMessageAsync();
+            });
+        }
 
         async partial void OnRefreshRateChanged(RefreshRateItem value)
         {
@@ -57,7 +83,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Settings
 
             if (value.Value != _drawingSettingsProvider.Settings.CanvasRefreshRate)
             {
-                await WaitBeforeExecutionAsync(() =>
+                await WaitBeforeExecutionAsync(async () =>
                 {
                     if (value.Value != _drawingSettingsProvider.Settings.CanvasRefreshRate)
                     {
@@ -65,11 +91,12 @@ namespace Modeling.ViewModels.Pages.MainPage.Settings
                             shouldUpdateCanvasSize: false,
                             shouldRecreateFigure: false,
                             shouldUpdateRefreshRate: true,
+                            applyAntiAliasing: false,
                             new((float)CanvasWidth,
                             (float)CanvasHeight), PixelsPerCentimeter,
                             value.Value);
 
-                        WeakReferenceMessenger.Default.Send(new ChangeCanvasSettingsMessage(this, settingsParameter));
+                        await WeakReferenceMessenger.Default.Send(new ChangeCanvasSettingsMessage(this, settingsParameter));
 
                         _drawingSettingsProvider.Settings.CanvasRefreshRate = value.Value;
                     }
@@ -95,7 +122,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Settings
 
             if (value != _drawingSettingsProvider.Settings.PixelsPerCentimeter)
             {
-                await WaitBeforeExecutionAsync(() =>
+                await WaitBeforeExecutionAsync(async () =>
                 {
                     if (value != _drawingSettingsProvider.Settings.PixelsPerCentimeter)
                     {
@@ -103,11 +130,12 @@ namespace Modeling.ViewModels.Pages.MainPage.Settings
                             shouldUpdateCanvasSize: false,
                             shouldRecreateFigure: true,
                             shouldUpdateRefreshRate: false,
+                            applyAntiAliasing: false,
                             new((float)CanvasWidth,
                             (float)CanvasHeight), PixelsPerCentimeter,
                             RefreshRate.Value);
 
-                        WeakReferenceMessenger.Default.Send(new ChangeCanvasSettingsMessage(this, settingsParameter));
+                        await WeakReferenceMessenger.Default.Send(new ChangeCanvasSettingsMessage(this, settingsParameter));
 
                         _drawingSettingsProvider.Settings.PixelsPerCentimeter = (float)value;
                     }
@@ -137,7 +165,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Settings
 
             if (newSize != _drawingSettingsProvider.Settings.CanvasSize)
             {
-                await WaitBeforeExecutionAsync(() =>
+                await WaitBeforeExecutionAsync(async () =>
                 {
                     if (newSize != _drawingSettingsProvider.Settings.CanvasSize)
                     {
@@ -145,11 +173,12 @@ namespace Modeling.ViewModels.Pages.MainPage.Settings
                             shouldUpdateCanvasSize: true,
                             shouldRecreateFigure: true,
                             shouldUpdateRefreshRate: false,
+                            applyAntiAliasing: false,
                             new((float)CanvasWidth, (float)CanvasHeight),
                             PixelsPerCentimeter,
                             RefreshRate.Value);
 
-                        WeakReferenceMessenger.Default.Send(new ChangeCanvasSettingsMessage(this, settingsParameter));
+                        await WeakReferenceMessenger.Default.Send(new ChangeCanvasSettingsMessage(this, settingsParameter));
 
                         _drawingSettingsProvider.Settings.CanvasSize = newSize;
                     }
@@ -179,7 +208,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Settings
 
             if (newSize != _drawingSettingsProvider.Settings.CanvasSize)
             {
-                await WaitBeforeExecutionAsync(() =>
+                await WaitBeforeExecutionAsync(async () =>
                 {
                     if (newSize != _drawingSettingsProvider.Settings.CanvasSize)
                     {
@@ -187,11 +216,12 @@ namespace Modeling.ViewModels.Pages.MainPage.Settings
                             shouldUpdateCanvasSize: true,
                             shouldRecreateFigure: true,
                             shouldUpdateRefreshRate: false,
+                            applyAntiAliasing: false,
                             new((float)CanvasWidth, (float)CanvasHeight),
                             PixelsPerCentimeter,
                             RefreshRate.Value);
 
-                        WeakReferenceMessenger.Default.Send(new ChangeCanvasSettingsMessage(this, updateDrawingsParameter));
+                        await WeakReferenceMessenger.Default.Send(new ChangeCanvasSettingsMessage(this, updateDrawingsParameter));
 
                         _drawingSettingsProvider.Settings.CanvasSize = newSize;
                     }

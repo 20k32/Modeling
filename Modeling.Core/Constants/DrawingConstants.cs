@@ -79,5 +79,8 @@ namespace Modeling.Core.Constants
 
         public const float CIRCLE_START_ANGLE_DEGREES = 0f;
         public const float CIRCLE_END_ANGLE_DEGREES = 360;
+
+        public const bool APPLY_ANTI_ALIASING_TO_GRID = false;
+        public const bool APPLY_ANTI_ALIASING_TO_DRAWINGS = false;
     }
 }

@@ -24,9 +24,9 @@ namespace Modeling.Core.Extensions
                 => new(
                     points,
                     color ?? parameter.Color,
+                    transformMatrix ?? parameter.TransformMatrix,
                     applyAliasing ?? parameter.ApplyAliasing,
                     drawingAliasing ?? parameter.Aliasing,
-                    transformMatrix ?? parameter.TransformMatrix,
                     shouldFillGeometry ?? parameter.ShouldFillGeometry,
                     fillColor ?? parameter.FillColor,
                     clearBeforeRedraw ?? parameter.ClearBeforeRedraw,
@@ -48,9 +48,9 @@ namespace Modeling.Core.Extensions
                 => new(
                     points,
                     color ?? parameter.Color,
+                    transformMatrix ?? parameter.TransformMatrix,
                     applyAliasing ?? parameter.ApplyAliasing,
                     drawingAliasing ?? parameter.Aliasing,
-                    transformMatrix ?? parameter.TransformMatrix,
                     shouldFillGeometry ?? parameter.ShouldFillGeometry,
                     fillColor ?? parameter.FillColor,
                     clearBeforeRedraw ?? parameter.ClearBeforeRedraw,

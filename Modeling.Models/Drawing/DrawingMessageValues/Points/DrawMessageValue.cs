@@ -11,7 +11,7 @@ namespace Modeling.Models.Drawing.DrawingMessageValues.Points
 
         public bool ShouldApplyAliasing { get; init; } = shouldApplyAliasing;
 
-        public DrawingAliasing { get; init; } = drawingAliasing;
+        public DrawingAliasing DrawingAliasing { get; init; } = drawingAliasing;
 
         public bool IsDefault() => BackgroundColor.IsDefault();
     }

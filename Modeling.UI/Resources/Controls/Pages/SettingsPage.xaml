@@ -23,6 +23,8 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
@@ -111,43 +113,66 @@
                    HorizontalAlignment="Right"
                    VerticalAlignment="Center"
                    Style="{StaticResource ApplicationTextBlockStyle}"
-                   Text="Canvas width" />
-        <TextBox Grid.Row="7"
-                 Grid.Column="1"
-                 HorizontalAlignment="Stretch"
-                 Text="{Binding CanvasWidth, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                   Text="Apply aliasing to grid" />
+        <CheckBox Grid.Row="7"
+                  Grid.Column="1"
+                  HorizontalAlignment="Left"
+                  IsChecked="{Binding ApplyAntiAliasingToGrid, Mode=TwoWay}" />
+
 
         <TextBlock Grid.Row="8"
                    Grid.Column="0"
                    HorizontalAlignment="Right"
                    VerticalAlignment="Center"
                    Style="{StaticResource ApplicationTextBlockStyle}"
-                   Text="Canvas height" />
-        <TextBox Grid.Row="8"
-                 Grid.Column="1"
-                 Margin="0,5"
-                 HorizontalAlignment="Stretch"
-                 Text="{Binding CanvasHeight, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                   Text="Apply aliasing to drawings" />
+        <CheckBox Grid.Row="8"
+                  Grid.Column="1"
+                  HorizontalAlignment="Left"
+                  IsChecked="{Binding ApplyAntiAliasingToDrawings, Mode=TwoWay}" />
 
         <TextBlock Grid.Row="9"
                    Grid.Column="0"
                    HorizontalAlignment="Right"
                    VerticalAlignment="Center"
                    Style="{StaticResource ApplicationTextBlockStyle}"
-                   Text="Pixels per centimeter" />
+                   Text="Canvas width" />
         <TextBox Grid.Row="9"
                  Grid.Column="1"
-                 Margin="0,0,0,5"
                  HorizontalAlignment="Stretch"
-                 Text="{Binding PixelsPerCentimeter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                 Text="{Binding CanvasWidth, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
         <TextBlock Grid.Row="10"
                    Grid.Column="0"
                    HorizontalAlignment="Right"
                    VerticalAlignment="Center"
                    Style="{StaticResource ApplicationTextBlockStyle}"
+                   Text="Canvas height" />
+        <TextBox Grid.Row="10"
+                 Grid.Column="1"
+                 Margin="0,5"
+                 HorizontalAlignment="Stretch"
+                 Text="{Binding CanvasHeight, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+        <TextBlock Grid.Row="11"
+                   Grid.Column="0"
+                   HorizontalAlignment="Right"
+                   VerticalAlignment="Center"
+                   Style="{StaticResource ApplicationTextBlockStyle}"
+                   Text="Pixels per centimeter" />
+        <TextBox Grid.Row="11"
+                 Grid.Column="1"
+                 Margin="0,0,0,5"
+                 HorizontalAlignment="Stretch"
+                 Text="{Binding PixelsPerCentimeter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+        <TextBlock Grid.Row="12"
+                   Grid.Column="0"
+                   HorizontalAlignment="Right"
+                   VerticalAlignment="Center"
+                   Style="{StaticResource ApplicationTextBlockStyle}"
                    Text="Frames per second" />
-        <ComboBox Grid.Row="10"
+        <ComboBox Grid.Row="12"
                   Grid.Column="1"
                   HorizontalAlignment="Stretch"
                   DisplayMemberPath="{Binding UserInterfaceConstants.DisplayMemberPath, Source={StaticResource ServiceLocator}}"

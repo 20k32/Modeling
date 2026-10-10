@@ -179,6 +179,8 @@ namespace Modeling.ViewModels.Pages.MainPage.Settings
             _drawingSettingsProvider.Settings.DrawFigureBounds = true;
 
             _drawingSettingsProvider.Settings.CanvasRefreshRate = DrawingConstants.DEFAULT_CANVAS_REFRESH_RATE;
+            _drawingSettingsProvider.Settings.ApplyAntiAliasingToDrawings = DrawingConstants.APPLY_ANTI_ALIASING_TO_DRAWINGS;
+            _drawingSettingsProvider.Settings.ApplyAntiAliasingToGrid = DrawingConstants.APPLY_ANTI_ALIASING_TO_GRID;
         }
 
         void ApplySettingsForUserInterface()
@@ -194,6 +196,8 @@ namespace Modeling.ViewModels.Pages.MainPage.Settings
             _attachGridToFigure = _drawingSettingsProvider.Settings.AttachGridToFigure;
             _pixelsPerCentimeter = _drawingSettingsProvider.Settings.PixelsPerCentimeter;
             _refreshRate = RefreshRates.First(refreshRate => refreshRate.Value == _drawingSettingsProvider.Settings.CanvasRefreshRate);
+            _applyAntiAliasingToGrid = _drawingSettingsProvider.Settings.ApplyAntiAliasingToGrid;
+            _applyAntiAliasingToDrawings = _drawingSettingsProvider.Settings.ApplyAntiAliasingToDrawings;
 
             OnPropertyChanged(nameof(DrawFigureBounds));
             OnPropertyChanged(nameof(DrawFigureShapeBounds));
@@ -206,16 +210,33 @@ namespace Modeling.ViewModels.Pages.MainPage.Settings
             OnPropertyChanged(nameof(CanvasHeight));
             OnPropertyChanged(nameof(PixelsPerCentimeter));
             OnPropertyChanged(nameof(RefreshRate));
+            OnPropertyChanged(nameof(ApplyAntiAliasingToGrid));
+            OnPropertyChanged(nameof(ApplyAntiAliasingToDrawings));
 
             var updateDrawingsParameter = new UpdateDrawingsParameter(
                 shouldUpdateCanvasSize: true,
                 shouldRecreateFigure: true,
                 shouldUpdateRefreshRate: true,
+                applyAntiAliasing: false,
                 new((float)CanvasWidth, (float)CanvasHeight),
                 PixelsPerCentimeter,
                 _drawingSettingsProvider.Settings.CanvasRefreshRate);
 
             WeakReferenceMessenger.Default.Send(new ChangeCanvasSettingsMessage(this, updateDrawingsParameter));
+        }
+
+        async Task SendAntiAliasingChangedMessageAsync()
+        {
+            var updateDrawingsParameter = new UpdateDrawingsParameter(
+                                                shouldUpdateCanvasSize: false,
+                                                shouldRecreateFigure: false,
+                                                shouldUpdateRefreshRate: false,
+                                                applyAntiAliasing: true,
+                                                new((float)CanvasWidth, (float)CanvasHeight),
+                                                PixelsPerCentimeter,
+                                                _drawingSettingsProvider.Settings.CanvasRefreshRate);
+
+            await WeakReferenceMessenger.Default.Send(new ChangeCanvasSettingsMessage(this, updateDrawingsParameter));
         }
     }
 }

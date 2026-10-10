@@ -56,5 +56,8 @@ namespace Modeling.Core.Settings
         bool DrawFigureBounds { get; set; }
 
         public int CanvasRefreshRate { get; set; }
+
+        bool ApplyAntiAliasingToGrid { get; set; }
+        bool ApplyAntiAliasingToDrawings { get; set; }
     }
 }

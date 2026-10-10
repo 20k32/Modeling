@@ -12,7 +12,7 @@ namespace Modeling.Models.Drawing.DrawingMessageValues.Points
         public Matrix3x3Single Transform { get; init; }
 
         public DrawTransformedPointsMessageValue(DrawingColor color, float thickness, bool shouldClearCanvas, DrawingColor backgroundColor, bool shouldFillGeometry, DrawingColor fillColor, Matrix3x3Single transform, bool shouldApplyAliasing, DrawingAliasing drawingAliasing, params PointSingle[] points)
-            : base(color, thickness, shouldClearCanvas, backgroundColor, shouldFillGeometry, fillColor, points, shouldApplyAliasing, drawingAliasing)
+            : base(color, thickness, shouldClearCanvas, backgroundColor, shouldFillGeometry, fillColor, shouldApplyAliasing, drawingAliasing, points)
         {
             var pointCollection = Ioc.Default.GetRequiredService<IPointListCollection>();
 
