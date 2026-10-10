@@ -22,8 +22,12 @@
     <PropertyGroup Condition="'$(Platform)' == 'AnyCPU'">
         <PlatformTarget>x86</PlatformTarget>
         <RuntimeIdentifier>win-x86</RuntimeIdentifier>
-        <PublishProfile >win-x86.pubxml</PublishProfile>
+        <PublishProfile>win-x86.pubxml</PublishProfile>
     </PropertyGroup>
+    <ItemGroup>
+      <None Remove="Resources\Controls\Miscellaneous\IncrementingTextBox\IncrementingTextBox.xaml" />
+      <None Remove="Resources\Styles\TextBoxStyles.xaml" />
+    </ItemGroup>
 
     <ItemGroup>
         <Content Include="Assets\SplashScreen.scale-200.png" />
@@ -62,6 +66,11 @@
         <ProjectReference Include="..\Modeling.ViewModels\Modeling.ViewModels.csproj" />
     </ItemGroup>
     <ItemGroup>
+      <Page Update="Resources\Styles\TextBoxStyles.xaml">
+        <Generator>MSBuild:Compile</Generator>
+      </Page>
+    </ItemGroup>
+    <ItemGroup>
         <Page Update="Resources\Controls\Pages\SettingsPage.xaml">
             <Generator>MSBuild:Compile</Generator>
         </Page>
@@ -87,7 +96,7 @@
         </Page>
     </ItemGroup>
     <ItemGroup>
-        <Page Update="Resources\Styles\ApplicationStyles.xaml">
+        <Page Update="Resources\Styles\RetemplatedControlStyles.xaml">
             <Generator>MSBuild:Compile</Generator>
         </Page>
     </ItemGroup>
@@ -130,6 +139,11 @@
         <Page Update="Resources\Converters\GeneralConverters.xaml">
             <Generator>MSBuild:Compile</Generator>
         </Page>
+    </ItemGroup>
+    <ItemGroup>
+      <Page Update="Resources\Controls\Miscellaneous\IncrementingTextBox\IncrementingTextBox.xaml">
+        <Generator>MSBuild:Compile</Generator>
+      </Page>
     </ItemGroup>
 
     <!--

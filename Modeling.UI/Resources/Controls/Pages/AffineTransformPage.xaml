@@ -3,12 +3,15 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:incrementingControl="using:Modeling.UI.Resources.Controls.Miscellaneous.IncrementingTextBox"
              xmlns:local="using:Modeling.UI.Resources.Controls.Pages"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              DataContext="{Binding DrawingViewModel, Source={StaticResource ServiceLocator}}"
              mc:Ignorable="d">
 
-    <Grid ColumnSpacing="10" RowSpacing="10">
+    <Grid Width="400"
+          ColumnSpacing="10"
+          RowSpacing="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -18,9 +21,9 @@
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
@@ -29,58 +32,67 @@
                    HorizontalAlignment="Center"
                    VerticalAlignment="Center"
                    Text="Start point:" />
-        <TextBox Grid.Row="0"
-                 Grid.Column="1"
-                 Text="{Binding AffineStartPointX, Mode=TwoWay}" />
+
+        <incrementingControl:IncrementingTextBox Grid.Row="0"
+                                                 Grid.Column="1"
+                                                 IncrementingStep="{Binding UserInterfaceConstants.LargeIncrementingStep, Source={StaticResource ServiceLocator}}"
+                                                 IncrementingValue="{Binding AffineStartPointX, Mode=TwoWay}" />
         <TextBlock Grid.Row="0"
                    Grid.Column="2"
                    VerticalAlignment="Center"
                    Text=";" />
-        <TextBox Grid.Row="0"
-                 Grid.Column="3"
-                 Text="{Binding AffineStartPointY, Mode=TwoWay}" />
+
+        <incrementingControl:IncrementingTextBox Grid.Row="0"
+                                                 Grid.Column="3"
+                                                 IncrementingStep="{Binding UserInterfaceConstants.LargeIncrementingStep, Source={StaticResource ServiceLocator}}"
+                                                 IncrementingValue="{Binding AffineStartPointY, Mode=TwoWay}" />
 
         <TextBlock Grid.Row="1"
                    Grid.Column="0"
                    HorizontalAlignment="Center"
                    VerticalAlignment="Center"
                    Text="X:" />
-        <TextBox Grid.Row="1"
-                 Grid.Column="1"
-                 Text="{Binding AffineNewXPointX, Mode=TwoWay}" />
+
+        <incrementingControl:IncrementingTextBox Grid.Row="1"
+                                                 Grid.Column="1"
+                                                 IncrementingStep="{Binding UserInterfaceConstants.IncrementingStep, Source={StaticResource ServiceLocator}}"
+                                                 IncrementingValue="{Binding AffineNewXPointX, Mode=TwoWay}" />
+
         <TextBlock Grid.Row="1"
                    Grid.Column="2"
                    VerticalAlignment="Center"
                    Text=";" />
-        <TextBox Grid.Row="1"
-                 Grid.Column="3"
-                 Text="{Binding AffineNewXPointY, Mode=TwoWay}" />
+
+        <incrementingControl:IncrementingTextBox Grid.Row="1"
+                                                 Grid.Column="3"
+                                                 IncrementingStep="{Binding UserInterfaceConstants.IncrementingStep, Source={StaticResource ServiceLocator}}"
+                                                 IncrementingValue="{Binding AffineNewXPointY, Mode=TwoWay}" />
 
         <TextBlock Grid.Row="2"
                    Grid.Column="0"
                    HorizontalAlignment="Center"
                    VerticalAlignment="Center"
                    Text="Y:" />
-        <TextBox Grid.Row="2"
-                 Grid.Column="1"
-                 Text="{Binding AffineNewYPointX, Mode=TwoWay}" />
+
+        <incrementingControl:IncrementingTextBox Grid.Row="2"
+                                                 Grid.Column="1"
+                                                 IncrementingStep="{Binding UserInterfaceConstants.IncrementingStep, Source={StaticResource ServiceLocator}}"
+                                                 IncrementingValue="{Binding AffineNewYPointX, Mode=TwoWay}" />
+
         <TextBlock Grid.Row="2"
                    Grid.Column="2"
                    VerticalAlignment="Center"
                    Text=";" />
-        <TextBox Grid.Row="2"
-                 Grid.Column="3"
-                 Text="{Binding AffineNewYPointY, Mode=TwoWay}" />
 
-        <Button Grid.Row="3"
-                Grid.ColumnSpan="5"
-                HorizontalAlignment="Stretch"
-                Command="{Binding ApplyAffineTransformCommand}"
-                Content="Apply" />
+        <incrementingControl:IncrementingTextBox Grid.Row="2"
+                                                 Grid.Column="3"
+                                                 IncrementingStep="{Binding UserInterfaceConstants.IncrementingStep, Source={StaticResource ServiceLocator}}"
+                                                 IncrementingValue="{Binding AffineNewYPointY, Mode=TwoWay}" />
+
         <Button Grid.Row="4"
                 Grid.ColumnSpan="5"
                 HorizontalAlignment="Stretch"
-                Content="Reset" 
-                Command="{Binding ResetFigureCommand}"/>
+                Command="{Binding ResetFigureCommand}"
+                Content="Reset" />
     </Grid>
 </UserControl>

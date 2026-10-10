@@ -7,5 +7,11 @@
         public string NavigationFrameName { get; }
         public int AnimationTimeoutMilliseconds { get; }
         public float SlidersStepFrequency { get; }
+
+        public double MinimumTextBoxWidth { get; }
+
+        public float IncrementingStep { get; }
+        public float LargeIncrementingStep { get; }
+        public int FractionalPartLength { get; }
     }
 }

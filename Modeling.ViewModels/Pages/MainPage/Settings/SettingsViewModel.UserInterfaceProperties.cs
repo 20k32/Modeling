@@ -10,7 +10,7 @@ using System.Linq;
 
 namespace Modeling.ViewModels.Pages.MainPage.Settings
 {
-    public sealed partial class SettingsViewModel : ObservableObject
+    public sealed partial class SettingsViewModel : BaseViewModel
     {
         [ObservableProperty]
         double _canvasHeight;

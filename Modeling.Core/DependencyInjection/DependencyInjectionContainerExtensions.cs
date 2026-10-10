@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Modeling.Core.Abstractions.Collections.Drawings;
-using Modeling.Core.Abstractions.Converters.PrimitivesConverters;
 using Modeling.Core.Collections.Drawings;
 using Modeling.Core.Dispatching;
 using Modeling.Core.Drawing.Providers;
@@ -9,7 +8,6 @@ using Modeling.Core.Logging.Formatting;
 using Modeling.Core.Serializer;
 using Modeling.Core.Serializer.NewtonSoft;
 using Modeling.Core.Settings;
-using Modeling.UI.Resources.Converters;
 using Serilog;
 
 namespace Modeling.Core.DependencyInjection
@@ -23,7 +21,6 @@ namespace Modeling.Core.DependencyInjection
             return services
                 .AddTransient<IPointHashSetCollection, PointHashSet>()
                 .AddTransient<IPointListCollection, PointList>()
-                .AddTransient<IFloatScaleConverter, FloatScaleConverter>()
                 .AddTransient<DrawingSettingsJsonConverter>()
                 .AddTransient<NewtonSoftSerializerContractResolver>()
                 .AddTransient<IDrawingSettings, DrawingSettings>()

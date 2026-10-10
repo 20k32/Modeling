@@ -5,5 +5,5 @@
                     xmlns:local="using:Modeling.UI.Resources.Converters">
     <converters:BoolNegationConverter x:Key="CommunityToolkit.BoolNegationConverter" />
     <converters:BoolToVisibilityConverter x:Key="CommunityToolkit.BoolToVisibilityConverter" />
-    <local:FloatScaleConverter x:Key="FloatScaleConverter" />
+    <local:InvertFloatConverter x:Key="InvertFloatConverter"/>
 </ResourceDictionary>

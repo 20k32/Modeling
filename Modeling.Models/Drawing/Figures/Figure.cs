@@ -160,8 +160,8 @@ namespace Modeling.Models.Drawing.Figures
         }
 
         public void CalculateCenterPoint() => _centerPoint = new PointSingle(
-                x: _bounds.Width / 2,
-                y: _bounds.Height / 2);
+             x: _bounds.Left + _bounds.Width / 2f,
+             y: _bounds.Top + _bounds.Height / 2f);
 
         public void InitializeSegmentDimensions(float pixelsPerCentimeter)
         {

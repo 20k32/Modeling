@@ -30,8 +30,13 @@ namespace Modeling.Models.Extensions
         public static IEnumerable<PointSingle> CreateGrid(SizeSingle canvasSize, float pixelsPerCentimeter)
         {
             for (var y = DrawingConstants.START_POINT_DRAWING_COORDINATE_X_Y;
-                y <= canvasSize.Height; y += pixelsPerCentimeter)
+                y <= canvasSize.Height + pixelsPerCentimeter; y += pixelsPerCentimeter)
             {
+                if (y < canvasSize.Height)
+                {
+                    yield return DrawingConstants.BREAK_POINT;
+                }
+
                 for (var x = DrawingConstants.START_POINT_DRAWING_COORDINATE_X_Y;
                     x <= canvasSize.Width + pixelsPerCentimeter; x += pixelsPerCentimeter)
                 {
@@ -45,8 +50,13 @@ namespace Modeling.Models.Extensions
             }
 
             for (var x = DrawingConstants.START_POINT_DRAWING_COORDINATE_X_Y;
-                x <= canvasSize.Width; x += pixelsPerCentimeter)
+                x <= canvasSize.Width + pixelsPerCentimeter; x += pixelsPerCentimeter)
             {
+                if (x < canvasSize.Width)
+                {
+                    yield return DrawingConstants.BREAK_POINT;
+                }
+
                 for (var y = DrawingConstants.START_POINT_DRAWING_COORDINATE_X_Y;
                     y <= canvasSize.Height + pixelsPerCentimeter; y += pixelsPerCentimeter)
                 {
@@ -65,19 +75,19 @@ namespace Modeling.Models.Extensions
             if (isVertical)
             {
                 yield return new PointSingle(centerX, centerY - pixelsPerCentimeter);
-                yield return new PointSingle(centerX, dimensionSize + pixelsPerCentimeter);
+                yield return new PointSingle(centerX, dimensionSize);
             }
             else
             {
                 yield return new PointSingle(centerX, centerY);
-                yield return new PointSingle(dimensionSize + pixelsPerCentimeter, centerY);
+                yield return new PointSingle(dimensionSize, centerY);
             }
 
             yield return DrawingConstants.BREAK_POINT;
 
             if (isVertical)
             {
-                yield return new PointSingle(centerX, centerY - pixelsPerCentimeter);
+                yield return new PointSingle(centerX, centerY);
                 yield return new PointSingle(centerX, 0);
             }
             else
@@ -207,7 +217,9 @@ namespace Modeling.Models.Extensions
             var topLargeVerticalLineWidth = MathF.Max(dimension.TopLargeVerticalLineLength, dimension.BottomLargeVerticalLineLength);
             var bottomLargeVerticalLineWidth = topLargeVerticalLineWidth;
 
-            var minSmallHorizontalLinesWidth = MathF.Max(MathF.Max(dimension.TopLeftHorizontalSmallLineFirstLength, dimension.TopLeftHorizontalSmallLineSecondLength), MathF.Max(dimension.TopRightHorizontalSmallLineFirstLength, dimension.TopRightHorizontalSmallLineSecondLength));
+            var minSmallHorizontalTopLinesWidth = MathF.Max(MathF.Max(dimension.TopLeftHorizontalSmallLineFirstLength, dimension.TopLeftHorizontalSmallLineSecondLength), MathF.Max(dimension.TopRightHorizontalSmallLineFirstLength, dimension.TopRightHorizontalSmallLineSecondLength));
+            var minSmallHorizontalBottomLinesWidth = MathF.Max(MathF.Max(dimension.BottomLeftHorizontalSmallLineFirstLength, dimension.BottomLeftHorizontalSmallLineSecondLength), MathF.Max(dimension.BottomRightHorizontalSmallLineFirstLength, dimension.BottomRightHorizontalSmallLineSecondLength));
+            var minSmallHorizontalLinesWidth = MathF.Max(minSmallHorizontalTopLinesWidth, minSmallHorizontalBottomLinesWidth);
             var minSmallVerticalLinesHeight = MathF.Max(MathF.Max(dimension.TopLeftVerticalSmallLineLength, dimension.BottomLeftVerticalSmallLineLength), MathF.Max(dimension.TopRightVerticalSmallLineLength, dimension.BottomRightVerticalSmallLineLength));
             var minHalfCirclesDiameter = MathF.Max(MathF.Max(dimension.TopLeftHalfCircleDiameter, dimension.BottomLeftHalfCircleDiameter), MathF.Max(dimension.TopRightHalfCircleDiameter, dimension.BottomRightHalfCircleDiameter));
 

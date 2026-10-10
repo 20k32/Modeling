@@ -37,7 +37,7 @@ using System.Threading.Tasks;
 
 namespace Modeling.ViewModels.Pages.MainPage.Drawing
 {
-    public sealed partial class DrawingViewModel : ObservableObject
+    public sealed partial class DrawingViewModel : BaseViewModel
     {
         readonly IDrawingSettingsProvider _drawingSettingsProvider;
         readonly INavigationProvider _navigationProvider;
@@ -56,7 +56,6 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
         UserPointDrawingAction _drawingAction;
         PointSingle _previousMovedPoint;
-
 
         Matrix3x3Single _figureTranslationTransform;
         Matrix3x3Single _figureRotationTransform;
@@ -176,36 +175,12 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         {
             switch (page)
             {
-                case (NavigationPage.ResizingPage): HandleResizingSubPageNavigation(); break;
+                case (NavigationPage.ResizingPage): break;
                 case (NavigationPage.AffineTransformPage): break;
                 case (NavigationPage.EuclideanTransformPage): break;
                 case (NavigationPage.ProjectiveTransformPage): break;
                 default: break;
             }
-        }
-
-        void ResetStateForResizingSubPage()
-        {
-            CircleEditingPanelVisible = false;
-            LineEditingPanelVisible = false;
-
-            PositionEditingPanelVisible = false;
-            SizeEditingPanelVisible = false;
-
-            PickButtonsVisible = true;
-            ChangeFigurePosition = false;
-            PickShapeForResizing = false;
-            CancelButtonVisible = false;
-            RotationPointVisible = false;
-
-            _canRedrawUserPoint = false;
-            _shouldApplyGeneralTransformForUserPoint = true;
-            _drawingAction = UserPointDrawingAction.None;
-        }
-
-        void HandleResizingSubPageNavigation()
-        {
-            ResetStateForResizingSubPage();
         }
 
         void OnChangeCanvasSettingsMessage(object recipient, ChangeCanvasSettingsMessage message)
@@ -347,25 +322,10 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
             if (point != _previousMovedPoint)
             {
-                var canvasSize = _drawingSettingsProvider.Settings.CanvasSize;
+                await ApplyUserPointTranslationTransformAsync(point);
 
-                var centerX = canvasSize.Width / 2f;
-                var centerY = canvasSize.Height / 2f;
-
-                var offsetX = point.X - centerX;
-                var offsetY = point.Y - centerY;
-
-                _userPointTransform = MatrixExtensions.CreateTranslationTransform(
-                    offsetX,
-                    offsetY);
-
-                _previousMovedPoint = point;
-
-                Logger.Information($"X: {point.X} Y: ; {point.Y}");
-
-                _shouldApplyGeneralTransformForUserPoint = false;
-
-                await RedrawAllAsync();
+                SetHorizontalRotationPointCenterSilent(point.X);
+                SetVerticalRotationPointCenterSilent(point.Y);
             }
         }
 
@@ -397,7 +357,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             var currentDrawingMessage = new PointListTransformMessageParameter(
                     points: Ioc.Default.GetRequiredService<IPointListCollection>(),
                     color: drawingColor,
-                    transformMatrix: _gridTransform,
+                    transformMatrix: _drawingSettingsProvider.Settings.AttachGridToFigure ? _figureTransform : _gridTransform,
                     clearBeforeRedraw: true,
                     backgroundColor: backgroundColor,
                     thickness: thickness);
@@ -491,6 +451,9 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             InitializeFigureSegments(pixelsPerCentimeter);
 
             _figure.CalculateDefaultPropertiesFromSegments();
+
+            SetHorizontalFigurePositionSilent(_figure.CenterPoint.X);
+            SetVerticalFigurePositionSilent(_figure.CenterPoint.Y);
         }
 
         void InitializeFigureSegments(float pixelsPerCentimeter)
@@ -665,6 +628,9 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
             var centerPoint = new PointSingle(canvasSize.Width / 2f, canvasSize.Height / 2f);
             InitializeUserPoint(centerPoint);
+
+            SetHorizontalRotationPointCenterSilent(centerPoint.X);
+            SetVerticalRotationPointCenterSilent(centerPoint.Y);
         }
 
         async Task LoadSettingsAsync()
@@ -748,13 +714,14 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
                 return;
             }
 
+            var localPoint = _figureTransform.Inverse() * point;
             var pixelsPerCentimeter = _drawingSettingsProvider.Settings.PixelsPerCentimeter;
 
-            point = _figureTransform.Inverse() * point;
-
-            if (_figure.Bounds.Contains(point, pixelsPerCentimeter))
+            if (_figure.Bounds.Contains(localPoint, pixelsPerCentimeter))
             {
                 _shouldChangeFigurePosition = true;
+                _previousMovedPoint = point;
+                _figureTransformCopy = _figureTransform;
 
                 ChangeMouseCursor(MouseCursor.Move);
             }
@@ -765,39 +732,24 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             if (!_shouldChangeFigurePosition)
             {
                 ChangeMouseCursorForEntireFigurePoint(_figure, point);
-                return;
             }
-
-            if (point != _previousMovedPoint)
+            else if (point != _previousMovedPoint)
             {
+                await ApplyFigureTranslationTransformAsync(point);
 
                 var canvasSize = _drawingSettingsProvider.Settings.CanvasSize;
 
-                var centerX = _startDrawingPoint.X + _figure.Bounds.Width / 2;
-                var centerY = _startDrawingPoint.Y + _figure.Bounds.Height / 2;
+                var centerPointTransformed = _figureTransform * new PointSingle(canvasSize.Width / 2, canvasSize.Height / 2);
 
-                var offsetX = point.X - centerX;
-                var offsetY = point.Y - centerY;
-
-                _figureTranslationTransform = MatrixExtensions.CreateTranslationTransform(offsetX, offsetY);
-
-                _figureTransform = _figureTransform * _figureRotationTransform * _figureTranslationTransform;
-
-                _figureTransformCopy = _figureTransform;
-
-                _previousMovedPoint = point;
-
-                Logger.Information($"X: {point.X} Y: ; {point.Y}");
-
-                _shouldApplyGeneralTransformForUserPoint = false;
-
-                await RedrawAllAsync();
+                SetHorizontalFigurePositionSilent(centerPointTransformed.X);
+                SetVerticalFigurePositionSilent(centerPointTransformed.Y);
             }
         }
 
         void EndFigureSelection(PointSingle point)
         {
             _shouldChangeFigurePosition = false;
+
             ChangeMouseCursor(MouseCursor.Default);
         }
 
@@ -847,7 +799,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         {
             var userInterfaceConstants = Ioc.Default.GetRequiredService<IUserInterfaceConstantsProvider>();
 
-            var stepFrequency = 1;//userInterfaceConstants.SlidersStepFrequency;
+            var stepFrequency = userInterfaceConstants.SlidersStepFrequency;
             var animationTimeoutMilliseconds = userInterfaceConstants.AnimationTimeoutMilliseconds;
 
             var rotationAngle = _lastRotationAngle;
@@ -862,6 +814,8 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
                 SetRotationAngleSilent(rotationAngle);
 
                 await RotateFigureAsync(rotationAngle);
+
+                UpdateFigureCenterInUserInterface();
 
                 if (needToDecreaseAngle)
                 {
@@ -896,6 +850,14 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             }
         }
 
+        private void UpdateFigureCenterInUserInterface()
+        {
+            var transformedFigureCenter = _figureTransform * _figure.CenterPoint;
+
+            SetHorizontalFigurePositionSilent(transformedFigureCenter.X);
+            SetVerticalFigurePositionSilent(transformedFigureCenter.Y);
+        }
+
         async Task StopAnimatingRotationAsync()
         {
             try
@@ -906,6 +868,148 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             {
                 Logger.Exception(ex);
             }
+        }
+
+        async Task ApplyAffineTransformAsync()
+        {
+            var origin = new PointSingle(AffineStartPointX, AffineStartPointY);
+
+            var xAxis = new PointSingle(1 + AffineNewXPointX, AffineNewXPointY);
+
+            var yAxis = new PointSingle(AffineNewYPointX, 1 + AffineNewYPointY);
+
+            var affineTransformMatrix = MatrixExtensions.CreateAffineTransform(origin, xAxis, yAxis);
+
+            _figureTransform = affineTransformMatrix * _figureTransformCopy;
+
+            await RedrawAllAsync();
+        }
+
+        async Task ApplyAffineTransformWithDelayAsync()
+        {
+            await WaitBeforeExecutionAsync(ApplyAffineTransformAsync);
+        }
+
+        async Task ApplyFigureTranslationTransformAsync(PointSingle point)
+        {
+            var inverseTransform = _figureTransform.Inverse();
+            var currentLocalPoint = inverseTransform * point;
+            var previousLocalPoint = inverseTransform * _previousMovedPoint;
+
+            var offsetX = currentLocalPoint.X - previousLocalPoint.X;
+            var offsetY = currentLocalPoint.Y - previousLocalPoint.Y;
+
+            await MoveFigureToOffsetAsync(new PointSingle(offsetX, offsetY));
+
+            _previousMovedPoint = point;
+            _shouldApplyGeneralTransformForUserPoint = false;
+        }
+
+        async Task ApplyFigureTranslationTransformAsync2(PointSingle point)
+        {
+            var figureCenter = _figure.CenterPoint;
+            var targetCenterInLocalSpace = _figureTransform.Inverse() * point;
+
+            var offset = new PointSingle(
+                targetCenterInLocalSpace.X - figureCenter.X,
+                targetCenterInLocalSpace.Y - figureCenter.Y);
+
+            await MoveFigureToOffsetAsync(offset);
+        }
+
+        async Task MoveFigureToOffsetAsync(PointSingle offsetPoint)
+        {
+            _figureTranslationTransform =
+                    MatrixExtensions.CreateTranslationTransform(offsetPoint.X, offsetPoint.Y);
+
+            _figureTransform *= _figureTranslationTransform;
+
+            await RedrawAllAsync();
+        }
+
+        async Task ApplyFigureTranslationTransformWithDelayAsync(PointSingle point)
+        {
+            await WaitBeforeExecutionAsync(ApplyFigureTranslationTransformAsync2, point);
+        }
+
+        async Task ApplyUserPointTranslationTransformAsync(PointSingle point)
+        {
+            var canvasSize = _drawingSettingsProvider.Settings.CanvasSize;
+
+            var centerX = canvasSize.Width / 2f;
+            var centerY = canvasSize.Height / 2f;
+
+            var offsetX = point.X - centerX;
+            var offsetY = point.Y - centerY;
+
+            _userPointTransform = MatrixExtensions.CreateTranslationTransform(
+                offsetX,
+                offsetY);
+
+            _previousMovedPoint = point;
+
+            Logger.Information($"X: {point.X} Y: ; {point.Y}");
+
+            _shouldApplyGeneralTransformForUserPoint = false;
+
+            await RedrawAllAsync();
+        }
+
+        async Task ApplyUserPointTranslationTransformWithDelayAsync(PointSingle point)
+        {
+            await WaitBeforeExecutionAsync(ApplyUserPointTranslationTransformAsync, point);
+        }
+
+        async Task CancelApiLayerAsync()
+        {
+            await RedrawAllAsync();
+        }
+
+        async Task ResetApiLayerAsync()
+        {
+            _shouldApplyGeneralTransformForUserPoint = true;
+
+            _canRedrawUserPoint = false;
+
+            _previousMovedPoint = DrawingConstants.BREAK_POINT;
+
+            _shouldChangeFigurePosition = false;
+            _canRedrawUserPoint = false;
+
+            _wasPositionEditingControlVisible = false;
+            _wasRotationPointVisible = false;
+
+            _drawingAction = UserPointDrawingAction.None;
+
+            _userPointTransform = DrawingConstants.NON_TRANSFORM_MATRIX;
+            _figureRotationTransform = DrawingConstants.NON_TRANSFORM_MATRIX;
+            _figureTranslationTransform = DrawingConstants.NON_TRANSFORM_MATRIX;
+            _figureTransform = DrawingConstants.NON_TRANSFORM_MATRIX;
+            _figureTransformCopy = DrawingConstants.NON_TRANSFORM_MATRIX;
+            _gridTransform = DrawingConstants.NON_TRANSFORM_MATRIX;
+            _gridTransformCopy = DrawingConstants.NON_TRANSFORM_MATRIX;
+
+            SetAffineStartPointXSilent(default);
+            SetAffineStartPointYSilent(default);
+            SetAffineNewXPointXSilent(default);
+            SetAffineNewXPointYSilent(default);
+            SetAffineNewYPointXSilent(default);
+            SetAffineNewYPointYSilent(default);
+
+            await RedrawAllAsync();
+        }
+
+        async Task ApplySymmetryTransformRelativeRotationPointAsync()
+        {
+            var rotationPoint = _userPointTransform * _userPoint.CenterPoint;
+
+            var symmetryTransform = MatrixExtensions.CreatePointSymmetryTransform(rotationPoint);
+
+            _figureTransform = symmetryTransform * _figureTransform;
+
+            UpdateFigureCenterInUserInterface();
+
+            await RedrawAllAsync();
         }
     }
 }

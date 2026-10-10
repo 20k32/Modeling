@@ -4,6 +4,6 @@
         <ResourceDictionary Source="/Resources/Converters/GeneralConverters.xaml" />
         <ResourceDictionary Source="/Resources/Icons/FluentIcons.xaml" />
         <ResourceDictionary Source="/Resources/Dictionaries/SharedResources.xaml" />
-        <ResourceDictionary Source="/Resources/Styles/ApplicationStyles.xaml" />
+        <ResourceDictionary Source="/Resources/Styles/RetemplatedControlStyles.xaml" />
     </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>

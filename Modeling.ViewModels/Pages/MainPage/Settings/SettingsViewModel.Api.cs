@@ -19,19 +19,15 @@ using System.Threading.Tasks;
 
 namespace Modeling.ViewModels.Pages.MainPage.Settings
 {
-    public sealed partial class SettingsViewModel : ObservableObject
+    public sealed partial class SettingsViewModel : BaseViewModel
     {
-        readonly SemaphoreSlim _applyingChangesLock;
         readonly IApplicationSettingsProvider _applicationSettingsProvider;
         readonly IDrawingSettingsProvider _drawingSettingsProvider;
-
-        CancellationTokenSource _applyingChangesCancellation;
 
         bool _initialized;
 
         public SettingsViewModel()
         {
-            _applyingChangesLock = new SemaphoreSlim(1, 1);
             _drawingSettingsProvider = Ioc.Default.GetService<IDrawingSettingsProvider>();
             _applicationSettingsProvider = Ioc.Default.GetService<IApplicationSettingsProvider>();
             _refreshRates =
@@ -42,36 +38,6 @@ namespace Modeling.ViewModels.Pages.MainPage.Settings
                     new RefreshRateItem(60),
                     new RefreshRateItem(120),
                 ];
-        }
-
-        async Task WaitBeforeExecutionAsync(ActionEventHandler action)
-        {
-            try
-            {
-                await _applyingChangesCancellation.TryCancelAsync(shouldDispose: false);
-
-                using (var cancellationSource = new CancellationTokenSource())
-                {
-                    _applyingChangesCancellation = cancellationSource;
-
-                    await Task.Delay(CoreConstants.MAXIMUM_DELAY_BEFORE_CHANGES_APPLIED_MILLISECONDS, cancellationSource.Token);
-
-                    await _applyingChangesLock.WaitAsync();
-
-                    action();
-                }
-            }
-            catch (Exception ex)
-            {
-                if (ex is not OperationCanceledException)
-                {
-                    Logger.Exception(ex);
-                }
-            }
-            finally
-            {
-                _applyingChangesLock.ReleaseSafe();
-            }
         }
 
         void OnSettingsViewModelInitializeSettingsMessage(object recipient, InitializeSettingsMessage message)

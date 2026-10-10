@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Modeling.ViewModels.Pages.MainPage.Drawing
 {
-    public sealed partial class DrawingViewModel : ObservableObject
+    public sealed partial class DrawingViewModel : BaseViewModel
     {
         [RelayCommand]
         void Initialize()
@@ -78,16 +78,6 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         [RelayCommand]
         async Task CancelPickingShape()
         {
-            _previousMovedPoint = DrawingConstants.BREAK_POINT;
-
-            _shouldChangeFigurePosition = false;
-            _canRedrawUserPoint = false;
-
-            _wasPositionEditingControlVisible = false;
-            _wasRotationPointVisible = false;
-
-            _drawingAction = UserPointDrawingAction.None;
-
             PositionEditingPanelVisible = false;
             SizeEditingPanelVisible = false;
 
@@ -101,11 +91,14 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
             AnimateRotation = false;
 
+            NearestSegment = default;
+
             if (NearestSegment is not null)
             {
-                NearestSegment = default;
                 await RedrawAllAsync();
             }
+
+            await CancelApiLayerAsync();
         }
 
         [RelayCommand]
@@ -115,46 +108,21 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             var pixelsPerCentimeter = _drawingSettingsProvider.Settings.PixelsPerCentimeter;
 
             ClearDrawingElements();
+
             InitializeDrawingElements(new SizeSingle(canvasSize.Width, canvasSize.Height),
                 pixelsPerCentimeter);
 
-            _shouldApplyGeneralTransformForUserPoint = true;
-
-            _canRedrawUserPoint = false;
-
             SetRotationAngleSilent(0);
 
-            _figureRotationTransform = DrawingConstants.NON_TRANSFORM_MATRIX;
-            _figureRotationTransform = DrawingConstants.NON_TRANSFORM_MATRIX;
+            SetRotationPointControlVisibleSilent(false);
 
-            _figureTransform = DrawingConstants.NON_TRANSFORM_MATRIX;
-            _figureTransformCopy = DrawingConstants.NON_TRANSFORM_MATRIX;
-
-            _userPointTransform = DrawingConstants.NON_TRANSFORM_MATRIX;
-
-            _gridTransform = DrawingConstants.NON_TRANSFORM_MATRIX;
-            _gridTransformCopy = DrawingConstants.NON_TRANSFORM_MATRIX;
-
-            SetRotationPointSilent(false);
-
-            await RedrawAllAsync();
+            await ResetApiLayerAsync();
         }
 
         [RelayCommand]
-        async Task ApplyAffineTransform()
+        async Task ApplySymmetryTransformAsync()
         {
-            var origin = new PointSingle(AffineStartPointX, AffineStartPointY);
-
-            var xAxis = new PointSingle(1 + AffineNewXPointX, AffineNewXPointY);
-
-            var yAxis = new PointSingle(AffineNewYPointX, 1 + AffineNewYPointY);
-
-            var affineTransformMatrix = MatrixExtensions.CreateAffineTransform(origin, xAxis, yAxis);
-
-            _figureTransform = affineTransformMatrix * _figureTransformCopy;
-            _gridTransform = affineTransformMatrix * _gridTransformCopy;
-
-            await RedrawAllAsync();
+            await ApplySymmetryTransformRelativeRotationPointAsync();
         }
     }
 }

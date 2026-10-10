@@ -1,13 +1,12 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Modeling.Core.Drawing;
-using Modeling.Core.Extensions;
-using Modeling.Models.Abstractions.Drawing.Figure;
 using Modeling.Models.Drawing.Figures.PointGeometries;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Modeling.ViewModels.Pages.MainPage.Drawing
 {
-    public sealed partial class DrawingViewModel : ObservableObject
+    public sealed partial class DrawingViewModel : BaseViewModel
     {
         [ObservableProperty]
         bool _pickShapeForResizing;
@@ -52,22 +51,88 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         float _rotationAngle;
 
         [ObservableProperty]
-        float affineStartPointX;
+        float _affineStartPointX;
 
         [ObservableProperty]
-        float affineStartPointY;
+        float _affineStartPointY;
 
         [ObservableProperty]
-        float affineNewXPointX;
+        float _affineNewXPointX;
 
         [ObservableProperty]
-        float affineNewXPointY;
+        float _affineNewXPointY;
 
         [ObservableProperty]
-        float affineNewYPointX;
+        float _affineNewYPointX;
 
         [ObservableProperty]
-        float affineNewYPointY;
+        float _affineNewYPointY;
+
+        [ObservableProperty]
+        float _horizontalFigurePosition;
+
+        [ObservableProperty]
+        float _verticalFigurePosition;
+
+        [ObservableProperty]
+        float _horizontalRotationPointCenter;
+
+        [ObservableProperty]
+        float _verticalRotationPointCenter;
+
+        async partial void OnVerticalRotationPointCenterChanged(float value)
+        {
+            var point = new PointSingle(HorizontalRotationPointCenter, value);
+            await ApplyUserPointTranslationTransformWithDelayAsync(point);
+        }
+
+        async partial void OnHorizontalRotationPointCenterChanged(float value)
+        {
+            var point = new PointSingle(value, VerticalRotationPointCenter);
+            await ApplyUserPointTranslationTransformWithDelayAsync(point);
+        }
+
+        async partial void OnHorizontalFigurePositionChanged(float value)
+        {
+            var point = new PointSingle(value, VerticalFigurePosition);
+            await ApplyFigureTranslationTransformWithDelayAsync(point);
+        }
+
+        async partial void OnVerticalFigurePositionChanged(float value)
+        {
+            var point = new PointSingle(HorizontalFigurePosition, value);
+            await ApplyFigureTranslationTransformWithDelayAsync(point);
+        }
+
+        async partial void OnAffineStartPointXChanged(float _)
+        {
+            await ApplyAffineTransformWithDelayAsync();
+        }
+
+        async partial void OnAffineStartPointYChanged(float _)
+        {
+            await ApplyAffineTransformWithDelayAsync();
+        }
+
+        async partial void OnAffineNewXPointXChanged(float _)
+        {
+            await ApplyAffineTransformWithDelayAsync();
+        }
+
+        async partial void OnAffineNewXPointYChanged(float _)
+        {
+            await ApplyAffineTransformWithDelayAsync();
+        }
+
+        async partial void OnAffineNewYPointXChanged(float _)
+        {
+            await ApplyAffineTransformWithDelayAsync();
+        }
+
+        async partial void OnAffineNewYPointYChanged(float _)
+        {
+            await ApplyAffineTransformWithDelayAsync();
+        }
 
         async partial void OnRotationPointVisibleChanged(bool value)
         {
@@ -165,6 +230,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
                 if (RotationPointVisible)
                 {
+                    _canRedrawUserPoint = false;
                     _rotationPointVisible = false;
                     OnPropertyChanged(nameof(RotationPointVisible));
                 }
@@ -185,7 +251,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             await RotateFigureAsync(newValue);
         }
 
-        private void SetRotationAngleSilent(float newValue)
+        void SetRotationAngleSilent(float newValue)
         {
             _rotationAngle = newValue;
             OnPropertyChanged(nameof(RotationAngle));
@@ -214,10 +280,70 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             }
         }
 
-        void SetRotationPointSilent(bool value)
+        void SetRotationPointControlVisibleSilent(bool value)
         {
             _rotationPointVisible = value;
             OnPropertyChanged(nameof(RotationPointVisible));
+        }
+
+        void SetHorizontalFigurePositionSilent(float value)
+        {
+            _horizontalFigurePosition = value;
+            OnPropertyChanged(nameof(HorizontalFigurePosition));
+        }
+
+        void SetVerticalFigurePositionSilent(float value)
+        {
+            _verticalFigurePosition = value;
+            OnPropertyChanged(nameof(VerticalFigurePosition));
+        }
+
+        void SetHorizontalRotationPointCenterSilent(float value)
+        {
+            _horizontalRotationPointCenter = value;
+            OnPropertyChanged(nameof(HorizontalRotationPointCenter));
+        }
+
+        void SetVerticalRotationPointCenterSilent(float value)
+        {
+            _verticalRotationPointCenter = value;
+            OnPropertyChanged(nameof(VerticalRotationPointCenter));
+        }
+
+        void SetAffineStartPointXSilent(float newValue)
+        {
+            _affineStartPointX = newValue;
+            OnPropertyChanged(nameof(AffineStartPointX));
+        }
+
+        void SetAffineStartPointYSilent(float newValue)
+        {
+            _affineStartPointY = newValue;
+            OnPropertyChanged(nameof(AffineStartPointY));
+        }
+
+        void SetAffineNewXPointXSilent(float newValue)
+        {
+            _affineNewXPointX = newValue;
+            OnPropertyChanged(nameof(AffineNewXPointX));
+        }
+
+        void SetAffineNewXPointYSilent(float newValue)
+        {
+            _affineNewXPointY = newValue;
+            OnPropertyChanged(nameof(AffineNewXPointY));
+        }
+
+        void SetAffineNewYPointXSilent(float newValue)
+        {
+            _affineNewYPointX = newValue;
+            OnPropertyChanged(nameof(AffineNewYPointX));
+        }
+
+        void SetAffineNewYPointYSilent(float newValue)
+        {
+            _affineNewYPointY = newValue;
+            OnPropertyChanged(nameof(AffineNewYPointY));
         }
     }
 }

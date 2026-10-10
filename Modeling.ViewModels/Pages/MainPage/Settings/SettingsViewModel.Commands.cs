@@ -7,7 +7,7 @@ using Modeling.Models.Abstractions.Dialogs;
 
 namespace Modeling.ViewModels.Pages.MainPage.Settings
 {
-    public sealed partial class SettingsViewModel : ObservableObject
+    public sealed partial class SettingsViewModel : BaseViewModel
     {
         [RelayCommand]
         void Initialize()
