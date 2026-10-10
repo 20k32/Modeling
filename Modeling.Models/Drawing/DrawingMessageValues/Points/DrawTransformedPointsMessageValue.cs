@@ -2,6 +2,7 @@
 using Modeling.Core.Abstractions.Collections;
 using Modeling.Core.Abstractions.Collections.Drawings;
 using Modeling.Core.Drawing;
+using Modeling.Core.Enums;
 using System.Linq;
 
 namespace Modeling.Models.Drawing.DrawingMessageValues.Points
@@ -10,8 +11,8 @@ namespace Modeling.Models.Drawing.DrawingMessageValues.Points
     {
         public Matrix3x3Single Transform { get; init; }
 
-        public DrawTransformedPointsMessageValue(DrawingColor color, float thickness, bool shouldClearCanvas, DrawingColor backgroundColor, bool shouldFillGeometry, DrawingColor fillColor, Matrix3x3Single transform, params PointSingle[] points)
-            : base(color, thickness, shouldClearCanvas, backgroundColor, shouldFillGeometry, fillColor, points)
+        public DrawTransformedPointsMessageValue(DrawingColor color, float thickness, bool shouldClearCanvas, DrawingColor backgroundColor, bool shouldFillGeometry, DrawingColor fillColor, Matrix3x3Single transform, bool shouldApplyAliasing, DrawingAliasing drawingAliasing, params PointSingle[] points)
+            : base(color, thickness, shouldClearCanvas, backgroundColor, shouldFillGeometry, fillColor, points, shouldApplyAliasing, drawingAliasing)
         {
             var pointCollection = Ioc.Default.GetRequiredService<IPointListCollection>();
 
@@ -20,8 +21,8 @@ namespace Modeling.Models.Drawing.DrawingMessageValues.Points
             Transform = transform;
         }
 
-        public DrawTransformedPointsMessageValue(DrawingColor color, float thickness, bool shouldClearCanvas, DrawingColor backgroundColor, bool shouldFillGeometry, DrawingColor fillColor, Matrix3x3Single transform, IBlockingCollection<PointSingle> points)
-            : base(color, thickness, shouldClearCanvas, backgroundColor, shouldFillGeometry, fillColor, points)
+        public DrawTransformedPointsMessageValue(DrawingColor color, float thickness, bool shouldClearCanvas, DrawingColor backgroundColor, bool shouldFillGeometry, DrawingColor fillColor, Matrix3x3Single transform, bool shouldApplyAliasing, DrawingAliasing drawingAliasing, IBlockingCollection<PointSingle> points)
+            : base(color, thickness, shouldClearCanvas, backgroundColor, shouldFillGeometry, fillColor, shouldApplyAliasing, drawingAliasing, points)
         {
             Transform = transform;
         }

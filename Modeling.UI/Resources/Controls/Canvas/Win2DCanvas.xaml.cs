@@ -473,6 +473,8 @@ namespace Modeling.UI.Resources.Controls.Canvas
                 using var drawingSession = _canvasRenderTarget.CreateDrawingSession();
                 foreach (var drawingParameter in message.DrawingParameters.OfType<DrawTransformedPointsMessageValue>())
                 {
+                    drawingSession.Antialiasing = CanvasAntialiasing.Antialiased;
+
                     token.ThrowIfCancellationRequested();
 
                     HandleTransformPointsCanvasMessageCore(drawingSession, drawingParameter, token);

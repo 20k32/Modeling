@@ -360,7 +360,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
                     transformMatrix: _drawingSettingsProvider.Settings.AttachGridToFigure ? _figureTransform : _gridTransform,
                     clearBeforeRedraw: true,
                     backgroundColor: backgroundColor,
-                    thickness: thickness);
+                    thickness: 1f);
 
             if (_drawingSettingsProvider.Settings.DrawGrid)
             {

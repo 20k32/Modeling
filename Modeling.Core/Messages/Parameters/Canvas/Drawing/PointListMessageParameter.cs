@@ -3,12 +3,13 @@ using Modeling.Core.Abstractions.Collections;
 using Modeling.Core.Abstractions.Collections.Drawings;
 using Modeling.Core.Constants;
 using Modeling.Core.Drawing;
+using Modeling.Core.Enums;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Modeling.Core.Messages.Parameters.Canvas.Drawing
 {
-    public class PointListMessageParameter(IBlockingCollection<PointSingle> points, DrawingColor color, bool shouldFillGeometry = false, DrawingColor fillColor = default, bool clearBeforeRedraw = false, DrawingColor backgroundColor = default, float thickness = DrawingConstants.GRID_DRAWING_THICKNESS, IObjectTree parent = default)
+    public class PointListMessageParameter(IBlockingCollection<PointSingle> points, DrawingColor color, bool applyAliasing = false, DrawingAliasing drawingAliasing = DrawingAliasing.None, bool shouldFillGeometry = false, DrawingColor fillColor = default, bool clearBeforeRedraw = false, DrawingColor backgroundColor = default, float thickness = DrawingConstants.GRID_DRAWING_THICKNESS, IObjectTree parent = default)
         : DrawingMessageParameter(clearBeforeRedraw, parent)
     {
         public IBlockingCollection<PointSingle> Points { get; init; } = points;
@@ -17,6 +18,8 @@ namespace Modeling.Core.Messages.Parameters.Canvas.Drawing
         public DrawingColor BackgroundColor { get; init; } = backgroundColor;
         public bool ShouldFillGeometry { get; init; } = shouldFillGeometry;
         public DrawingColor FillColor { get; init; } = fillColor;
+        public bool ApplyAliasing { get; init; } = applyAliasing;
+        public DrawingAliasing Aliasing { get; init; } = drawingAliasing;
 
         public override bool IsDefault() => Color.IsDefault()
             || Points is null

@@ -150,13 +150,14 @@ namespace Modeling.UI.Resources.Controls.Miscellaneous.IncrementingTextBox
 
             try
             {
-                if (value == float.NegativeZero)
+                var newValue = MathF.Round(value, _userInterfaceConstantsProvider.FractionalPartLength);
+
+                if (newValue == float.NegativeZero)
                 {
-                    value = 0;
+                    newValue = 0;
                 }
 
-                textBox.Text = MathF.Round(value, _userInterfaceConstantsProvider.FractionalPartLength)
-                    .ToString();
+                textBox.Text = newValue.ToString();
             }
             finally
             {

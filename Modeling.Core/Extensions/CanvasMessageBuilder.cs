@@ -2,6 +2,7 @@
 using Modeling.Core.Abstractions.Collections.Drawings;
 using Modeling.Core.Constants;
 using Modeling.Core.Drawing;
+using Modeling.Core.Enums;
 using Modeling.Core.Messages.Parameters.Canvas.Drawing;
 using System.Collections.Generic;
 
@@ -12,12 +13,19 @@ namespace Modeling.Core.Extensions
         public static PointListTransformMessageParameter With(this PointListTransformMessageParameter parameter,
             IBlockingCollection<PointSingle> points,
             DrawingColor? color = default,
-            Matrix3x3Single? transformMatrix = default, bool? shouldFillGeometry = false,
-            DrawingColor? fillColor = default, bool? clearBeforeRedraw = false,
-            DrawingColor? backgroundColor = default, float? thickness = default)
+            Matrix3x3Single? transformMatrix = default,
+            bool? applyAliasing = default,
+            DrawingAliasing? drawingAliasing = default,
+            bool? shouldFillGeometry = false,
+            DrawingColor? fillColor = default,
+            bool? clearBeforeRedraw = false,
+            DrawingColor? backgroundColor = default,
+            float? thickness = default)
                 => new(
                     points,
                     color ?? parameter.Color,
+                    applyAliasing ?? parameter.ApplyAliasing,
+                    drawingAliasing ?? parameter.Aliasing,
                     transformMatrix ?? parameter.TransformMatrix,
                     shouldFillGeometry ?? parameter.ShouldFillGeometry,
                     fillColor ?? parameter.FillColor,
@@ -29,12 +37,19 @@ namespace Modeling.Core.Extensions
         public static PointListTransformMessageParameter WithNoParent(this PointListTransformMessageParameter parameter,
             IPointListCollection points,
             DrawingColor? color = default,
-            Matrix3x3Single? transformMatrix = default, bool? shouldFillGeometry = false,
-            DrawingColor? fillColor = default, bool? clearBeforeRedraw = false,
-            DrawingColor? backgroundColor = default, float? thickness = DrawingConstants.GRID_DRAWING_THICKNESS)
+             bool? applyAliasing = default,
+            DrawingAliasing? drawingAliasing = default,
+            Matrix3x3Single? transformMatrix = default,
+            bool? shouldFillGeometry = false,
+            DrawingColor? fillColor = default,
+            bool? clearBeforeRedraw = false,
+            DrawingColor? backgroundColor = default,
+            float? thickness = DrawingConstants.GRID_DRAWING_THICKNESS)
                 => new(
                     points,
                     color ?? parameter.Color,
+                    applyAliasing ?? parameter.ApplyAliasing,
+                    drawingAliasing ?? parameter.Aliasing,
                     transformMatrix ?? parameter.TransformMatrix,
                     shouldFillGeometry ?? parameter.ShouldFillGeometry,
                     fillColor ?? parameter.FillColor,

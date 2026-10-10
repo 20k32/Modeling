@@ -2,6 +2,7 @@
 using Modeling.Core.Abstractions.Collections;
 using Modeling.Core.Abstractions.Collections.Drawings;
 using Modeling.Core.Drawing;
+using Modeling.Core.Enums;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -15,7 +16,7 @@ namespace Modeling.Models.Drawing.DrawingMessageValues.Points
         public bool ShouldFillGeometry { get; init; }
         public DrawingColor FillColor { get; init; }
 
-        protected DrawPointsMessageValue(DrawingColor color, float thickness, DrawingColor backgroundColor, bool shouldClearCanvas, bool shouldFillGeometry, DrawingColor fillColor) : base(backgroundColor, shouldClearCanvas)
+        protected DrawPointsMessageValue(DrawingColor color, float thickness, DrawingColor backgroundColor, bool shouldClearCanvas, bool shouldFillGeometry, DrawingColor fillColor, bool shouldApplyAliasing, DrawingAliasing drawingAliasing) : base(backgroundColor, shouldClearCanvas, shouldApplyAliasing, drawingAliasing)
         {
             Color = color;
             ShouldClearBeforeRedraw = shouldClearCanvas;
@@ -24,8 +25,8 @@ namespace Modeling.Models.Drawing.DrawingMessageValues.Points
             FillColor = fillColor;
         }
 
-        public DrawPointsMessageValue(DrawingColor color, float thickness, bool shouldClearCanvas, DrawingColor backgroundColor, bool shouldFillGeometry, DrawingColor fillColor, params PointSingle[] points)
-            : this(color, thickness, backgroundColor, shouldClearCanvas, shouldFillGeometry, fillColor)
+        public DrawPointsMessageValue(DrawingColor color, float thickness, bool shouldClearCanvas, DrawingColor backgroundColor, bool shouldFillGeometry, DrawingColor fillColor, bool shouldApplyAliasing, DrawingAliasing drawingAliasing, params PointSingle[] points)
+            : this(color, thickness, backgroundColor, shouldClearCanvas, shouldFillGeometry, fillColor, shouldApplyAliasing, drawingAliasing)
         {
             var pointsCollection = Ioc.Default.GetRequiredService<IPointListCollection>();
 
@@ -34,8 +35,8 @@ namespace Modeling.Models.Drawing.DrawingMessageValues.Points
             Points = pointsCollection;
         }
 
-        public DrawPointsMessageValue(DrawingColor color, float thickness, bool shouldClearCanvas, DrawingColor backgroundColor, bool shouldFillGeometry, DrawingColor fillColor, IBlockingCollection<PointSingle> points)
-            : this(color, thickness, backgroundColor, shouldClearCanvas, shouldFillGeometry, fillColor)
+        public DrawPointsMessageValue(DrawingColor color, float thickness, bool shouldClearCanvas, DrawingColor backgroundColor, bool shouldFillGeometry, DrawingColor fillColor, bool shouldApplyAliasing, DrawingAliasing drawingAliasing, IBlockingCollection<PointSingle> points)
+            : this(color, thickness, backgroundColor, shouldClearCanvas, shouldFillGeometry, fillColor, shouldApplyAliasing, drawingAliasing)
         {
             Points = points;
         }
