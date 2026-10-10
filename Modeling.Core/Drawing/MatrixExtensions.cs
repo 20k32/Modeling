@@ -121,7 +121,9 @@ namespace Modeling.Core.Drawing
             };
         }
 
-        public static Matrix3x3Single CreateAffineTransform(PointSingle origin, PointSingle xAxisPoint, PointSingle yAxisPoint)
+        public static Matrix3x3Single CreateAffineTransform(PointSingle origin,
+            PointSingle xAxisPoint,
+            PointSingle yAxisPoint)
         {
             return new Matrix3x3Single
             {
@@ -154,6 +156,29 @@ namespace Modeling.Core.Drawing
                 M31 = 0,
                 M32 = 0,
                 M33 = 1
+            };
+        }
+
+        public static Matrix3x3Single CreateProjectiveTransform(PointSingle origin,
+            PointSingle xAxisPoint,
+            PointSingle yAxisPoint,
+            float wx,
+            float wy,
+            float w0)
+        {
+            return new Matrix3x3Single
+            {
+                M11 = xAxisPoint.X * wx,
+                M12 = yAxisPoint.X * wy,
+                M13 = origin.X * w0,
+
+                M21 = xAxisPoint.Y * wx,
+                M22 = yAxisPoint.Y * wy,
+                M23 = origin.Y * w0,
+
+                M31 = wx,
+                M32 = wy,
+                M33 = w0
             };
         }
     }

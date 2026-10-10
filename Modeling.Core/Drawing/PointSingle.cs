@@ -47,7 +47,9 @@ namespace Modeling.Core.Drawing
                     + point.Y * matrix.M22
                     + matrix.M23;
 
-            return new PointSingle(x, y);
+            float w = point.X * matrix.M31 + point.Y * matrix.M32 + matrix.M33;
+
+            return new PointSingle(x / w, y / w);
         }
     }
 }
