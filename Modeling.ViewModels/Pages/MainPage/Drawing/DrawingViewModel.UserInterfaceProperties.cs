@@ -249,6 +249,8 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         async partial void OnRotationAngleChanged(float newValue)
         {
             await RotateFigureAsync(newValue);
+
+            UpdateFigureCenterInUserInterface();
         }
 
         void SetRotationAngleSilent(float newValue)

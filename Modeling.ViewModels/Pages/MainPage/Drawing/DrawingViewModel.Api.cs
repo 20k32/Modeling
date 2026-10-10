@@ -260,6 +260,8 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
                 var segmentRedrawingMessageParameter = _lastDrawingMessage.With(
                     points: nearestSegment.Bounds.GetPointsFromBounds(),
+                    transformMatrix: _figureTransform,
+                    thickness: _drawingSettingsProvider.Settings.FigureDrawingThickness,
                     color: new(_drawingSettingsProvider.Settings.FigureBoundsColor));
 
                 WeakReferenceMessenger.Default.Send(new TransformPointsMessage(this, segmentRedrawingMessageParameter));
@@ -777,7 +779,6 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
         async Task RotateFigureAsync(float angleDegrees)
         {
-
             var pixelsPerCentimeter = _drawingSettingsProvider.Settings.PixelsPerCentimeter;
             var pixelsPerMillimeter = pixelsPerCentimeter / 10;
 
