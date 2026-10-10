@@ -8,31 +8,22 @@
         <Platforms>x86;x64;ARM64</Platforms>
         <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
         <UseRidGraph>true</UseRidGraph>
-        <PublishProfile>win-$(Platform).pubxml</PublishProfile>
         <UseWinUI>true</UseWinUI>
         <WinUISDKReferences>false</WinUISDKReferences>
         <EnableMsixTooling>true</EnableMsixTooling>
         <Nullable>enable</Nullable>
         <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <RuntimeIdentifier>win-x$(Platform)</RuntimeIdentifier>
+        <PublishProfile>win-$(Platform).pubxml</PublishProfile>
     </PropertyGroup>
-    <ItemGroup>
-      <None Remove="Resources\Controls\Canvas\Win2DCanvas.xaml" />
-      <None Remove="Resources\Controls\Pages\AffineTransformPage.xaml" />
-      <None Remove="Resources\Controls\Pages\EuclideanTransformPage.xaml" />
-      <None Remove="Resources\Controls\Pages\ProjectiveTransformPage.xaml" />
-      <None Remove="Resources\Controls\Pages\ResizingPage.xaml" />
-      <None Remove="Resources\Controls\Pages\SettingsPage.xaml" />
-      <None Remove="Resources\Controls\Root\MainPage.xaml" />
-      <None Remove="Resources\Converters\GeneralConverters.xaml" />
-      <None Remove="Resources\Dialogs\SettingsDialog.xaml" />
-      <None Remove="Resources\Dictionaries\SharedResources.xaml" />
-      <None Remove="Resources\GeneralResources.xaml" />
-      <None Remove="Resources\Icons\FluentIcons.xaml" />
-      <None Remove="Resources\Styles\ApplicationStyles.xaml" />
-      <None Remove="Resources\Styles\ScrollViewer.xaml" />
-      <None Remove="Resources\Styles\TextBlock.xaml" />
-    </ItemGroup>
+
+    <!-- AnyCpu restrictions -->
+    <PropertyGroup Condition="'$(Platform)' == 'AnyCPU'">
+        <PlatformTarget>x86</PlatformTarget>
+        <RuntimeIdentifier>win-x86</RuntimeIdentifier>
+        <PublishProfile >win-x86.pubxml</PublishProfile>
+    </PropertyGroup>
 
     <ItemGroup>
         <Content Include="Assets\SplashScreen.scale-200.png" />
@@ -68,77 +59,77 @@
         <PackageReference Include="WinUIEx" Version="2.9.3" />
     </ItemGroup>
     <ItemGroup>
-      <ProjectReference Include="..\Modeling.ViewModels\Modeling.ViewModels.csproj" />
+        <ProjectReference Include="..\Modeling.ViewModels\Modeling.ViewModels.csproj" />
     </ItemGroup>
     <ItemGroup>
-      <Page Update="Resources\Controls\Pages\SettingsPage.xaml">
-        <Generator>MSBuild:Compile</Generator>
-      </Page>
+        <Page Update="Resources\Controls\Pages\SettingsPage.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </Page>
     </ItemGroup>
     <ItemGroup>
-      <Page Update="Resources\Controls\Pages\ProjectiveTransformPage.xaml">
-        <Generator>MSBuild:Compile</Generator>
-      </Page>
+        <Page Update="Resources\Controls\Pages\ProjectiveTransformPage.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </Page>
     </ItemGroup>
     <ItemGroup>
-      <Page Update="Resources\Controls\Pages\EuclideanTransformPage.xaml">
-        <Generator>MSBuild:Compile</Generator>
-      </Page>
+        <Page Update="Resources\Controls\Pages\EuclideanTransformPage.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </Page>
     </ItemGroup>
     <ItemGroup>
-      <Page Update="Resources\Controls\Pages\AffineTransformPage.xaml">
-        <Generator>MSBuild:Compile</Generator>
-      </Page>
+        <Page Update="Resources\Controls\Pages\AffineTransformPage.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </Page>
     </ItemGroup>
     <ItemGroup>
-      <Page Update="Resources\Styles\TextBlock.xaml">
-        <Generator>MSBuild:Compile</Generator>
-      </Page>
+        <Page Update="Resources\Styles\TextBlock.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </Page>
     </ItemGroup>
     <ItemGroup>
-      <Page Update="Resources\Styles\ApplicationStyles.xaml">
-        <Generator>MSBuild:Compile</Generator>
-      </Page>
+        <Page Update="Resources\Styles\ApplicationStyles.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </Page>
     </ItemGroup>
     <ItemGroup>
-      <Page Update="Resources\GeneralResources.xaml">
-        <Generator>MSBuild:Compile</Generator>
-      </Page>
+        <Page Update="Resources\GeneralResources.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </Page>
     </ItemGroup>
     <ItemGroup>
-      <Page Update="Resources\Dictionaries\SharedResources.xaml">
-        <Generator>MSBuild:Compile</Generator>
-      </Page>
+        <Page Update="Resources\Dictionaries\SharedResources.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </Page>
     </ItemGroup>
     <ItemGroup>
-      <Page Update="Resources\Dictionaries\ThemeResources.xaml">
-        <Generator>MSBuild:Compile</Generator>
-      </Page>
+        <Page Update="Resources\Dictionaries\ThemeResources.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </Page>
     </ItemGroup>
     <ItemGroup>
-      <Page Update="Resources\Icons\FluentIcons.xaml">
-        <Generator>MSBuild:Compile</Generator>
-      </Page>
+        <Page Update="Resources\Icons\FluentIcons.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </Page>
     </ItemGroup>
     <ItemGroup>
-      <Page Update="Resources\Styles\ScrollViewer.xaml">
-        <Generator>MSBuild:Compile</Generator>
-      </Page>
+        <Page Update="Resources\Styles\ScrollViewer.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </Page>
     </ItemGroup>
     <ItemGroup>
-      <Page Update="Resources\Dialogs\SettingsDialog.xaml">
-        <Generator>MSBuild:Compile</Generator>
-      </Page>
+        <Page Update="Resources\Dialogs\SettingsDialog.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </Page>
     </ItemGroup>
     <ItemGroup>
-      <Page Update="Resources\Controls\Pages\ResizingPage.xaml">
-        <Generator>MSBuild:Compile</Generator>
-      </Page>
+        <Page Update="Resources\Controls\Pages\ResizingPage.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </Page>
     </ItemGroup>
     <ItemGroup>
-      <Page Update="Resources\Converters\GeneralConverters.xaml">
-        <Generator>MSBuild:Compile</Generator>
-      </Page>
+        <Page Update="Resources\Converters\GeneralConverters.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </Page>
     </ItemGroup>
 
     <!--
