@@ -301,9 +301,6 @@ namespace Modeling.UI.Resources.Controls.Canvas
                 AnimatedCanvas.Draw -= OnCanvasAnimatedControlDraw;
                 AnimatedCanvas.Draw += OnCanvasAnimatedControlDraw;
 
-                AnimatedCanvas.Update -= OnCanvasAnimatedControlUpdate;
-                AnimatedCanvas.Update += OnCanvasAnimatedControlUpdate;
-
                 ScrollToCenter();
             }
         }
@@ -327,27 +324,8 @@ namespace Modeling.UI.Resources.Controls.Canvas
             }
         }
 
-        long _lastUpdateTimestamp;
-
-        void OnCanvasAnimatedControlUpdate(ICanvasAnimatedControl sender, CanvasAnimatedUpdateEventArgs args)
-        {
-            var now = Stopwatch.GetTimestamp();
-            var interval = _lastUpdateTimestamp == 0
-                ? TimeSpan.Zero
-                : Stopwatch.GetElapsedTime(_lastUpdateTimestamp, now);
-
-            _lastUpdateTimestamp = now;
-
-            Logger.Information(
-                $"Update interval: {interval.TotalMilliseconds:F1} ms; " +
-                $"target: {AnimatedCanvas.TargetElapsedTime.TotalMilliseconds:F1} ms; " +
-                $"fixed: {AnimatedCanvas.IsFixedTimeStep}");
-        }
-
         void OnCanvasAnimatedControlDraw(ICanvasAnimatedControl sender, CanvasAnimatedDrawEventArgs args)
         {
-            Logger.Information($"Drawing occured : {DateTime.Now.TimeOfDay.Seconds}");
-
             if (sender is null
                 || args is null
                 || _canvasRenderTarget is null)

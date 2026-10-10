@@ -31,6 +31,7 @@ using Modeling.Models.UserInterface;
 using Modeling.ViewModels.Miscellaneous;
 using System;
 using System.Linq;
+using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -56,6 +57,9 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         UserPointDrawingAction _drawingAction;
         PointSingle _previousMovedPoint;
 
+
+        Matrix3x3Single _figureTranslationTransform;
+        Matrix3x3Single _figureRotationTransform;
         Matrix3x3Single _gridTransform;
         Matrix3x3Single _userPointTransform;
         Matrix3x3Single _figureTransform;
@@ -99,6 +103,8 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
             _userPointTransform = DrawingConstants.NON_TRANSFORM_MATRIX;
 
+            _figureRotationTransform = DrawingConstants.NON_TRANSFORM_MATRIX;
+            _figureTranslationTransform = DrawingConstants.NON_TRANSFORM_MATRIX;
             _figureTransform = DrawingConstants.NON_TRANSFORM_MATRIX;
             _figureTransformCopy = DrawingConstants.NON_TRANSFORM_MATRIX;
 
@@ -764,17 +770,18 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
             if (point != _previousMovedPoint)
             {
+
                 var canvasSize = _drawingSettingsProvider.Settings.CanvasSize;
 
-                var centerX = canvasSize.Width / 2f;
-                var centerY = canvasSize.Height / 2f;
+                var centerX = _startDrawingPoint.X + _figure.Bounds.Width / 2;
+                var centerY = _startDrawingPoint.Y + _figure.Bounds.Height / 2;
 
                 var offsetX = point.X - centerX;
                 var offsetY = point.Y - centerY;
 
-                _figureTransform = MatrixExtensions.CreateTranslationTransform(
-                    offsetX,
-                    offsetY);
+                _figureTranslationTransform = MatrixExtensions.CreateTranslationTransform(offsetX, offsetY);
+
+                _figureTransform = _figureTransform * _figureRotationTransform * _figureTranslationTransform;
 
                 _figureTransformCopy = _figureTransform;
 
@@ -805,7 +812,10 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
             var transformedUserPoint = _userPointTransform * _userPoint.CenterPoint;
 
-            _figureTransform = MatrixExtensions.CreateRotationTransform(transformedUserPoint, -rotationAngle.DegreesToRadian()) * _figureTransform;
+            _figureRotationTransform = MatrixExtensions.CreateRotationTransform(transformedUserPoint, -rotationAngle.DegreesToRadian());
+
+            _figureTransform = _figureRotationTransform * _figureTransform;
+
             _figureTransformCopy = _figureTransform;
 
             await RedrawAllAsync();

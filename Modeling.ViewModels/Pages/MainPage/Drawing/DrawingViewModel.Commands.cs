@@ -122,6 +122,11 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
             _canRedrawUserPoint = false;
 
+            SetRotationAngleSilent(0);
+
+            _figureRotationTransform = DrawingConstants.NON_TRANSFORM_MATRIX;
+            _figureRotationTransform = DrawingConstants.NON_TRANSFORM_MATRIX;
+
             _figureTransform = DrawingConstants.NON_TRANSFORM_MATRIX;
             _figureTransformCopy = DrawingConstants.NON_TRANSFORM_MATRIX;
 
