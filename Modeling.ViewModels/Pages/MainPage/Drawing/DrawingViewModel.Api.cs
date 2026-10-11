@@ -443,8 +443,6 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
                      color: circleDrawingColor,
                      transformMatrix: _shouldApplyGeneralTransformForUserPoint
                      ? _gridTransform
-                     : _drawingSettingsProvider.Settings.AttachGridToFigure
-                     ? _gridTransform * _userPointTransform
                      : _userPointTransform,
                      shouldFillGeometry: true,
                      fillColor: new DrawingColor(_drawingSettingsProvider.Settings.HorizontalAxisColor),
