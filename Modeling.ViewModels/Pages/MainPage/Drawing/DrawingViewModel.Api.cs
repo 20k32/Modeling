@@ -924,7 +924,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
         async Task ApplyFigureTranslationTransformAsync(PointSingle point)
         {
-            var inverseTransform = _figureTransform.Inverse();
+            /*var inverseTransform = _figureTransform.Inverse();
             var currentLocalPoint = inverseTransform * point;
             var previousLocalPoint = inverseTransform * _previousMovedPoint;
 
@@ -934,27 +934,45 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             await MoveFigureToOffsetAsync(new PointSingle(offsetX, offsetY));
 
             _previousMovedPoint = point;
+            _shouldApplyGeneralTransformForUserPoint = false;*/
+
+            var offset = point - _previousMovedPoint;
+
+            await MoveFigureToOffsetAsync(offset);
+
+            _previousMovedPoint = point;
             _shouldApplyGeneralTransformForUserPoint = false;
         }
 
         async Task ApplyFigureTranslationTransformAsync2(PointSingle point)
         {
-            var figureCenter = _figure.CenterPoint;
+            /*var figureCenter = _figure.CenterPoint;
             var targetCenterInLocalSpace = _figureTransform.Inverse() * point;
 
             var offset = new PointSingle(
                 targetCenterInLocalSpace.X - figureCenter.X,
                 targetCenterInLocalSpace.Y - figureCenter.Y);
 
+            await MoveFigureToOffsetAsync(offset);*/
+
+            var currentCenter = _figureTransform * _figure.CenterPoint;
+            var offset = point - currentCenter;
+
             await MoveFigureToOffsetAsync(offset);
         }
 
         async Task MoveFigureToOffsetAsync(PointSingle offsetPoint)
         {
-            _figureTranslationTransform =
+            /*_figureTranslationTransform =
                     MatrixExtensions.CreateTranslationTransform(offsetPoint.X, offsetPoint.Y);
 
             _figureTransform *= _figureTranslationTransform;
+
+            await RedrawAllAsync();*/
+
+            _figureTranslationTransform = MatrixExtensions.CreateTranslationTransform(offsetPoint.X, offsetPoint.Y);
+
+            _figureTransform = _figureTranslationTransform * _figureTransform;
 
             await RedrawAllAsync();
         }
