@@ -241,6 +241,8 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
         void SelectSegmentOnFigure(PointSingle point)
         {
+            var inverted = _figureTransform.Inverse();
+
             point = _figureTransform.Inverse() * point;
 
             var pixelsPerCentimeter = _drawingSettingsProvider.Settings.PixelsPerCentimeter;
@@ -438,7 +440,11 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
                 currentDrawingMessage = currentDrawingMessage.With(
                      points: _userPoint.Points,
                      color: circleDrawingColor,
-                     transformMatrix: _shouldApplyGeneralTransformForUserPoint ? _gridTransform : _userPointTransform,
+                     transformMatrix: _shouldApplyGeneralTransformForUserPoint
+                     ? _gridTransform
+                     : _drawingSettingsProvider.Settings.AttachGridToFigure
+                     ? _gridTransform * _userPointTransform
+                     : _userPointTransform,
                      shouldFillGeometry: true,
                      fillColor: new DrawingColor(_drawingSettingsProvider.Settings.HorizontalAxisColor),
                      backgroundColor: backgroundColor,
@@ -953,6 +959,13 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             await RedrawAllAsync();
         }
 
+        async Task MoveUserPointToOffsetAsync(PointSingle offsetPoint)
+        {
+            _userPointTransform *= MatrixExtensions.CreateTranslationTransform(offsetPoint.X, offsetPoint.Y);
+
+            await RedrawAllAsync();
+        }
+
         async Task ApplyFigureTranslationTransformWithDelayAsync(PointSingle point)
         {
             await WaitBeforeExecutionAsync(ApplyFigureTranslationTransformAsync2, point);
@@ -1033,22 +1046,20 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             SetAffineNewYPointYSilent(DrawingConstants.DEFAULT_Y_AXIS_VECTOR.Y);
         }
 
-        async void ResetProjectiveTransforms()
+        void ResetProjectiveTransforms()
         {
             SetProjectiveStartPointXSilent(0);
             SetProjectiveStartPointYSilent(0);
 
-            SetProjectiveNewXPointXSilent(2);
+            SetProjectiveNewXPointXSilent(1);
             SetProjectiveNewXPointYSilent(0);
 
             SetProjectiveNewYPointXSilent(0);
-            SetProjectiveNewYPointYSilent(2);
+            SetProjectiveNewYPointYSilent(1);
 
             SetProjectiveStartPointWeightSilent(1);
             SetProjectiveNewXWeightSilent(1);
-            SetProjectiveNewYWeightSilent(2);
-
-            await ApplyProjectiveTransformAsync();
+            SetProjectiveNewYWeightSilent(1);
         }
 
         async Task ApplySymmetryTransformRelativeRotationPointAsync()

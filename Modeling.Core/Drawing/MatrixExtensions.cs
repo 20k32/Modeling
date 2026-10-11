@@ -63,36 +63,6 @@ namespace Modeling.Core.Drawing
             M33 = 1
         };
 
-        public static Matrix3x3Single CreateHorizontalFlipTransform() => new()
-        {
-            M11 = -1,
-            M12 = 0,
-            M13 = 0,
-
-            M21 = 0,
-            M22 = 1,
-            M23 = 0,
-
-            M31 = 0,
-            M32 = 0,
-            M33 = 1
-        };
-
-        public static Matrix3x3Single CreateHorizontalFlipTransform(float centerX) => new()
-        {
-            M11 = -1,
-            M12 = 0,
-            M13 = 2 * centerX,
-
-            M21 = 0,
-            M22 = 1,
-            M23 = 0,
-
-            M31 = 0,
-            M32 = 0,
-            M33 = 1
-        };
-
         public static Matrix3x3Single Inverse(this Matrix3x3Single matrix)
         {
             float determinant = matrix.M11 * matrix.M22 - matrix.M12 * matrix.M21;
@@ -115,9 +85,9 @@ namespace Modeling.Core.Drawing
                 M22 = matrix.M11 * inverseDeterminant,
                 M23 = (matrix.M21 * matrix.M13 - matrix.M11 * matrix.M23) * inverseDeterminant,
 
-                M31 = 0f,
-                M32 = 0f,
-                M33 = 1f
+                M31 = (matrix.M21 * matrix.M32 - matrix.M22 * matrix.M31) * inverseDeterminant,
+                M32 = (matrix.M12 * matrix.M31 - matrix.M11 * matrix.M32) * inverseDeterminant,
+                M33 = (matrix.M11 * matrix.M22 - matrix.M12 * matrix.M21) * inverseDeterminant
             };
         }
 
