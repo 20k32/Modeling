@@ -65,29 +65,42 @@ namespace Modeling.Core.Drawing
 
         public static Matrix3x3Single Inverse(this Matrix3x3Single matrix)
         {
-            float determinant = matrix.M11 * matrix.M22 - matrix.M12 * matrix.M21;
+            var a = matrix.M11;
+            var b = matrix.M12;
+            var c = matrix.M13;
+            var d = matrix.M21;
+            var e = matrix.M22;
+            var f = matrix.M23;
+            var g = matrix.M31;
+            var h = matrix.M32;
+            var i = matrix.M33;
+
+            var cofactor11 = e * i - f * h;
+            var cofactor12 = f * g - d * i;
+            var cofactor13 = d * h - e * g;
+            var determinant = a * cofactor11 + b * cofactor12 + c * cofactor13;
 
             if (MathF.Abs(determinant) < 1e-6f)
             {
                 throw new InvalidOperationException(
-                    "The matrix cannot be inverted because its determinant is zero.");
+                    "The matrix cannot be inverted because its determinant is zero or too small.");
             }
 
             float inverseDeterminant = 1f / determinant;
 
             return new Matrix3x3Single
             {
-                M11 = matrix.M22 * inverseDeterminant,
-                M12 = -matrix.M12 * inverseDeterminant,
-                M13 = (matrix.M12 * matrix.M23 - matrix.M22 * matrix.M13) * inverseDeterminant,
+                M11 = cofactor11 * inverseDeterminant,
+                M12 = (c * h - b * i) * inverseDeterminant,
+                M13 = (b * f - c * e) * inverseDeterminant,
 
-                M21 = -matrix.M21 * inverseDeterminant,
-                M22 = matrix.M11 * inverseDeterminant,
-                M23 = (matrix.M21 * matrix.M13 - matrix.M11 * matrix.M23) * inverseDeterminant,
+                M21 = cofactor12 * inverseDeterminant,
+                M22 = (a * i - c * g) * inverseDeterminant,
+                M23 = (c * d - a * f) * inverseDeterminant,
 
-                M31 = (matrix.M21 * matrix.M32 - matrix.M22 * matrix.M31) * inverseDeterminant,
-                M32 = (matrix.M12 * matrix.M31 - matrix.M11 * matrix.M32) * inverseDeterminant,
-                M33 = (matrix.M11 * matrix.M22 - matrix.M12 * matrix.M21) * inverseDeterminant
+                M31 = cofactor13 * inverseDeterminant,
+                M32 = (b * g - a * h) * inverseDeterminant,
+                M33 = (a * e - b * d) * inverseDeterminant
             };
         }
 

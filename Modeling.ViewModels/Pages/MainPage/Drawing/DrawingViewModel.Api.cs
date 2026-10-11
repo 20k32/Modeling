@@ -60,12 +60,13 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         PointSingle _previousMovedPoint;
 
         Matrix3x3Single _figureTranslationTransform;
+        Matrix3x3Single _figureProjectiveTransform;
+        Matrix3x3Single _figureAffineTransform;
         Matrix3x3Single _figureRotationTransform;
+        Matrix3x3Single _figureTransform;
+
         Matrix3x3Single _gridTransform;
         Matrix3x3Single _userPointTransform;
-        Matrix3x3Single _figureTransform;
-        Matrix3x3Single _figureTransformCopy;
-        Matrix3x3Single _gridTransformCopy;
 
         IPointGeometry _pointerMoveNearestSegment;
 
@@ -100,14 +101,14 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             _verticalAxisMarks = Ioc.Default.GetRequiredService<IPointListCollection>();
 
             _gridTransform = DrawingConstants.NON_TRANSFORM_MATRIX;
-            _gridTransformCopy = DrawingConstants.NON_TRANSFORM_MATRIX;
 
             _userPointTransform = DrawingConstants.NON_TRANSFORM_MATRIX;
 
             _figureRotationTransform = DrawingConstants.NON_TRANSFORM_MATRIX;
             _figureTranslationTransform = DrawingConstants.NON_TRANSFORM_MATRIX;
+            _figureProjectiveTransform = DrawingConstants.NON_TRANSFORM_MATRIX;
+            _figureAffineTransform = DrawingConstants.NON_TRANSFORM_MATRIX;
             _figureTransform = DrawingConstants.NON_TRANSFORM_MATRIX;
-            _figureTransformCopy = DrawingConstants.NON_TRANSFORM_MATRIX;
 
             _drawingSettingsProvider = Ioc.Default.GetRequiredService<IDrawingSettingsProvider>();
             _drawingSettingsProvider.SettingsChanged += OnDrawingSettingsProviderSettingsChanged;
@@ -754,7 +755,6 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             {
                 _shouldChangeFigurePosition = true;
                 _previousMovedPoint = point;
-                _figureTransformCopy = _figureTransform;
 
                 ChangeMouseCursor(MouseCursor.Move);
             }
@@ -796,11 +796,12 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
             var transformedUserPoint = _userPointTransform * _userPoint.CenterPoint;
 
-            _figureRotationTransform = MatrixExtensions.CreateRotationTransform(transformedUserPoint, -rotationAngle.DegreesToRadian());
+            var rotationDeltaTransform = MatrixExtensions.CreateRotationTransform(
+                transformedUserPoint,
+                -rotationAngle.DegreesToRadian());
 
-            _figureTransform = _figureRotationTransform * _figureTransform;
-
-            _figureTransformCopy = _figureTransform;
+            _figureRotationTransform = rotationDeltaTransform * _figureRotationTransform;
+            RebuildFigureTransform();
 
             await RedrawAllAsync();
         }
@@ -912,7 +913,8 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
             var affineTransformMatrix = MatrixExtensions.CreateAffineTransform(origin, xAxis, yAxis);
 
-            _figureTransform = affineTransformMatrix * _figureTransformCopy;
+            _figureAffineTransform = affineTransformMatrix;
+            RebuildFigureTransform();
 
             await RedrawAllAsync();
         }
@@ -924,18 +926,6 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
         async Task ApplyFigureTranslationTransformAsync(PointSingle point)
         {
-            /*var inverseTransform = _figureTransform.Inverse();
-            var currentLocalPoint = inverseTransform * point;
-            var previousLocalPoint = inverseTransform * _previousMovedPoint;
-
-            var offsetX = currentLocalPoint.X - previousLocalPoint.X;
-            var offsetY = currentLocalPoint.Y - previousLocalPoint.Y;
-
-            await MoveFigureToOffsetAsync(new PointSingle(offsetX, offsetY));
-
-            _previousMovedPoint = point;
-            _shouldApplyGeneralTransformForUserPoint = false;*/
-
             var offset = point - _previousMovedPoint;
 
             await MoveFigureToOffsetAsync(offset);
@@ -946,15 +936,6 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
         async Task ApplyFigureTranslationTransformAsync2(PointSingle point)
         {
-            /*var figureCenter = _figure.CenterPoint;
-            var targetCenterInLocalSpace = _figureTransform.Inverse() * point;
-
-            var offset = new PointSingle(
-                targetCenterInLocalSpace.X - figureCenter.X,
-                targetCenterInLocalSpace.Y - figureCenter.Y);
-
-            await MoveFigureToOffsetAsync(offset);*/
-
             var currentCenter = _figureTransform * _figure.CenterPoint;
             var offset = point - currentCenter;
 
@@ -963,25 +944,23 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
         async Task MoveFigureToOffsetAsync(PointSingle offsetPoint)
         {
-            /*_figureTranslationTransform =
-                    MatrixExtensions.CreateTranslationTransform(offsetPoint.X, offsetPoint.Y);
+            var translationDelta = MatrixExtensions.CreateTranslationTransform(
+                offsetPoint.X,
+                offsetPoint.Y);
 
-            _figureTransform *= _figureTranslationTransform;
-
-            await RedrawAllAsync();*/
-
-            _figureTranslationTransform = MatrixExtensions.CreateTranslationTransform(offsetPoint.X, offsetPoint.Y);
-
-            _figureTransform = _figureTranslationTransform * _figureTransform;
+            _figureTranslationTransform = translationDelta * _figureTranslationTransform;
+            RebuildFigureTransform();
 
             await RedrawAllAsync();
         }
 
-        async Task MoveUserPointToOffsetAsync(PointSingle offsetPoint)
+        void RebuildFigureTransform()
         {
-            _userPointTransform *= MatrixExtensions.CreateTranslationTransform(offsetPoint.X, offsetPoint.Y);
-
-            await RedrawAllAsync();
+            _figureTransform =
+                _figureTranslationTransform
+                * _figureRotationTransform
+                * _figureProjectiveTransform
+                * _figureAffineTransform;
         }
 
         async Task ApplyFigureTranslationTransformWithDelayAsync(PointSingle point)
@@ -1043,10 +1022,10 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             _userPointTransform = DrawingConstants.NON_TRANSFORM_MATRIX;
             _figureRotationTransform = DrawingConstants.NON_TRANSFORM_MATRIX;
             _figureTranslationTransform = DrawingConstants.NON_TRANSFORM_MATRIX;
+            _figureProjectiveTransform = DrawingConstants.NON_TRANSFORM_MATRIX;
+            _figureAffineTransform = DrawingConstants.NON_TRANSFORM_MATRIX;
             _figureTransform = DrawingConstants.NON_TRANSFORM_MATRIX;
-            _figureTransformCopy = DrawingConstants.NON_TRANSFORM_MATRIX;
             _gridTransform = DrawingConstants.NON_TRANSFORM_MATRIX;
-            _gridTransformCopy = DrawingConstants.NON_TRANSFORM_MATRIX;
 
             ResetAffineTransforms();
             ResetProjectiveTransforms();
@@ -1108,7 +1087,8 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
                        ProjectiveNewYWeight / canvasSize.Height,
                        ProjectiveStartPointWeight);
 
-                _figureTransform = projectiveTransform * _figureTransformCopy;
+                _figureProjectiveTransform = projectiveTransform;
+                RebuildFigureTransform();
 
                 await RedrawAllAsync();
             }
@@ -1117,6 +1097,13 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         async Task ApplyProjectiveTransformWithDelayAsync()
         {
             await WaitBeforeExecutionAsync(ApplyProjectiveTransformAsync);
+        }
+
+        async Task ResetProjectiveTransformAsync()
+        {
+
+            ResetProjectiveTransforms();
+            await ApplyProjectiveTransformAsync();
         }
     }
 }

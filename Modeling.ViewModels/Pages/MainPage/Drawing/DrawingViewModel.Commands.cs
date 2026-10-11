@@ -124,5 +124,11 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         {
             await ApplySymmetryTransformRelativeRotationPointAsync();
         }
+
+        [RelayCommand]
+        async Task ApplyDefaultProjectiveTransformAsync()
+        {
+            await ResetProjectiveTransformAsync();
+        }
     }
 }

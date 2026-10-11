@@ -135,6 +135,23 @@
                                                  IncrementingStep="{Binding UserInterfaceConstants.LargeIncrementingStep, Source={StaticResource ServiceLocator}}"
                                                  IncrementingValue="{Binding ProjectiveNewXWeight, Mode=TwoWay}" />
 
+        <Border Grid.Row="3"
+                Grid.Column="4"
+                Width="18"
+                Height="18"
+                Padding="0"
+                Background="LightGray"
+                CornerRadius="8"
+                ToolTipService.ToolTip="projective weight of X-axis point - Wx">
+            <PathIcon Margin="0,-1.3,0,0"
+                      Data="{StaticResource QuestionIcon}"
+                      Foreground="Black">
+                <PathIcon.RenderTransform>
+                    <ScaleTransform ScaleX="0.8" ScaleY="0.8" />
+                </PathIcon.RenderTransform>
+            </PathIcon>
+        </Border>
+
         <Border Grid.Row="4"
                 Grid.Column="4"
                 Width="18"
@@ -142,7 +159,7 @@
                 Padding="0"
                 Background="LightGray"
                 CornerRadius="8"
-                ToolTipService.ToolTip="Y basis vector original x axis starts at (0, 1)">
+                ToolTipService.ToolTip="Y scale vector relative to start point">
             <PathIcon Margin="0,-1.3,0,0"
                       Data="{StaticResource QuestionIcon}"
                       Foreground="Black">
@@ -159,7 +176,7 @@
                 Padding="0"
                 Background="LightGray"
                 CornerRadius="8"
-                ToolTipService.ToolTip="X basis vector original x axis starts at (1, 0)">
+                ToolTipService.ToolTip="projective weight of the origin point - W0">
             <PathIcon Margin="0,-1.3,0,0"
                       Data="{StaticResource QuestionIcon}"
                       Foreground="Black">
@@ -201,7 +218,7 @@
                 Padding="0"
                 Background="LightGray"
                 CornerRadius="8"
-                ToolTipService.ToolTip="Y basis vector original x axis starts at (0, 1)">
+                ToolTipService.ToolTip="X scale vector relative to start point">
             <PathIcon Margin="0,-1.3,0,0"
                       Data="{StaticResource QuestionIcon}"
                       Foreground="Black">
@@ -223,14 +240,14 @@
                                                  IncrementingStep="{Binding UserInterfaceConstants.LargeIncrementingStep, Source={StaticResource ServiceLocator}}"
                                                  IncrementingValue="{Binding ProjectiveNewYWeight, Mode=TwoWay}" />
 
-        <Border Grid.Row="3"
+        <Border Grid.Row="5"
                 Grid.Column="4"
                 Width="18"
                 Height="18"
                 Padding="0"
                 Background="LightGray"
                 CornerRadius="8"
-                ToolTipService.ToolTip="Y basis vector original x axis starts at (0, 1)">
+                ToolTipService.ToolTip="projective weight of the Y-axis point - Wy">
             <PathIcon Margin="0,-1.3,0,0"
                       Data="{StaticResource QuestionIcon}"
                       Foreground="Black">
@@ -243,7 +260,7 @@
         <Button Grid.Row="7"
                 Grid.ColumnSpan="5"
                 HorizontalAlignment="Stretch"
-                Command="{Binding ResetFigureCommand}"
+                Command="{Binding ApplyDefaultProjectiveTransformCommand}"
                 Content="Reset" />
     </Grid>
 </UserControl>
