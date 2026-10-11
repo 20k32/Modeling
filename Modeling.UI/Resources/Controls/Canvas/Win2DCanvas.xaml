@@ -9,6 +9,8 @@
              mc:Ignorable="d">
 
     <ScrollViewer x:Name="CanvasScrollViewer"
+                  MaxWidth="800"
+                  MaxHeight="800"
                   HorizontalScrollBarVisibility="Auto"
                   VerticalScrollBarVisibility="Auto">
         <canvas:CanvasAnimatedControl x:Name="AnimatedCanvas"

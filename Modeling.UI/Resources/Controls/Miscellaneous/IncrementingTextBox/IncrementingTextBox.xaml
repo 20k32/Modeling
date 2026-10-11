@@ -3,12 +3,12 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             PointerWheelChanged="OnIncrementingTextBoxPointerWheelChanged"
              xmlns:local="using:Modeling.UI.Resources.Controls.Miscellaneous.IncrementingTextBox"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             PointerWheelChanged="OnIncrementingTextBoxPointerWheelChanged"
              mc:Ignorable="d">
 
-    <Grid HorizontalAlignment="Center"
+    <Grid HorizontalAlignment="Stretch"
           VerticalAlignment="Center"
           ColumnSpacing="3">
         <Grid.ColumnDefinitions>
@@ -18,7 +18,7 @@
         </Grid.ColumnDefinitions>
 
         <TextBox x:Name="IncrementingBox"
-                 Width="10"
+                 Grid.Column="0"
                  GotFocus="OnIncrementingTextBoxGotFocus"
                  LostFocus="OnIncrementingBoxLostFocus"
                  Style="{StaticResource ApplicationTextBoxStyle}"

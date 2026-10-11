@@ -21,9 +21,9 @@ namespace Modeling.PlatformHelpers.Providers.PackageRelatedProviders.Application
 
         public UnpackagedApplicationDataProvider()
         {
-            _serializer = Ioc.Default.GetService<ISerializer>();
+            _serializer = Ioc.Default.GetRequiredService<ISerializer>();
             _settingsContainer = [];
-            _windowHelper = Ioc.Default.GetService<IWindowHelper>();
+            _windowHelper = Ioc.Default.GetRequiredService<IWindowHelper>();
         }
 
         public StorageFolder LocalFolder => _applicationData.LocalFolder;

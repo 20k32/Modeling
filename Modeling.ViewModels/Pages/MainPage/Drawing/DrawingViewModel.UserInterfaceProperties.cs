@@ -80,6 +80,78 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         [ObservableProperty]
         float _verticalRotationPointCenter;
 
+        [ObservableProperty]
+        float _projectiveStartPointX;
+
+        [ObservableProperty]
+        float _projectiveStartPointY;
+
+        [ObservableProperty]
+        float _projectiveNewXPointX;
+
+        [ObservableProperty]
+        float _projectiveNewXPointY;
+
+        [ObservableProperty]
+        float _projectiveNewYPointX;
+
+        [ObservableProperty]
+        float _projectiveNewYPointY;
+
+        [ObservableProperty]
+        float _projectiveNewXWeight;
+
+        [ObservableProperty]
+        float _projectiveNewYWeight;
+
+        [ObservableProperty]
+        float _projectiveStartPointWeight;
+
+        async partial void OnProjectiveStartPointWeightChanged(float _)
+        {
+            await ApplyProjectiveTransformWithDelayAsync();
+        }
+
+        async partial void OnProjectiveStartPointXChanged(float _)
+        {
+            await ApplyProjectiveTransformWithDelayAsync();
+        }
+
+        async partial void OnProjectiveStartPointYChanged(float _)
+        {
+            await ApplyProjectiveTransformWithDelayAsync();
+        }
+
+        async partial void OnProjectiveNewXPointXChanged(float _)
+        {
+            await ApplyProjectiveTransformWithDelayAsync();
+        }
+
+        async partial void OnProjectiveNewXPointYChanged(float _)
+        {
+            await ApplyProjectiveTransformWithDelayAsync();
+        }
+
+        async partial void OnProjectiveNewYPointXChanged(float _)
+        {
+            await ApplyProjectiveTransformWithDelayAsync();
+        }
+
+        async partial void OnProjectiveNewYPointYChanged(float _)
+        {
+            await ApplyProjectiveTransformWithDelayAsync();
+        }
+
+        async partial void OnProjectiveNewXWeightChanged(float _)
+        {
+            await ApplyProjectiveTransformWithDelayAsync();
+        }
+
+        async partial void OnProjectiveNewYWeightChanged(float _)
+        {
+            await ApplyProjectiveTransformWithDelayAsync();
+        }
+
         async partial void OnVerticalRotationPointCenterChanged(float value)
         {
             var point = new PointSingle(HorizontalRotationPointCenter, value);
@@ -346,6 +418,60 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         {
             _affineNewYPointY = newValue;
             OnPropertyChanged(nameof(AffineNewYPointY));
+        }
+
+        void SetProjectiveStartPointXSilent(float newValue)
+        {
+            _projectiveStartPointX = newValue;
+            OnPropertyChanged(nameof(ProjectiveStartPointX));
+        }
+
+        void SetProjectiveStartPointYSilent(float newValue)
+        {
+            _projectiveStartPointY = newValue;
+            OnPropertyChanged(nameof(ProjectiveStartPointY));
+        }
+
+        void SetProjectiveNewXPointXSilent(float newValue)
+        {
+            _projectiveNewXPointX = newValue;
+            OnPropertyChanged(nameof(ProjectiveNewXPointX));
+        }
+
+        void SetProjectiveNewXPointYSilent(float newValue)
+        {
+            _projectiveNewXPointY = newValue;
+            OnPropertyChanged(nameof(ProjectiveNewXPointY));
+        }
+
+        void SetProjectiveNewYPointXSilent(float newValue)
+        {
+            _projectiveNewYPointX = newValue;
+            OnPropertyChanged(nameof(ProjectiveNewYPointX));
+        }
+
+        void SetProjectiveNewYPointYSilent(float newValue)
+        {
+            _projectiveNewYPointY = newValue;
+            OnPropertyChanged(nameof(ProjectiveNewYPointY));
+        }
+
+        void SetProjectiveNewXWeightSilent(float newValue)
+        {
+            _projectiveNewXWeight = newValue;
+            OnPropertyChanged(nameof(ProjectiveNewXWeight));
+        }
+
+        void SetProjectiveNewYWeightSilent(float newValue)
+        {
+            _projectiveNewYWeight = newValue;
+            OnPropertyChanged(nameof(ProjectiveNewYWeight));
+        }
+
+        void SetProjectiveStartPointWeightSilent(float newValue)
+        {
+            _projectiveStartPointWeight = newValue;
+            OnPropertyChanged(nameof(ProjectiveStartPointWeight));
         }
     }
 }

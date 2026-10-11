@@ -106,20 +106,6 @@ namespace Modeling.ViewModels.Pages.MainPage.Settings
 
         async partial void OnPixelsPerCentimeterChanged(float value)
         {
-            if (value > DrawingConstants.MAXIMUM_CANVAS_PIXELS_PER_CENTIMETER)
-            {
-                value = DrawingConstants.MAXIMUM_CANVAS_PIXELS_PER_CENTIMETER;
-                _pixelsPerCentimeter = value;
-                OnPropertyChanged(nameof(PixelsPerCentimeter));
-            }
-
-            if (value < DrawingConstants.MINIMUM_CANVAS_PIXELS_PER_CENTIMETER)
-            {
-                value = DrawingConstants.MINIMUM_CANVAS_PIXELS_PER_CENTIMETER;
-                _pixelsPerCentimeter = value;
-                OnPropertyChanged(nameof(PixelsPerCentimeter));
-            }
-
             if (value != _drawingSettingsProvider.Settings.PixelsPerCentimeter)
             {
                 await WaitBeforeExecutionAsync(async () =>
@@ -145,20 +131,6 @@ namespace Modeling.ViewModels.Pages.MainPage.Settings
 
         async partial void OnCanvasHeightChanged(double value)
         {
-            if (value > DrawingConstants.MAXIMUM_CANVAS_SIZE_PIXELS)
-            {
-                value = DrawingConstants.MAXIMUM_CANVAS_SIZE_PIXELS;
-                _canvasHeight = value;
-                OnPropertyChanged(nameof(CanvasHeight));
-            }
-
-            if (value < DrawingConstants.MINIMUM_CANVAS_SIZE_PIXELS)
-            {
-                value = DrawingConstants.MINIMUM_CANVAS_SIZE_PIXELS;
-                _canvasHeight = value;
-                OnPropertyChanged(nameof(CanvasHeight));
-            }
-
             var newSize = new Windows.Graphics.SizeInt32(
                     _drawingSettingsProvider.Settings.CanvasSize.Width,
                     (int)value);
@@ -188,20 +160,6 @@ namespace Modeling.ViewModels.Pages.MainPage.Settings
 
         async partial void OnCanvasWidthChanged(double value)
         {
-            if (value > DrawingConstants.MAXIMUM_CANVAS_SIZE_PIXELS)
-            {
-                value = DrawingConstants.MAXIMUM_CANVAS_SIZE_PIXELS;
-                _canvasWidth = value;
-                OnPropertyChanged(nameof(CanvasWidth));
-            }
-
-            if (value < DrawingConstants.MINIMUM_CANVAS_SIZE_PIXELS)
-            {
-                value = DrawingConstants.MINIMUM_CANVAS_SIZE_PIXELS;
-                _canvasWidth = value;
-                OnPropertyChanged(nameof(CanvasWidth));
-            }
-
             var newSize = new Windows.Graphics.SizeInt32(
                     (int)value,
                     _drawingSettingsProvider.Settings.CanvasSize.Height);

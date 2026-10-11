@@ -15,7 +15,7 @@ namespace Modeling.Models.Drawing.DrawingPipeline
 
         public DrawingPipeline()
         {
-            _messageInterpreter = Ioc.Default.GetService<IDrawingMessageInterpreter>();
+            _messageInterpreter = Ioc.Default.GetRequiredService<IDrawingMessageInterpreter>();
         }
 
         public async Task<bool> TryEnqueueAsync(AsyncMessage message)

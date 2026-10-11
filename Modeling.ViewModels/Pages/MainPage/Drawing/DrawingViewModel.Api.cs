@@ -119,8 +119,11 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
             _pickButtonsVisible = true;
 
-            _userPoint = Ioc.Default.GetService<IPointGeometryCreationFactory>()
+            _userPoint = Ioc.Default.GetRequiredService<IPointGeometryCreationFactory>()
                 .CreateCirclePointGeometry(DrawingConstants.DEFAULT_POINT, SegmentDimensionParameter.None);
+
+            ResetAffineTransforms();
+            ResetProjectiveTransforms();
         }
 
         void SetDimensionLengthCentimetersSilent(float newValuePixels)
@@ -897,9 +900,9 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         {
             var origin = new PointSingle(AffineStartPointX, AffineStartPointY);
 
-            var xAxis = new PointSingle(1 + AffineNewXPointX, AffineNewXPointY);
+            var xAxis = new PointSingle(AffineNewXPointX, AffineNewXPointY);
 
-            var yAxis = new PointSingle(AffineNewYPointX, 1 + AffineNewYPointY);
+            var yAxis = new PointSingle(AffineNewYPointX, AffineNewYPointY);
 
             var affineTransformMatrix = MatrixExtensions.CreateAffineTransform(origin, xAxis, yAxis);
 
@@ -990,6 +993,8 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
         async Task ResetApiLayerAsync()
         {
+            _lastRotationAngle = default;
+
             _shouldApplyGeneralTransformForUserPoint = true;
 
             _canRedrawUserPoint = false;
@@ -1012,14 +1017,38 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             _gridTransform = DrawingConstants.NON_TRANSFORM_MATRIX;
             _gridTransformCopy = DrawingConstants.NON_TRANSFORM_MATRIX;
 
-            SetAffineStartPointXSilent(default);
-            SetAffineStartPointYSilent(default);
-            SetAffineNewXPointXSilent(default);
-            SetAffineNewXPointYSilent(default);
-            SetAffineNewYPointXSilent(default);
-            SetAffineNewYPointYSilent(default);
+            ResetAffineTransforms();
+            ResetProjectiveTransforms();
 
             await RedrawAllAsync();
+        }
+
+        void ResetAffineTransforms()
+        {
+            SetAffineStartPointXSilent(DrawingConstants.DEFAULT_COORDINATE_SYSTEM_START_POINT.X);
+            SetAffineStartPointYSilent(DrawingConstants.DEFAULT_COORDINATE_SYSTEM_START_POINT.Y);
+            SetAffineNewXPointXSilent(DrawingConstants.DEFAULT_X_AXIS_VECTOR.X);
+            SetAffineNewXPointYSilent(DrawingConstants.DEFAULT_X_AXIS_VECTOR.Y);
+            SetAffineNewYPointXSilent(DrawingConstants.DEFAULT_Y_AXIS_VECTOR.X);
+            SetAffineNewYPointYSilent(DrawingConstants.DEFAULT_Y_AXIS_VECTOR.Y);
+        }
+
+        async void ResetProjectiveTransforms()
+        {
+            SetProjectiveStartPointXSilent(0);
+            SetProjectiveStartPointYSilent(0);
+
+            SetProjectiveNewXPointXSilent(2);
+            SetProjectiveNewXPointYSilent(0);
+
+            SetProjectiveNewYPointXSilent(0);
+            SetProjectiveNewYPointYSilent(2);
+
+            SetProjectiveStartPointWeightSilent(1);
+            SetProjectiveNewXWeightSilent(1);
+            SetProjectiveNewYWeightSilent(2);
+
+            await ApplyProjectiveTransformAsync();
         }
 
         async Task ApplySymmetryTransformRelativeRotationPointAsync()
@@ -1033,6 +1062,26 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             UpdateFigureCenterInUserInterface();
 
             await RedrawAllAsync();
+        }
+
+        async Task ApplyProjectiveTransformAsync()
+        {
+            var projectiveTransform = MatrixExtensions.CreateProjectiveTransform(
+                   new PointSingle(ProjectiveStartPointX, ProjectiveStartPointY),
+                   new PointSingle(ProjectiveNewXPointX, ProjectiveNewXPointY),
+                   new PointSingle(ProjectiveNewYPointX, ProjectiveNewYPointY),
+                   ProjectiveNewXWeight,
+                   ProjectiveNewYWeight,
+                   ProjectiveStartPointWeight);
+
+            _figureTransform = _figureTransformCopy * projectiveTransform;
+
+            await RedrawAllAsync();
+        }
+
+        async Task ApplyProjectiveTransformWithDelayAsync()
+        {
+            await WaitBeforeExecutionAsync(ApplyProjectiveTransformAsync);
         }
     }
 }

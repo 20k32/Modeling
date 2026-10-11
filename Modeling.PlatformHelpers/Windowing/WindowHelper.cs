@@ -64,7 +64,7 @@ namespace Modeling.PlatformHelpers.Windowing
         {
             if (CanChangeMainWindow)
             {
-                var primaryScreenLocation = Ioc.Default.GetService<IScreenListener>()
+                var primaryScreenLocation = Ioc.Default.GetRequiredService<IScreenListener>()
                     .Locations.First(location => location.IsPrimary);
 
                 var centerX = (int)(primaryScreenLocation.ScaledSize.Width - ApplicationWindowConstants.DESIGN_WIDTH) / 2;

@@ -13,7 +13,7 @@ namespace Modeling.PlatformHelpers.Providers.PackageRelatedProviders.Application
 
         public PackagedApplicationDataProvider()
         {
-            _windowHelper = Ioc.Default.GetService<IWindowHelper>();
+            _windowHelper = Ioc.Default.GetRequiredService<IWindowHelper>();
         }
 
         public async Task InitializeAsync(string _) => await _windowHelper.WindowInitializationTask;

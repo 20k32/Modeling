@@ -21,7 +21,7 @@ namespace Modeling.ViewModels
 
         public NavigationViewModel()
         {
-            _navigationProvider = Ioc.Default.GetService<INavigationProvider>();
+            _navigationProvider = Ioc.Default.GetRequiredService<INavigationProvider>();
 
             _navigationItems = [
                 new NavigationItem("Resizing", NavigationPage.ResizingPage),

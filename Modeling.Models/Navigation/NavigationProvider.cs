@@ -31,8 +31,8 @@ namespace Modeling.Models.Navigation
 
         public NavigationProvider()
         {
-            _windowHelper = Ioc.Default.GetService<IWindowHelper>();
-            _userInterfaceConstants = Ioc.Default.GetService<IUserInterfaceConstantsProvider>();
+            _windowHelper = Ioc.Default.GetRequiredService<IWindowHelper>();
+            _userInterfaceConstants = Ioc.Default.GetRequiredService<IUserInterfaceConstantsProvider>();
         }
 
         public void Initialize()

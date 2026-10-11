@@ -12,6 +12,7 @@ using Modeling.Core.Messages.Settings;
 using Modeling.Core.Messages.ViewModels;
 using Modeling.Core.Miscellaneous;
 using Modeling.Models.Settings;
+using Modeling.Models.UserInterface;
 using System;
 using System.Linq;
 using System.Threading;
@@ -21,6 +22,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Settings
 {
     public sealed partial class SettingsViewModel : BaseViewModel
     {
+        readonly IUserInterfaceConstantsProvider _userInterfaceConstantsProvider;
         readonly IApplicationSettingsProvider _applicationSettingsProvider;
         readonly IDrawingSettingsProvider _drawingSettingsProvider;
 
@@ -28,8 +30,10 @@ namespace Modeling.ViewModels.Pages.MainPage.Settings
 
         public SettingsViewModel()
         {
-            _drawingSettingsProvider = Ioc.Default.GetService<IDrawingSettingsProvider>();
-            _applicationSettingsProvider = Ioc.Default.GetService<IApplicationSettingsProvider>();
+            _userInterfaceConstantsProvider = Ioc.Default.GetRequiredService<IUserInterfaceConstantsProvider>();
+            _drawingSettingsProvider = Ioc.Default.GetRequiredService<IDrawingSettingsProvider>();
+            _applicationSettingsProvider = Ioc.Default.GetRequiredService<IApplicationSettingsProvider>();
+
             _refreshRates =
                 [
                     new RefreshRateItem(1),

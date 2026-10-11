@@ -13,5 +13,14 @@
         public float IncrementingStep { get; }
         public float LargeIncrementingStep { get; }
         public int FractionalPartLength { get; }
+
+        public float MaximumCanvasWidth { get; }
+        public float MaximumCanvasHeight { get; }
+
+        public float MinimumCanvasWidth { get; }
+        public float MinimumCanvasHeight { get; }
+
+        public float MaximumPixelsPerCentimeter { get; }
+        public float MinimumPixelsPerCentimeter { get; }
     }
 }

@@ -130,7 +130,6 @@
                     Background="LightGray"
                     CornerRadius="8"
                     ToolTipService.ToolTip="Coordinates of center of figure">
-
                 <PathIcon Margin="0,-1.3,0,0"
                           Data="{StaticResource QuestionIcon}"
                           Foreground="Black">

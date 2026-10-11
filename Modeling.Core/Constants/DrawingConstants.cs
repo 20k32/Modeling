@@ -82,5 +82,9 @@ namespace Modeling.Core.Constants
 
         public const bool APPLY_ANTI_ALIASING_TO_GRID = false;
         public const bool APPLY_ANTI_ALIASING_TO_DRAWINGS = false;
+
+        public static readonly PointSingle DEFAULT_COORDINATE_SYSTEM_START_POINT = new(0, 0);
+        public static readonly PointSingle DEFAULT_X_AXIS_VECTOR = new (1, 0);
+        public static readonly PointSingle DEFAULT_Y_AXIS_VECTOR = new(0, 1);
     }
 }

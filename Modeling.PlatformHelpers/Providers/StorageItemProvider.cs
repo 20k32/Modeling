@@ -22,9 +22,9 @@ namespace Modeling.PlatformHelpers.Providers
 
         public StorageItemProvider()
         {
-            _applicationSettingsProvider = Ioc.Default.GetService<IApplicationSettingsProvider>();
-            _applicationDataProvider = Ioc.Default.GetService<IApplicationDataProvider>();
-            _futureAccessListProvider = Ioc.Default.GetService<IFutureAccessListProvider>();
+            _applicationSettingsProvider = Ioc.Default.GetRequiredService<IApplicationSettingsProvider>();
+            _applicationDataProvider = Ioc.Default.GetRequiredService<IApplicationDataProvider>();
+            _futureAccessListProvider = Ioc.Default.GetRequiredService<IFutureAccessListProvider>();
         }
 
         async Task InitializeDefaultSavingFileAsync(string key, string defaultFileNameWithExtension)

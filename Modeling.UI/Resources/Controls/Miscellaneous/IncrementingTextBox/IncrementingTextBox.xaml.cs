@@ -126,15 +126,11 @@ namespace Modeling.UI.Resources.Controls.Miscellaneous.IncrementingTextBox
             if (sender is TextBox textBox)
             {
                 if (float.TryParse(textBox.Text, out var newIncrementingValue)
-                    && ValidateTextInputIncrementingValue(newIncrementingValue))
+                    && ValidateIncrementingValue(newIncrementingValue))
                 {
-                    IncrementingValue = newIncrementingValue;
-                }
-                else
-                {
-                    if (IncrementingValue != 0)
+                    if (IncrementingValue != newIncrementingValue)
                     {
-                        IncrementingValue = 0;
+                        IncrementingValue = newIncrementingValue;
                     }
                     else
                     {
@@ -170,10 +166,6 @@ namespace Modeling.UI.Resources.Controls.Miscellaneous.IncrementingTextBox
             => newValue > MinimumIncrementingValue
             && newValue < MaximumIncrementingValue;
 
-        private bool ValidateTextInputIncrementingValue(float newValue)
-            => newValue >= MinimumIncrementingValue
-            && newValue <= MaximumIncrementingValue;
-
         private void OnIncrementingTextBoxGotFocus(object sender, RoutedEventArgs e)
         {
             if (sender is TextBox textBox)
@@ -187,6 +179,39 @@ namespace Modeling.UI.Resources.Controls.Miscellaneous.IncrementingTextBox
             if (sender is TextBox textBox)
             {
                 textBox.Select(0, 0);
+
+                // float parsing logic can parse 'big integers' to infinity
+                if (float.TryParse(textBox.Text, out var newIncrementingValue))
+                {
+                    if (newIncrementingValue < MinimumIncrementingValue)
+                    {
+                        newIncrementingValue = MinimumIncrementingValue;
+                    }
+                    else if (newIncrementingValue > MaximumIncrementingValue)
+                    {
+                        newIncrementingValue = MaximumIncrementingValue;
+                    }
+
+                    if (IncrementingValue != newIncrementingValue)
+                    {
+                        IncrementingValue = newIncrementingValue;
+                    }
+                    else
+                    {
+                        SetNewValueInUserInterface(textBox, IncrementingValue);
+                    }
+                }
+                else
+                {
+                    if (IncrementingValue != MinimumIncrementingValue)
+                    {
+                        IncrementingValue = MinimumIncrementingValue;
+                    }
+                    else
+                    {
+                        SetNewValueInUserInterface(textBox, IncrementingValue);
+                    }
+                }
             }
         }
 

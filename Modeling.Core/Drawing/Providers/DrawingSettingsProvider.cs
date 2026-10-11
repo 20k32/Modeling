@@ -32,10 +32,10 @@ namespace Modeling.Core.Drawing.Providers
         public DrawingSettingsProvider()
         {
             _settingsSavingLock = new SemaphoreSlim(1, 1);
-            _applicationSettingsProvider = Ioc.Default.GetService<IApplicationSettingsProvider>();
-            _applicationKeyProvider = Ioc.Default.GetService<IApplicationKeyProvider>();
-            _storageItemProvider = Ioc.Default.GetService<IStorageItemProvider>();
-            _serializer = Ioc.Default.GetService<ISerializer>();
+            _applicationSettingsProvider = Ioc.Default.GetRequiredService<IApplicationSettingsProvider>();
+            _applicationKeyProvider = Ioc.Default.GetRequiredService<IApplicationKeyProvider>();
+            _storageItemProvider = Ioc.Default.GetRequiredService<IStorageItemProvider>();
+            _serializer = Ioc.Default.GetRequiredService<ISerializer>();
         }
 
         public async Task LoadSettingsAsync()

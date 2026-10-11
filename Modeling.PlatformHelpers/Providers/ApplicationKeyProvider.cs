@@ -15,7 +15,7 @@ namespace Modeling.PlatformHelpers.Providers
 
         public ApplicationKeyProvider()
         {
-            _windowHelper = Ioc.Default.GetService<IWindowHelper>();
+            _windowHelper = Ioc.Default.GetRequiredService<IWindowHelper>();
         }
 
         public async Task InitializeAsync() => await _windowHelper.WindowInitializationTask;

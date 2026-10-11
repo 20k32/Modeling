@@ -3,9 +3,243 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:incrementingControl="using:Modeling.UI.Resources.Controls.Miscellaneous.IncrementingTextBox"
              xmlns:local="using:Modeling.UI.Resources.Controls.Pages"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             DataContext="{Binding DrawingViewModel, Source={StaticResource ServiceLocator}}"
              mc:Ignorable="d">
 
-    <Grid />
+    <Grid Width="400"
+          ColumnSpacing="10"
+          RowSpacing="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+
+        <TextBlock Grid.Row="0"
+                   Grid.Column="0"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   Text="Start point:" />
+
+        <incrementingControl:IncrementingTextBox Grid.Row="0"
+                                                 Grid.Column="1"
+                                                 InCompactMode="True"
+                                                 IncrementingStep="{Binding UserInterfaceConstants.LargeIncrementingStep, Source={StaticResource ServiceLocator}}"
+                                                 IncrementingValue="{Binding ProjectiveStartPointX, Mode=TwoWay}" />
+        <TextBlock Grid.Row="0"
+                   Grid.Column="2"
+                   VerticalAlignment="Center"
+                   Text=";" />
+
+        <incrementingControl:IncrementingTextBox Grid.Row="0"
+                                                 Grid.Column="3"
+                                                 InCompactMode="True"
+                                                 IncrementingStep="{Binding UserInterfaceConstants.LargeIncrementingStep, Source={StaticResource ServiceLocator}}"
+                                                 IncrementingValue="{Binding ProjectiveStartPointY, Mode=TwoWay}" />
+
+        <Border Grid.Row="0"
+                Grid.Column="4"
+                Width="18"
+                Height="18"
+                Padding="0"
+                Background="LightGray"
+                CornerRadius="8"
+                ToolTipService.ToolTip="New coord system start point relative to top left canvas corner">
+            <PathIcon Margin="0,-1.3,0,0"
+                      Data="{StaticResource QuestionIcon}"
+                      Foreground="Black">
+                <PathIcon.RenderTransform>
+                    <ScaleTransform ScaleX="0.8" ScaleY="0.8" />
+                </PathIcon.RenderTransform>
+            </PathIcon>
+        </Border>
+
+        <TextBlock Grid.Row="1"
+                   Grid.Column="0"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   Text="weight: " />
+
+        <incrementingControl:IncrementingTextBox Grid.Row="1"
+                                                 Grid.Column="1"
+                                                 Grid.ColumnSpan="3"
+                                                 IncrementingStep="{Binding UserInterfaceConstants.IncrementingStep, Source={StaticResource ServiceLocator}}"
+                                                 IncrementingValue="{Binding ProjectiveStartPointWeight, Mode=TwoWay}" />
+
+        <Border Grid.Row="1"
+                Grid.Column="4"
+                Width="18"
+                Height="18"
+                Padding="0"
+                Background="LightGray"
+                CornerRadius="8"
+                ToolTipService.ToolTip="Y basis vector original x axis starts at (0, 1)">
+            <PathIcon Margin="0,-1.3,0,0"
+                      Data="{StaticResource QuestionIcon}"
+                      Foreground="Black">
+                <PathIcon.RenderTransform>
+                    <ScaleTransform ScaleX="0.8" ScaleY="0.8" />
+                </PathIcon.RenderTransform>
+            </PathIcon>
+        </Border>
+
+
+        <TextBlock Grid.Row="2"
+                   Grid.Column="0"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   Text="X -&gt;" />
+
+        <incrementingControl:IncrementingTextBox Grid.Row="2"
+                                                 Grid.Column="1"
+                                                 InCompactMode="True"
+                                                 IncrementingStep="{Binding UserInterfaceConstants.IncrementingStep, Source={StaticResource ServiceLocator}}"
+                                                 IncrementingValue="{Binding ProjectiveNewXPointX, Mode=TwoWay}" />
+
+        <TextBlock Grid.Row="2"
+                   Grid.Column="2"
+                   VerticalAlignment="Center"
+                   Text=";" />
+
+        <incrementingControl:IncrementingTextBox Grid.Row="2"
+                                                 Grid.Column="3"
+                                                 InCompactMode="True"
+                                                 IncrementingStep="{Binding UserInterfaceConstants.IncrementingStep, Source={StaticResource ServiceLocator}}"
+                                                 IncrementingValue="{Binding ProjectiveNewXPointY, Mode=TwoWay}" />
+
+        <TextBlock Grid.Row="3"
+                   Grid.Column="0"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   Text="weight X: " />
+
+        <incrementingControl:IncrementingTextBox Grid.Row="3"
+                                                 Grid.Column="1"
+                                                 Grid.ColumnSpan="3"
+                                                 IncrementingStep="{Binding UserInterfaceConstants.IncrementingStep, Source={StaticResource ServiceLocator}}"
+                                                 IncrementingValue="{Binding ProjectiveNewXWeight, Mode=TwoWay}" />
+
+        <Border Grid.Row="4"
+                Grid.Column="4"
+                Width="18"
+                Height="18"
+                Padding="0"
+                Background="LightGray"
+                CornerRadius="8"
+                ToolTipService.ToolTip="Y basis vector original x axis starts at (0, 1)">
+            <PathIcon Margin="0,-1.3,0,0"
+                      Data="{StaticResource QuestionIcon}"
+                      Foreground="Black">
+                <PathIcon.RenderTransform>
+                    <ScaleTransform ScaleX="0.8" ScaleY="0.8" />
+                </PathIcon.RenderTransform>
+            </PathIcon>
+        </Border>
+
+        <Border Grid.Row="1"
+                Grid.Column="4"
+                Width="18"
+                Height="18"
+                Padding="0"
+                Background="LightGray"
+                CornerRadius="8"
+                ToolTipService.ToolTip="X basis vector original x axis starts at (1, 0)">
+            <PathIcon Margin="0,-1.3,0,0"
+                      Data="{StaticResource QuestionIcon}"
+                      Foreground="Black">
+                <PathIcon.RenderTransform>
+                    <ScaleTransform ScaleX="0.8" ScaleY="0.8" />
+                </PathIcon.RenderTransform>
+            </PathIcon>
+        </Border>
+
+        <TextBlock Grid.Row="4"
+                   Grid.Column="0"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   Text="Y -&gt;" />
+
+        <incrementingControl:IncrementingTextBox Grid.Row="4"
+                                                 Grid.Column="1"
+                                                 InCompactMode="True"
+                                                 IncrementingStep="{Binding UserInterfaceConstants.IncrementingStep, Source={StaticResource ServiceLocator}}"
+                                                 IncrementingValue="{Binding ProjectiveNewYPointX, Mode=TwoWay}" />
+
+        <TextBlock Grid.Row="4"
+                   Grid.Column="2"
+                   VerticalAlignment="Center"
+                   Text=";" />
+
+        <incrementingControl:IncrementingTextBox Grid.Row="4"
+                                                 Grid.Column="3"
+                                                 InCompactMode="True"
+                                                 IncrementingStep="{Binding UserInterfaceConstants.IncrementingStep, Source={StaticResource ServiceLocator}}"
+                                                 IncrementingValue="{Binding ProjectiveNewYPointY, Mode=TwoWay}" />
+
+        <Border Grid.Row="2"
+                Grid.Column="4"
+                Width="18"
+                Height="18"
+                Padding="0"
+                Background="LightGray"
+                CornerRadius="8"
+                ToolTipService.ToolTip="Y basis vector original x axis starts at (0, 1)">
+            <PathIcon Margin="0,-1.3,0,0"
+                      Data="{StaticResource QuestionIcon}"
+                      Foreground="Black">
+                <PathIcon.RenderTransform>
+                    <ScaleTransform ScaleX="0.8" ScaleY="0.8" />
+                </PathIcon.RenderTransform>
+            </PathIcon>
+        </Border>
+
+        <TextBlock Grid.Row="5"
+                   Grid.Column="0"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   Text="weight Y: " />
+
+        <incrementingControl:IncrementingTextBox Grid.Row="5"
+                                                 Grid.Column="1"
+                                                 Grid.ColumnSpan="3"
+                                                 IncrementingStep="{Binding UserInterfaceConstants.IncrementingStep, Source={StaticResource ServiceLocator}}"
+                                                 IncrementingValue="{Binding ProjectiveNewYWeight, Mode=TwoWay}" />
+
+        <Border Grid.Row="3"
+                Grid.Column="4"
+                Width="18"
+                Height="18"
+                Padding="0"
+                Background="LightGray"
+                CornerRadius="8"
+                ToolTipService.ToolTip="Y basis vector original x axis starts at (0, 1)">
+            <PathIcon Margin="0,-1.3,0,0"
+                      Data="{StaticResource QuestionIcon}"
+                      Foreground="Black">
+                <PathIcon.RenderTransform>
+                    <ScaleTransform ScaleX="0.8" ScaleY="0.8" />
+                </PathIcon.RenderTransform>
+            </PathIcon>
+        </Border>
+
+        <Button Grid.Row="7"
+                Grid.ColumnSpan="5"
+                HorizontalAlignment="Stretch"
+                Command="{Binding ResetFigureCommand}"
+                Content="Reset" />
+    </Grid>
 </UserControl>
