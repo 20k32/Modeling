@@ -49,11 +49,6 @@ namespace Modeling.Core.Drawing
 
             float w = point.X * matrix.M31 + point.Y * matrix.M32 + matrix.M33;
 
-            if (w != 1)
-            {
-
-            }
-
             return new PointSingle(x / w, y / w);
         }
     }

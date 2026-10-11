@@ -48,7 +48,8 @@ namespace Modeling.Core.Drawing
             };
         }
 
-        public static Matrix3x3Single CreateTranslationTransform(float offsetX, float offsetY) => new()
+        public static Matrix3x3Single CreateTranslationTransform(float offsetX, float offsetY) 
+            => new()
         {
             M11 = 1,
             M12 = 0,
@@ -142,7 +143,7 @@ namespace Modeling.Core.Drawing
             };
         }
 
-        public static Matrix3x3Single CreateProjectiveTransform2(PointSingle origin,
+        public static Matrix3x3Single CreateProjectiveTransform(PointSingle origin,
                                         PointSingle xAxisPoint,
                                         PointSingle yAxisPoint,
                                         float wx,

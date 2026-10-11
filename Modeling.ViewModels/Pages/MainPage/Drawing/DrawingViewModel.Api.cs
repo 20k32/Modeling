@@ -1079,7 +1079,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             {
                 var canvasSize = _drawingSettingsProvider.Settings.CanvasSize;
 
-                var projectiveTransform = MatrixExtensions.CreateProjectiveTransform2(
+                var projectiveTransform = MatrixExtensions.CreateProjectiveTransform(
                        new PointSingle(ProjectiveStartPointX, ProjectiveStartPointY),
                        new PointSingle(ProjectiveNewXPointX * canvasSize.Width, ProjectiveNewXPointY * canvasSize.Height),
                        new PointSingle(ProjectiveNewYPointX * canvasSize.Width, ProjectiveNewYPointY * canvasSize.Height),
