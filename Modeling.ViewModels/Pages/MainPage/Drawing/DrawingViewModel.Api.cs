@@ -1053,6 +1053,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
         async Task ApplySymmetryTransformRelativeRotationPointAsync()
         {
+
             var rotationPoint = _userPointTransform * _userPoint.CenterPoint;
 
             var symmetryTransform = MatrixExtensions.CreatePointSymmetryTransform(rotationPoint);
@@ -1066,17 +1067,22 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
         async Task ApplyProjectiveTransformAsync()
         {
-            var projectiveTransform = MatrixExtensions.CreateProjectiveTransform(
-                   new PointSingle(ProjectiveStartPointX, ProjectiveStartPointY),
-                   new PointSingle(ProjectiveNewXPointX, ProjectiveNewXPointY),
-                   new PointSingle(ProjectiveNewYPointX, ProjectiveNewYPointY),
-                   ProjectiveNewXWeight,
-                   ProjectiveNewYWeight,
-                   ProjectiveStartPointWeight);
+            if (_drawingSettingsProvider?.Settings is not null)
+            {
+                var canvasSize = _drawingSettingsProvider.Settings.CanvasSize;
 
-            _figureTransform = _figureTransformCopy * projectiveTransform;
+                var projectiveTransform = MatrixExtensions.CreateProjectiveTransform2(
+                       new PointSingle(ProjectiveStartPointX, ProjectiveStartPointY),
+                       new PointSingle(ProjectiveNewXPointX * canvasSize.Width, ProjectiveNewXPointY * canvasSize.Height),
+                       new PointSingle(ProjectiveNewYPointX * canvasSize.Width, ProjectiveNewYPointY * canvasSize.Height),
+                       ProjectiveNewXWeight / canvasSize.Width,
+                       ProjectiveNewYWeight / canvasSize.Height,
+                       ProjectiveStartPointWeight);
 
-            await RedrawAllAsync();
+                _figureTransform = projectiveTransform * _figureTransformCopy;
+
+                await RedrawAllAsync();
+            }
         }
 
         async Task ApplyProjectiveTransformWithDelayAsync()

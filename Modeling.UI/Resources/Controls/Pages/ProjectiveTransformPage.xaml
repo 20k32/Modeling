@@ -77,7 +77,7 @@
         <incrementingControl:IncrementingTextBox Grid.Row="1"
                                                  Grid.Column="1"
                                                  Grid.ColumnSpan="3"
-                                                 IncrementingStep="{Binding UserInterfaceConstants.IncrementingStep, Source={StaticResource ServiceLocator}}"
+                                                 IncrementingStep="{Binding UserInterfaceConstants.LargeIncrementingStep, Source={StaticResource ServiceLocator}}"
                                                  IncrementingValue="{Binding ProjectiveStartPointWeight, Mode=TwoWay}" />
 
         <Border Grid.Row="1"
@@ -108,7 +108,8 @@
                                                  Grid.Column="1"
                                                  InCompactMode="True"
                                                  IncrementingStep="{Binding UserInterfaceConstants.IncrementingStep, Source={StaticResource ServiceLocator}}"
-                                                 IncrementingValue="{Binding ProjectiveNewXPointX, Mode=TwoWay}" />
+                                                 IncrementingValue="{Binding ProjectiveNewXPointX, Mode=TwoWay}"
+                                                 MaximumIncrementingValue="{Binding SettingsViewModel.CanvasWidth, Source={StaticResource ServiceLocator}}" />
 
         <TextBlock Grid.Row="2"
                    Grid.Column="2"
@@ -119,7 +120,8 @@
                                                  Grid.Column="3"
                                                  InCompactMode="True"
                                                  IncrementingStep="{Binding UserInterfaceConstants.IncrementingStep, Source={StaticResource ServiceLocator}}"
-                                                 IncrementingValue="{Binding ProjectiveNewXPointY, Mode=TwoWay}" />
+                                                 IncrementingValue="{Binding ProjectiveNewXPointY, Mode=TwoWay}"
+                                                 MaximumIncrementingValue="{Binding SettingsViewModel.CanvasHeight, Source={StaticResource ServiceLocator}}" />
 
         <TextBlock Grid.Row="3"
                    Grid.Column="0"
@@ -130,7 +132,7 @@
         <incrementingControl:IncrementingTextBox Grid.Row="3"
                                                  Grid.Column="1"
                                                  Grid.ColumnSpan="3"
-                                                 IncrementingStep="{Binding UserInterfaceConstants.IncrementingStep, Source={StaticResource ServiceLocator}}"
+                                                 IncrementingStep="{Binding UserInterfaceConstants.LargeIncrementingStep, Source={StaticResource ServiceLocator}}"
                                                  IncrementingValue="{Binding ProjectiveNewXWeight, Mode=TwoWay}" />
 
         <Border Grid.Row="4"
@@ -177,7 +179,8 @@
                                                  Grid.Column="1"
                                                  InCompactMode="True"
                                                  IncrementingStep="{Binding UserInterfaceConstants.IncrementingStep, Source={StaticResource ServiceLocator}}"
-                                                 IncrementingValue="{Binding ProjectiveNewYPointX, Mode=TwoWay}" />
+                                                 IncrementingValue="{Binding ProjectiveNewYPointX, Mode=TwoWay}"
+                                                 MaximumIncrementingValue="{Binding SettingsViewModel.CanvasWidth, Source={StaticResource ServiceLocator}}" />
 
         <TextBlock Grid.Row="4"
                    Grid.Column="2"
@@ -187,8 +190,9 @@
         <incrementingControl:IncrementingTextBox Grid.Row="4"
                                                  Grid.Column="3"
                                                  InCompactMode="True"
-                                                 IncrementingStep="{Binding UserInterfaceConstants.IncrementingStep, Source={StaticResource ServiceLocator}}"
-                                                 IncrementingValue="{Binding ProjectiveNewYPointY, Mode=TwoWay}" />
+                                                 IncrementingStep="{Binding UserInterfaceConstants.LargeIncrementingStep, Source={StaticResource ServiceLocator}}"
+                                                 IncrementingValue="{Binding ProjectiveNewYPointY, Mode=TwoWay}"
+                                                 MaximumIncrementingValue="{Binding SettingsViewModel.CanvasHeight, Source={StaticResource ServiceLocator}}" />
 
         <Border Grid.Row="2"
                 Grid.Column="4"
@@ -216,7 +220,7 @@
         <incrementingControl:IncrementingTextBox Grid.Row="5"
                                                  Grid.Column="1"
                                                  Grid.ColumnSpan="3"
-                                                 IncrementingStep="{Binding UserInterfaceConstants.IncrementingStep, Source={StaticResource ServiceLocator}}"
+                                                 IncrementingStep="{Binding UserInterfaceConstants.LargeIncrementingStep, Source={StaticResource ServiceLocator}}"
                                                  IncrementingValue="{Binding ProjectiveNewYWeight, Mode=TwoWay}" />
 
         <Border Grid.Row="3"

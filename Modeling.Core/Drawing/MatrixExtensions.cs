@@ -159,12 +159,12 @@ namespace Modeling.Core.Drawing
             };
         }
 
-        public static Matrix3x3Single CreateProjectiveTransform(PointSingle origin,
-            PointSingle xAxisPoint,
-            PointSingle yAxisPoint,
-            float wx,
-            float wy,
-            float w0)
+        public static Matrix3x3Single CreateProjectiveTransform2(PointSingle origin,
+                                        PointSingle xAxisPoint,
+                                        PointSingle yAxisPoint,
+                                        float wx,
+                                        float wy,
+                                        float w0)
         {
             return new Matrix3x3Single
             {
