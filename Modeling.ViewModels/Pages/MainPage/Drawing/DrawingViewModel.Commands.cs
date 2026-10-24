@@ -33,6 +33,12 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         [RelayCommand]
         async Task CanvasPointerMovedAsync(PointSingle point)
         {
+            if (_isCurveInitialized)
+            {
+                await HandleCurvePointerMovedAsync(point);
+                return;
+            }
+
             switch (_drawingAction)
             {
                 case UserPointDrawingAction.AxisPointSelection: await RedrawUserPointCoreAsync(point); break;
@@ -43,8 +49,14 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         }
 
         [RelayCommand]
-        void CanvasPointerPressed(PointSingle point)
+        async Task CanvasPointerPressedAsync(PointSingle point)
         {
+            if (_isCurveInitialized)
+            {
+                await HandleCurvePointerPressedAsync(point);
+                return;
+            }
+
             switch (_drawingAction)
             {
                 case UserPointDrawingAction.AxisPointSelection: StartUserPointSelection(point); break;
@@ -57,6 +69,12 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         [RelayCommand]
         void CanvasPointerReleased(PointSingle point)
         {
+            if (_isCurveInitialized)
+            {
+                HandleCurvePointerReleased();
+                return;
+            }
+
             switch (_drawingAction)
             {
                 case UserPointDrawingAction.AxisPointSelection: EndUserPointRedrawing(point); break;
@@ -127,6 +145,30 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         async Task ApplyDefaultProjectiveTransformAsync()
         {
             await ResetProjectiveTransformAsync();
+        }
+
+        [RelayCommand]
+        async Task StartCurveAnimationAsync()
+        {
+            await StartCurveAnimationCoreAsync();
+        }
+
+        [RelayCommand]
+        async Task PauseCurveAnimationAsync()
+        {
+            await StopCurveAnimationAsync();
+        }
+
+        [RelayCommand]
+        async Task ResetCurveAnimationAsync()
+        {
+            await ResetCurveAnimationCoreAsync();
+        }
+
+        [RelayCommand]
+        async Task ResetCurveTransformsAsync()
+        {
+            await ResetCurveTransformsCoreAsync();
         }
     }
 }

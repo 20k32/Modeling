@@ -86,6 +86,8 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
         MouseCursor _cursorState;
 
+        NavigationPage _currentLabPage;
+
         public DrawingViewModel()
         {
             _drawingAction = UserPointDrawingAction.None;
@@ -170,6 +172,11 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         {
             if (navigationParameter is not null)
             {
+                if (navigationParameter.ToPage != NavigationPage.None && navigationParameter.ToPage != NavigationPage.SettingsPage)
+                {
+                    _currentLabPage = navigationParameter.ToPage;
+                }
+
                 try
                 {
                     await HandleSubPageNavigationAsync(navigationParameter);
@@ -442,6 +449,11 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
                 currentDrawingMessage = GetDrawingFigureMessage(currentDrawingMessage);
             }
 
+            if (_isCurveInitialized)
+            {
+                currentDrawingMessage = GetDrawingCurveMessage(currentDrawingMessage);
+            }
+
             if (_canRedrawUserPoint)
             {
                 var circleColor = _drawingSettingsProvider.Settings.VerticalAxisColor;
@@ -510,25 +522,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
         void InitializeSecondLabFigure(SizeSingle canvasSize, float pixelsPerCentimeter)
         {
-            var pixelsPerMillimeter = pixelsPerCentimeter / 10;
-
-            var figureWidthPixels = FigureRelatedConstants.FIGURE_WIDTH_MILLIMETERS * pixelsPerMillimeter;
-            var figureHeightPixels = FigureRelatedConstants.FIGURE_HEIGHT_MILLIMETERS * pixelsPerMillimeter;
-
-            var halfCirclesRadiusPixels = FigureRelatedConstants.HALF_CIRCLES_DIAMETER_MILLIMETERS * pixelsPerMillimeter;
-
-            _startDrawingPoint = new PointSingle(
-                x: (canvasSize.Width - figureWidthPixels) / 2,
-                y: (canvasSize.Height - figureHeightPixels) / 2);
-
-            _figure.InitializeSegmentDimensions(pixelsPerCentimeter);
-
-            InitializeFigureSegments(pixelsPerCentimeter);
-
-            _figure.CalculateDefaultPropertiesFromSegments();
-
-            SetHorizontalFigurePositionSilent(_figure.CenterPoint.X);
-            SetVerticalFigurePositionSilent(_figure.CenterPoint.Y);
+            InitializeCurve(canvasSize, pixelsPerCentimeter);
         }
 
         void InitializeFigureSegments(float pixelsPerCentimeter)
@@ -693,6 +687,8 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             _figure.Segments.Clear();
 
             _userPoint.Points.Clear();
+
+            ClearCurve();
         }
 
         void InitializeDrawingElements(SizeSingle canvasSize, float pixelsPerCentimeter)
@@ -701,7 +697,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             InitializeAxis(canvasSize, pixelsPerCentimeter);
             InitializeMarksOnAxis(canvasSize, pixelsPerCentimeter);
 
-            InitializeFigureAccordingPage(_navigationProvider.CurrentPage, canvasSize, pixelsPerCentimeter);
+            InitializeFigureAccordingPage(_currentLabPage, canvasSize, pixelsPerCentimeter);
 
             var centerPoint = new PointSingle(canvasSize.Width / 2f, canvasSize.Height / 2f);
             InitializeUserPoint(centerPoint);

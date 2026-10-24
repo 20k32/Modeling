@@ -66,6 +66,12 @@ namespace Modeling.Core.Constants
         public static readonly Color Y_AXIS_TICKS_COLOR = Colors.Blue;
         public static readonly Color FIGURE_BOUNDS_COLOR = Colors.Magenta;
 
+        public static readonly Color CURVE_TANGENT_COLOR = Colors.DarkOrange;
+        public static readonly Color CURVE_NORMAL_COLOR = Colors.DarkViolet;
+        public static readonly Color CURVE_POINT_COLOR = Colors.Crimson;
+        public static readonly Color CURVE_INFLECTION_POINT_COLOR = Colors.DodgerBlue;
+        public static readonly Color CURVE_ROTATION_POINT_COLOR = Colors.SeaGreen;
+
         public const float X_Y_AXIS_THICKNESS = 3;
         public const float X_Y_AXIS_TICKS_LENGTH_PIXELS = 15;
         public const float X_Y_AXIST_TICKS_THICKNESS = 5;
