@@ -29,6 +29,7 @@ using Modeling.Models.Drawing.Figures.PointGeometries.Enums;
 using Modeling.Models.Drawing.Figures.PointGeometries.GeometryCreationFactory;
 using Modeling.Models.Extensions;
 using Modeling.Models.Miscellaneous;
+using Modeling.Models.Navigation;
 using Modeling.Models.UserInterface;
 using Modeling.ViewModels.Miscellaneous;
 using System;
@@ -116,7 +117,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             WeakReferenceMessenger.Default.Register<ChangeCanvasSettingsMessage>(this, OnChangeCanvasSettingsMessage);
 
             _navigationProvider = Ioc.Default.GetRequiredService<INavigationProvider>();
-            _navigationProvider.Navigated += OnNavigationProviderNavigated;
+            _navigationProvider.Navigated += OnNavigationProviderNavigatedAsync;
 
             _pickButtonsVisible = true;
 
@@ -165,27 +166,35 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             }
         }
 
-        void OnNavigationProviderNavigated(NavigationPage page)
+        async Task OnNavigationProviderNavigatedAsync(NavigationParameter navigationParameter)
         {
-            try
+            if (navigationParameter is not null)
             {
-                HandleSubPageNavigation(page);
-            }
-            catch (Exception ex)
-            {
-                Logger.Exception(ex);
+                try
+                {
+                    await HandleSubPageNavigationAsync(navigationParameter);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Exception(ex);
+                }
             }
         }
 
-        void HandleSubPageNavigation(NavigationPage page)
+        async Task HandleSubPageNavigationAsync(NavigationParameter navigationParameter)
         {
-            switch (page)
+            if (navigationParameter.ToPage != NavigationPage.None)
             {
-                case (NavigationPage.ResizingPage): break;
-                case (NavigationPage.AffineTransformPage): break;
-                case (NavigationPage.EuclideanTransformPage): break;
-                case (NavigationPage.ProjectiveTransformPage): break;
-                default: break;
+                if (navigationParameter.ToPage != NavigationPage.SettingsPage)
+                {
+                    if (NavigationPage.FirstLabPage.HasFlag(navigationParameter.ToPage)
+                        && !NavigationPage.FirstLabPage.HasFlag(navigationParameter.FromPage)
+                        || NavigationPage.SecondLabPage.HasFlag(navigationParameter.ToPage)
+                        && !NavigationPage.SecondLabPage.HasFlag(navigationParameter.FromPage))
+                    {
+                        await ResetFigureAsync();
+                    }
+                }
             }
         }
 
@@ -229,10 +238,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
         async void OnDrawingSettingsProviderSettingsChanged()
         {
-            if (_figure.Any())
-            {
-                await RedrawAllAsync();
-            }
+            await RedrawAllAsync();
         }
 
         void EndSegmentSelection()
@@ -431,7 +437,10 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
                       color: verticalAxisTicksDrawingColor);
             }
 
-            currentDrawingMessage = GetDrawingFigureMessage(currentDrawingMessage);
+            if (_figure.Any())
+            {
+                currentDrawingMessage = GetDrawingFigureMessage(currentDrawingMessage);
+            }
 
             if (_canRedrawUserPoint)
             {
@@ -464,7 +473,42 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             _lastDrawingMessage = currentDrawingMessage;
         }
 
-        void InitializeFigure(SizeSingle canvasSize, float pixelsPerCentimeter)
+        void InitializeFigureAccordingPage(NavigationPage page, SizeSingle canvasSize, float pixelsPerCentimeter)
+        {
+            if (NavigationPage.FirstLabPage.HasFlag(page))
+            {
+                InitializeFirstLabFigure(canvasSize, pixelsPerCentimeter);
+            }
+            else if (NavigationPage.SecondLabPage.HasFlag(page))
+            {
+                InitializeSecondLabFigure(canvasSize, pixelsPerCentimeter);
+            }
+        }
+
+        void InitializeFirstLabFigure(SizeSingle canvasSize, float pixelsPerCentimeter)
+        {
+            var pixelsPerMillimeter = pixelsPerCentimeter / 10;
+
+            var figureWidthPixels = FigureRelatedConstants.FIGURE_WIDTH_MILLIMETERS * pixelsPerMillimeter;
+            var figureHeightPixels = FigureRelatedConstants.FIGURE_HEIGHT_MILLIMETERS * pixelsPerMillimeter;
+
+            var halfCirclesRadiusPixels = FigureRelatedConstants.HALF_CIRCLES_DIAMETER_MILLIMETERS * pixelsPerMillimeter;
+
+            _startDrawingPoint = new PointSingle(
+                x: (canvasSize.Width - figureWidthPixels) / 2,
+                y: (canvasSize.Height - figureHeightPixels) / 2);
+
+            _figure.InitializeSegmentDimensions(pixelsPerCentimeter);
+
+            InitializeFigureSegments(pixelsPerCentimeter);
+
+            _figure.CalculateDefaultPropertiesFromSegments();
+
+            SetHorizontalFigurePositionSilent(_figure.CenterPoint.X);
+            SetVerticalFigurePositionSilent(_figure.CenterPoint.Y);
+        }
+
+        void InitializeSecondLabFigure(SizeSingle canvasSize, float pixelsPerCentimeter)
         {
             var pixelsPerMillimeter = pixelsPerCentimeter / 10;
 
@@ -656,7 +700,8 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             InitializeGrid(canvasSize, pixelsPerCentimeter);
             InitializeAxis(canvasSize, pixelsPerCentimeter);
             InitializeMarksOnAxis(canvasSize, pixelsPerCentimeter);
-            InitializeFigure(canvasSize, pixelsPerCentimeter);
+
+            InitializeFigureAccordingPage(_navigationProvider.CurrentPage, canvasSize, pixelsPerCentimeter);
 
             var centerPoint = new PointSingle(canvasSize.Width / 2f, canvasSize.Height / 2f);
             InitializeUserPoint(centerPoint);

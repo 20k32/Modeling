@@ -8,6 +8,7 @@ using Modeling.Models.UserInterface;
 using Modeling.PlatformHelpers.Windowing;
 using System;
 using System.Collections.Concurrent;
+using System.Threading.Tasks;
 
 namespace Modeling.Models.Navigation
 {
@@ -26,8 +27,8 @@ namespace Modeling.Models.Navigation
 
         public NavigationPage CurrentPage => _currentPage;
 
-        public event ActionEventHandler<NavigatingCancellationParameter> Navigating;
-        public event ActionEventHandler<NavigationPage> Navigated;
+        public event AsyncActionEventHandler<NavigatingCancellationParameter> Navigating;
+        public event AsyncActionEventHandler<NavigationParameter> Navigated;
 
         public NavigationProvider()
         {
@@ -46,14 +47,14 @@ namespace Modeling.Models.Navigation
             _navigationPageSources.TryAdd(page, pageControl);
         }
 
-        public void Navigate(NavigationPage page)
+        public async Task NavigateAsync(NavigationPage page)
         {
             var cancelNavigationParameter = new NavigatingCancellationParameter(
                 fromPage: _currentPage,
                 toPage: page,
                 cancelNavigation: false);
 
-            Navigating?.Invoke(cancelNavigationParameter);
+            await (Navigating?.Invoke(cancelNavigationParameter) ?? Task.CompletedTask);
 
             if (!cancelNavigationParameter.CancelNavigation)
             {
@@ -71,13 +72,15 @@ namespace Modeling.Models.Navigation
                     }
                 }
 
-                Navigated?.Invoke(page);
+                await (Navigated?.Invoke(new NavigationParameter(
+                    fromPage: _currentPage, 
+                    toPage: page)) ?? Task.CompletedTask);
 
                 _previousPage = _currentPage;
                 _currentPage = page;
             }
         }
 
-        public void NavigateBack() => Navigate(_previousPage);
+        public async Task NavigateBackAsync() => await NavigateAsync(_previousPage);
     }
 }

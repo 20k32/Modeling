@@ -23,21 +23,29 @@ namespace Modeling.ViewModels
         {
             _navigationProvider = Ioc.Default.GetRequiredService<INavigationProvider>();
 
-            _navigationItems = [
+            var lab1NavigationItem = new NavigationItem("Lab 1", NavigationPage.FirstLabPage);
+
+            lab1NavigationItem.Children.AddRange([
                 new NavigationItem("Resizing", NavigationPage.ResizingPage),
                 new NavigationItem("Affine", NavigationPage.AffineTransformPage),
-                new NavigationItem("Projective", NavigationPage.ProjectiveTransformPage),
-                new NavigationItem("Settings", NavigationPage.SettingsPage)];
+                new NavigationItem("Projective", NavigationPage.ProjectiveTransformPage)]);
+
+            var lab2NavigationItem = new NavigationItem("Lab 2", NavigationPage.SecondLabPage);
+
+            _navigationItems = [
+                    lab1NavigationItem,
+                    lab2NavigationItem,
+                    new NavigationItem("Settings", NavigationPage.SettingsPage)];
         }
 
-        partial void OnSelectedNavigationItemChanged(NavigationItem newValue)
+        async partial void OnSelectedNavigationItemChanged(NavigationItem newValue)
         {
             if (newValue is null || _navigationProvider.CurrentPage == newValue.NavigationPage)
             {
                 return;
             }
 
-            _navigationProvider.Navigate(newValue.NavigationPage);
+            await _navigationProvider.NavigateAsync(newValue.NavigationPage);
         }
 
         [RelayCommand]

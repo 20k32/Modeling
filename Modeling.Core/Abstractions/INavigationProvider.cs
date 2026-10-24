@@ -1,13 +1,15 @@
 ﻿using Modeling.Core.CoreDelegates;
 using Modeling.Core.Navigation;
+using Modeling.Models.Navigation;
 using System;
+using System.Threading.Tasks;
 
 namespace Modeling.Core.Abstractions
 {
     public interface INavigationProvider
     {
-        event ActionEventHandler<NavigatingCancellationParameter> Navigating;
-        event ActionEventHandler<NavigationPage> Navigated;
+        event AsyncActionEventHandler<NavigatingCancellationParameter> Navigating;
+        event AsyncActionEventHandler<NavigationParameter> Navigated;
 
         NavigationPage CurrentPage { get; }
 
@@ -15,7 +17,7 @@ namespace Modeling.Core.Abstractions
 
         void Initialize();
 
-        void Navigate(NavigationPage page);
-        void NavigateBack();
+        Task NavigateAsync(NavigationPage page);
+        Task NavigateBackAsync();
     }
 }

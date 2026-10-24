@@ -71,8 +71,6 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             await LoadSettingsAsync();
 
             LoadCanvasState();
-
-            await RedrawAllAsync();
         }
 
         [RelayCommand]
