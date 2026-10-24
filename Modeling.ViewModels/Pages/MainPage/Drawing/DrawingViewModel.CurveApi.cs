@@ -62,6 +62,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             InitializeCurveFigures(pixelsPerCentimeter);
 
             _isCurveInitialized = true;
+            _drawingAction = UserPointDrawingAction.CurveRelatedPointSelection;
 
             UpdateCurveState();
         }
@@ -69,6 +70,11 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         void ClearCurve()
         {
             _isCurveInitialized = false;
+
+            if (_drawingAction == UserPointDrawingAction.CurveRelatedPointSelection)
+            {
+                _drawingAction = UserPointDrawingAction.None;
+            }
 
             _ = StopCurveAnimationAsync();
 

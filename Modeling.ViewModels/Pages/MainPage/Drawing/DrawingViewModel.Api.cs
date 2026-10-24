@@ -199,7 +199,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
                         || NavigationPage.SecondLabPage.HasFlag(navigationParameter.ToPage)
                         && !NavigationPage.SecondLabPage.HasFlag(navigationParameter.FromPage))
                     {
-                        await ResetFigureAsync();
+                        await ResetFigureCoreAsync(resetDrawingAction: false);
                     }
                 }
             }
@@ -1040,7 +1040,17 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             await RedrawAllAsync();
         }
 
-        async Task ResetApiLayerAsync()
+        async Task ResetApiLayerAsync(bool resetDrawingAction = true)
+        {
+            if (resetDrawingAction)
+            {
+                _drawingAction = UserPointDrawingAction.None;
+            }
+
+            await ResetApiLayerCoreAsync();
+        }
+
+        async Task ResetApiLayerCoreAsync()
         {
             _lastRotationAngle = default;
 
@@ -1055,8 +1065,6 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
             _wasPositionEditingControlVisible = false;
             _wasRotationPointVisible = false;
-
-            _drawingAction = UserPointDrawingAction.None;
 
             _userPointTransform = DrawingConstants.NON_TRANSFORM_MATRIX;
             _figureRotationTransform = DrawingConstants.NON_TRANSFORM_MATRIX;
