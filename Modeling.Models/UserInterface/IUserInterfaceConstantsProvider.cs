@@ -11,6 +11,7 @@
         public double MinimumTextBoxWidth { get; }
 
         public float IncrementingStep { get; }
+        public float MediumIncrementingStep { get; }
         public float LargeIncrementingStep { get; }
         public int FractionalPartLength { get; }
 

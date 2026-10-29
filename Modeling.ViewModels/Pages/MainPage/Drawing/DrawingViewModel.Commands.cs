@@ -38,18 +38,20 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
                 case UserPointDrawingAction.AxisPointSelection: await RedrawUserPointCoreAsync(point); break;
                 case UserPointDrawingAction.FigurePointSelection: SelectSegmentOnFigure(point); break;
                 case UserPointDrawingAction.EntireFigureSelection: await SelectEntireFigureAsync(point); break;
+                case UserPointDrawingAction.CurveRelatedPointSelection: await HandleCurvePointerMovedAsync(point); break;
                 default: break;
             }
         }
 
         [RelayCommand]
-        void CanvasPointerPressed(PointSingle point)
+        async Task CanvasPointerPressedAsync(PointSingle point)
         {
             switch (_drawingAction)
             {
                 case UserPointDrawingAction.AxisPointSelection: StartUserPointSelection(point); break;
                 case UserPointDrawingAction.FigurePointSelection: EndSegmentSelection(); break;
                 case UserPointDrawingAction.EntireFigureSelection: StartFigureSelection(point); break;
+                case UserPointDrawingAction.CurveRelatedPointSelection: await HandleCurvePointerPressedAsync(point); break;
                 default: break;
             }
         }
@@ -61,6 +63,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             {
                 case UserPointDrawingAction.AxisPointSelection: EndUserPointRedrawing(point); break;
                 case UserPointDrawingAction.EntireFigureSelection: EndFigureSelection(point); break;
+                case UserPointDrawingAction.CurveRelatedPointSelection: HandleCurvePointerReleased(); break;
                 default: break;
             }
         }
@@ -71,8 +74,6 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             await LoadSettingsAsync();
 
             LoadCanvasState();
-
-            await RedrawAllAsync();
         }
 
         [RelayCommand]
@@ -104,6 +105,11 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         [RelayCommand]
         async Task ResetFigureAsync()
         {
+            await ResetFigureCoreAsync();
+        }
+
+        async Task ResetFigureCoreAsync(bool resetDrawingAction = true)
+        {
             var canvasSize = _drawingSettingsProvider.Settings.CanvasSize;
             var pixelsPerCentimeter = _drawingSettingsProvider.Settings.PixelsPerCentimeter;
 
@@ -116,7 +122,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
             SetRotationPointControlVisibleSilent(false);
 
-            await ResetApiLayerAsync();
+            await ResetApiLayerAsync(resetDrawingAction);
         }
 
         [RelayCommand]
@@ -129,6 +135,30 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         async Task ApplyDefaultProjectiveTransformAsync()
         {
             await ResetProjectiveTransformAsync();
+        }
+
+        [RelayCommand]
+        async Task StartCurveAnimationAsync()
+        {
+            await StartCurveAnimationCoreAsync();
+        }
+
+        [RelayCommand]
+        async Task PauseCurveAnimationAsync()
+        {
+            await StopCurveAnimationAsync();
+        }
+
+        [RelayCommand]
+        async Task ResetCurveAnimationAsync()
+        {
+            await ResetCurveAnimationCoreAsync();
+        }
+
+        [RelayCommand]
+        async Task ResetCurveTransformsAsync()
+        {
+            await ResetCurveTransformsCoreAsync();
         }
     }
 }

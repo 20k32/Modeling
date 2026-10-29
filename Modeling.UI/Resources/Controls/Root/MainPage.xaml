@@ -34,7 +34,7 @@
                         SelectedItem="{Binding NavigationViewModel.SelectedNavigationItem, Source={StaticResource ServiceLocator}, Mode=TwoWay}">
             <NavigationView.MenuItemTemplate>
                 <DataTemplate>
-                    <TextBlock Text="{Binding ItemName}" />
+                    <NavigationViewItem Content="{Binding ItemName}" MenuItemsSource="{Binding Children}" />
                 </DataTemplate>
             </NavigationView.MenuItemTemplate>
         </NavigationView>

@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<UserControl x:Class="Modeling.UI.Resources.Controls.Pages.WonderfulCurvePage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:incrementingControl="using:Modeling.UI.Resources.Controls.Miscellaneous.IncrementingTextBox"
+             xmlns:local="using:Modeling.UI.Resources.Controls.Pages"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             DataContext="{Binding DrawingViewModel, Source={StaticResource ServiceLocator}}"
+             mc:Ignorable="d">
+
+    <ScrollViewer HorizontalScrollMode="Disabled" VerticalScrollBarVisibility="Auto">
+        <StackPanel Width="400"
+                    Padding="0,0,15,15"
+                    Spacing="10">
+
+            <TextBlock FontWeight="SemiBold"
+                       Style="{StaticResource ApplicationTextBlockStyle}"
+                       Text="Bernoulli lemniscate" />
+            <TextBlock Text="x(t) = a√2·cos t / (1 + sin²t)&#x0a;y(t) = a√2·cos t·sin t / (1 + sin²t),  t ∈ [0°; 360°)" TextWrapping="Wrap" />
+
+            <Grid ColumnSpacing="10" RowSpacing="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Row="0"
+                           Grid.Column="0"
+                           VerticalAlignment="Center"
+                           Text="a, cm:" />
+                <incrementingControl:IncrementingTextBox Grid.Row="0"
+                                                         Grid.Column="1"
+                                                         IncrementingStep="{Binding UserInterfaceConstants.MediumIncrementingStep, Source={StaticResource ServiceLocator}}"
+                                                         IncrementingValue="{Binding CurveScale, Mode=TwoWay}"
+                                                         MaximumIncrementingValue="{Binding MaximumCurveScale}"
+                                                         MinimumIncrementingValue="{Binding MinimumCurveScale}" />
+                <Border Grid.Row="0"
+                        Grid.Column="2"
+                        Width="18"
+                        Height="18"
+                        Padding="0"
+                        Background="LightGray"
+                        CornerRadius="8"
+                        ToolTipService.ToolTip="Scale parameter a &gt; 0: foci are at (±a; 0), vertices at (±a√2; 0)">
+                    <PathIcon Margin="0,-1.3,0,0"
+                              Data="{StaticResource QuestionIcon}"
+                              Foreground="Black">
+                        <PathIcon.RenderTransform>
+                            <ScaleTransform ScaleX="0.8" ScaleY="0.8" />
+                        </PathIcon.RenderTransform>
+                    </PathIcon>
+                </Border>
+
+                <TextBlock Grid.Row="1"
+                           Grid.Column="0"
+                           VerticalAlignment="Center"
+                           Text="Points:" />
+                <incrementingControl:IncrementingTextBox Grid.Row="1"
+                                                         Grid.Column="1"
+                                                         IncrementingStep="{Binding UserInterfaceConstants.LargeIncrementingStep, Source={StaticResource ServiceLocator}}"
+                                                         IncrementingValue="{Binding CurvePointsCount, Mode=TwoWay}"
+                                                         MaximumIncrementingValue="{Binding MaximumCurvePointsCount}"
+                                                         MinimumIncrementingValue="{Binding MinimumCurvePointsCount}" />
+                <Border Grid.Row="1"
+                        Grid.Column="2"
+                        Width="18"
+                        Height="18"
+                        Padding="0"
+                        Background="LightGray"
+                        CornerRadius="8"
+                        ToolTipService.ToolTip="Number of segments used to build the curve over t ∈ [0°; 360°)">
+                    <PathIcon Margin="0,-1.3,0,0"
+                              Data="{StaticResource QuestionIcon}"
+                              Foreground="Black">
+                        <PathIcon.RenderTransform>
+                            <ScaleTransform ScaleX="0.8" ScaleY="0.8" />
+                        </PathIcon.RenderTransform>
+                    </PathIcon>
+                </Border>
+            </Grid>
+
+            <TextBlock FontWeight="SemiBold" Text="Animation (parameter a changes automatically)" />
+            <Grid ColumnSpacing="10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Button Grid.Column="0"
+                        HorizontalAlignment="Stretch"
+                        Command="{Binding StartCurveAnimationCommand}"
+                        Content="Start"
+                        IsEnabled="{Binding IsCurveAnimationRunning, Converter={StaticResource CommunityToolkit.BoolNegationConverter}}" />
+                <Button Grid.Column="1"
+                        HorizontalAlignment="Stretch"
+                        Command="{Binding PauseCurveAnimationCommand}"
+                        Content="Pause"
+                        IsEnabled="{Binding IsCurveAnimationRunning}" />
+                <Button Grid.Column="2"
+                        HorizontalAlignment="Stretch"
+                        Command="{Binding ResetCurveAnimationCommand}"
+                        Content="Reset" />
+            </Grid>
+            <CheckBox Content="Move tangent point during animation" IsChecked="{Binding MoveCurvePointDuringAnimation, Mode=TwoWay}" />
+
+            <TextBlock FontWeight="SemiBold" Text="Tangent and normal" />
+            <CheckBox Content="Show tangent and normal" IsChecked="{Binding CurveTangentVisible, Mode=TwoWay}" />
+            <ToggleButton HorizontalAlignment="Stretch"
+                          Content="Pick a point by mouse"
+                          IsChecked="{Binding PickCurvePointByMouse, Mode=TwoWay}" />
+            <Slider Maximum="360"
+                    Minimum="0"
+                    StepFrequency="{Binding UserInterfaceConstants.SlidersStepFrequency, Source={StaticResource ServiceLocator}}"
+                    Value="{Binding CurvePointParameterDegrees, Mode=TwoWay}">
+                <Slider.Header>
+                    <TextBlock>
+                        <Run Text="Point parameter t, degrees:" />
+                        <Run Text="{Binding CurvePointParameterDegrees}" />
+                    </TextBlock>
+                </Slider.Header>
+            </Slider>
+            <StackPanel Orientation="Horizontal" Spacing="10">
+                <TextBlock VerticalAlignment="Center" Text="Tangent / normal length, cm:" />
+                <incrementingControl:IncrementingTextBox InCompactMode="True"
+                                                         IncrementingStep="{Binding UserInterfaceConstants.MediumIncrementingStep, Source={StaticResource ServiceLocator}}"
+                                                         IncrementingValue="{Binding CurveTangentLength, Mode=TwoWay}"
+                                                         MinimumIncrementingValue="{Binding MinimumCurveTangentLength}" />
+            </StackPanel>
+            <TextBlock Text="{Binding CurvePointCoordinatesText}" TextWrapping="Wrap" />
+            <TextBlock Text="{Binding CurveTransformedPointCoordinatesText}" TextWrapping="Wrap" />
+            <TextBlock Text="{Binding CurveTangentSlopeText}" TextWrapping="Wrap" />
+            <TextBlock Text="{Binding CurveRadiusOfCurvatureText}" TextWrapping="Wrap" />
+            <TextBlock Text="{Binding CurveArcLengthToPointText}" TextWrapping="Wrap" />
+
+            <!--  Asymptotes and calculations  -->
+            <TextBlock FontWeight="SemiBold" Text="Asymptotes" />
+            <TextBlock Text="{Binding CurveAsymptotesText}" TextWrapping="Wrap" />
+
+            <TextBlock FontWeight="SemiBold" Text="Calculations" />
+            <TextBlock Text="{Binding CurveTotalArcLengthText}" TextWrapping="Wrap" />
+            <TextBlock Text="{Binding CurveLoopArcLengthText}" TextWrapping="Wrap" />
+            <TextBlock Text="{Binding CurveTotalAreaText}" TextWrapping="Wrap" />
+            <TextBlock Text="{Binding CurveLoopAreaText}" TextWrapping="Wrap" />
+            <TextBlock Text="{Binding CurveInflectionPointsText}" TextWrapping="Wrap" />
+            <CheckBox Content="Show inflection point" IsChecked="{Binding CurveInflectionPointsVisible, Mode=TwoWay}" />
+
+            <TextBlock FontWeight="SemiBold" Text="Euclidean transformations" />
+            <Grid ColumnSpacing="10" RowSpacing="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Row="0"
+                           Grid.Column="0"
+                           VerticalAlignment="Center"
+                           Text="Shift (dx; dy), px:" />
+                <incrementingControl:IncrementingTextBox Grid.Row="0"
+                                                         Grid.Column="1"
+                                                         InCompactMode="True"
+                                                         IncrementingStep="{Binding UserInterfaceConstants.LargeIncrementingStep, Source={StaticResource ServiceLocator}}"
+                                                         IncrementingValue="{Binding CurveTranslationX, Mode=TwoWay}"
+                                                         MaximumIncrementingValue="{Binding SettingsViewModel.CanvasWidth, Source={StaticResource ServiceLocator}}"
+                                                         MinimumIncrementingValue="{Binding SettingsViewModel.CanvasWidth, Source={StaticResource ServiceLocator}, Converter={StaticResource InvertFloatConverter}}" />
+                <TextBlock Grid.Row="0"
+                           Grid.Column="2"
+                           VerticalAlignment="Center"
+                           Text=";" />
+                <incrementingControl:IncrementingTextBox Grid.Row="0"
+                                                         Grid.Column="3"
+                                                         InCompactMode="True"
+                                                         IncrementingStep="{Binding UserInterfaceConstants.LargeIncrementingStep, Source={StaticResource ServiceLocator}}"
+                                                         IncrementingValue="{Binding CurveTranslationY, Mode=TwoWay}"
+                                                         MaximumIncrementingValue="{Binding SettingsViewModel.CanvasHeight, Source={StaticResource ServiceLocator}}"
+                                                         MinimumIncrementingValue="{Binding SettingsViewModel.CanvasHeight, Source={StaticResource ServiceLocator}, Converter={StaticResource InvertFloatConverter}}" />
+                <Border Grid.Row="0"
+                        Grid.Column="4"
+                        Width="18"
+                        Height="18"
+                        Padding="0"
+                        Background="LightGray"
+                        CornerRadius="8"
+                        ToolTipService.ToolTip="Translation vector in pixels (y points down). You can also drag the inflection point on the canvas">
+                    <PathIcon Margin="0,-1.3,0,0"
+                              Data="{StaticResource QuestionIcon}"
+                              Foreground="Black">
+                        <PathIcon.RenderTransform>
+                            <ScaleTransform ScaleX="0.8" ScaleY="0.8" />
+                        </PathIcon.RenderTransform>
+                    </PathIcon>
+                </Border>
+
+                <TextBlock Grid.Row="1"
+                           Grid.Column="0"
+                           VerticalAlignment="Center"
+                           Text="Rotation point, px:" />
+                <incrementingControl:IncrementingTextBox Grid.Row="1"
+                                                         Grid.Column="1"
+                                                         InCompactMode="True"
+                                                         IncrementingStep="{Binding UserInterfaceConstants.LargeIncrementingStep, Source={StaticResource ServiceLocator}}"
+                                                         IncrementingValue="{Binding CurveRotationPointX, Mode=TwoWay}"
+                                                         MaximumIncrementingValue="{Binding SettingsViewModel.CanvasWidth, Source={StaticResource ServiceLocator}}"
+                                                         MinimumIncrementingValue="{Binding SettingsViewModel.CanvasWidth, Source={StaticResource ServiceLocator}, Converter={StaticResource InvertFloatConverter}}" />
+                <TextBlock Grid.Row="1"
+                           Grid.Column="2"
+                           VerticalAlignment="Center"
+                           Text=";" />
+                <incrementingControl:IncrementingTextBox Grid.Row="1"
+                                                         Grid.Column="3"
+                                                         InCompactMode="True"
+                                                         IncrementingStep="{Binding UserInterfaceConstants.LargeIncrementingStep, Source={StaticResource ServiceLocator}}"
+                                                         IncrementingValue="{Binding CurveRotationPointY, Mode=TwoWay}"
+                                                         MaximumIncrementingValue="{Binding SettingsViewModel.CanvasHeight, Source={StaticResource ServiceLocator}}"
+                                                         MinimumIncrementingValue="{Binding SettingsViewModel.CanvasHeight, Source={StaticResource ServiceLocator}, Converter={StaticResource InvertFloatConverter}}" />
+                <Border Grid.Row="1"
+                        Grid.Column="4"
+                        Width="18"
+                        Height="18"
+                        Padding="0"
+                        Background="LightGray"
+                        CornerRadius="8"
+                        ToolTipService.ToolTip="Rotation point relative to top left canvas corner. You can also drag the green cross on the canvas">
+                    <PathIcon Margin="0,-1.3,0,0"
+                              Data="{StaticResource QuestionIcon}"
+                              Foreground="Black">
+                        <PathIcon.RenderTransform>
+                            <ScaleTransform ScaleX="0.8" ScaleY="0.8" />
+                        </PathIcon.RenderTransform>
+                    </PathIcon>
+                </Border>
+            </Grid>
+            <CheckBox Content="Show rotation point" IsChecked="{Binding CurveRotationPointVisible, Mode=TwoWay}" />
+            <Slider Maximum="360"
+                    Minimum="-360"
+                    StepFrequency="{Binding UserInterfaceConstants.SlidersStepFrequency, Source={StaticResource ServiceLocator}}"
+                    Value="{Binding CurveRotationAngle, Mode=TwoWay}">
+                <Slider.Header>
+                    <TextBlock>
+                        <Run Text="Rotation angle (counterclockwise), degrees:" />
+                        <Run Text="{Binding CurveRotationAngle}" />
+                    </TextBlock>
+                </Slider.Header>
+            </Slider>
+            <Button HorizontalAlignment="Stretch"
+                    Command="{Binding ResetCurveTransformsCommand}"
+                    Content="Reset transformations" />
+
+            <Button HorizontalAlignment="Stretch"
+                    Command="{Binding ResetFigureCommand}"
+                    Content="Reset curve" />
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

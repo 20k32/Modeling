@@ -1,5 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.DependencyInjection;
 using Modeling.Core.Navigation;
+using Modeling.Models.Abstractions.Collections.General;
 
 namespace Modeling.Models.Navigation
 {
@@ -7,6 +9,9 @@ namespace Modeling.Models.Navigation
     {
         [ObservableProperty]
         string _itemName = name;
+
+        [ObservableProperty]
+        INavigationItemsObservableCollection children = Ioc.Default.GetRequiredService<INavigationItemsObservableCollection>();
 
         public readonly NavigationPage NavigationPage = page;
     }

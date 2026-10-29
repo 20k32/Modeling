@@ -29,7 +29,7 @@ namespace Modeling.UI
             Logger.Information("Application initialized");
         }
 
-        protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
+        protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
             var windowHelper = Ioc.Default.GetRequiredService<IWindowHelper>();
 
@@ -50,6 +50,7 @@ namespace Modeling.UI
             navigationProvider.AddNavigationPageMapping(typeof(EuclideanTransformPage), NavigationPage.EuclideanTransformPage);
             navigationProvider.AddNavigationPageMapping(typeof(ProjectiveTransformPage), NavigationPage.ProjectiveTransformPage);
             navigationProvider.AddNavigationPageMapping(typeof(SettingsPage), NavigationPage.SettingsPage);
+            navigationProvider.AddNavigationPageMapping(typeof(WonderfulCurvePage), NavigationPage.SecondLabPage);
         }
     }
 }

@@ -12,6 +12,7 @@ namespace Modeling.Models.UserInterface
         const string NAVIGATION_CONTAINER_CONTROL_NAME = "ModelingApplicationNavigationContainer";
         const double MINIMUM_TEXT_BOX_WIDTH = 55;
         const float INCREMENTING_STEP = 0.01f;
+        const float MEDIUM_INCREMENTING_STEP = 0.1f;
         const int FRACTIONAL_PART_LENGTH = 3;
         const float LARGE_INCREMENTING_STEP = 1;
         const float MINIMUM_CANVAS_WIDTH = 100;
@@ -26,6 +27,7 @@ namespace Modeling.Models.UserInterface
         public float SlidersStepFrequency => DEFAULT_SLIDERS_STEP_FREQUENCY;
         public double MinimumTextBoxWidth => MINIMUM_TEXT_BOX_WIDTH;
         public float IncrementingStep => INCREMENTING_STEP;
+        public float MediumIncrementingStep => MEDIUM_INCREMENTING_STEP;
         public int FractionalPartLength => FRACTIONAL_PART_LENGTH;
         public float LargeIncrementingStep => LARGE_INCREMENTING_STEP;
 

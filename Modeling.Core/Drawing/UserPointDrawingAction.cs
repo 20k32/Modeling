@@ -6,5 +6,6 @@
         FigurePointSelection,
         AxisPointSelection,
         EntireFigureSelection,
+        CurveRelatedPointSelection,
     }
 }

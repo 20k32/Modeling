@@ -1,12 +1,12 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Modeling.Core.Abstractions;
-using Modeling.Core.Abstractions.Collections.Drawings;
 using Modeling.Core.DependencyInjection;
 using Modeling.Models.Abstractions.Collections.Drawings;
+using Modeling.Models.Abstractions.Collections.General;
 using Modeling.Models.Abstractions.Drawing.Figure;
 using Modeling.Models.Abstractions.SegmentDimensions;
-using Modeling.Models.Collections;
 using Modeling.Models.Collections.Drawings;
+using Modeling.Models.Collections.General;
 using Modeling.Models.Drawing;
 using Modeling.Models.Drawing.DrawingMessageInterpreter;
 using Modeling.Models.Drawing.DrawingPipeline;
@@ -27,6 +27,7 @@ namespace Modeling.Models.DependencyInjection
             .AddTransient<CirclePointGeometry, CirclePointGeometry>()
             .AddTransient<LinePointGeometry, LinePointGeometry>()
             .AddTransient<IPointGeometryCreationFactory, PointGeometryCreationFactory>()
+            .AddTransient<INavigationItemsObservableCollection, NavigationItemObservableCollection>()
             .AddTransient<IFigure, Figure>()
             .AddTransient<IDrawingPipeline, DrawingPipeline>()
             .AddSingleton<IDrawingMessageInterpreter, DrawingMessageInterpreter>()

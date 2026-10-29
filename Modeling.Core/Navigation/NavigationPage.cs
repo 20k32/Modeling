@@ -13,5 +13,7 @@ namespace Modeling.Core.Navigation
         EuclideanTransformPage = 1ul << 3,
         ProjectiveTransformPage = 1ul << 4,
         SettingsPage  = 1ul << 5,
+        SecondLabPage = 1ul << 6,
+        FirstLabPage = ResizingPage | AffineTransformPage | EuclideanTransformPage | ProjectiveTransformPage,
     }
 }

@@ -1,6 +1,11 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Modeling.Core.Drawing;
+using Modeling.Core.Enums;
+using Modeling.Core.Extensions;
+using Modeling.Models.Drawing.Curves;
 using Modeling.Models.Drawing.Figures.PointGeometries;
+using Modeling.ViewModels.Miscellaneous;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -106,6 +111,269 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
         [ObservableProperty]
         float _projectiveStartPointWeight;
+
+        [ObservableProperty]
+        float _curveScale;
+
+        [ObservableProperty]
+        float _curvePointsCount;
+
+        [ObservableProperty]
+        float _curvePointParameterDegrees;
+
+        [ObservableProperty]
+        float _curveTangentLength;
+
+        [ObservableProperty]
+        bool _curveTangentVisible = true;
+
+        [ObservableProperty]
+        bool _curveInflectionPointsVisible = true;
+
+        [ObservableProperty]
+        bool _curveRotationPointVisible = true;
+
+        [ObservableProperty]
+        bool _pickCurvePointByMouse;
+
+        [ObservableProperty]
+        bool _moveCurvePointDuringAnimation = true;
+
+        [ObservableProperty]
+        bool _isCurveAnimationRunning;
+
+        [ObservableProperty]
+        float _curveTranslationX;
+
+        [ObservableProperty]
+        float _curveTranslationY;
+
+        [ObservableProperty]
+        float _curveRotationPointX;
+
+        [ObservableProperty]
+        float _curveRotationPointY;
+
+        [ObservableProperty]
+        float _curveRotationAngle;
+
+        [ObservableProperty]
+        string _curvePointCoordinatesText;
+
+        [ObservableProperty]
+        string _curveTransformedPointCoordinatesText;
+
+        [ObservableProperty]
+        string _curveTangentSlopeText;
+
+        [ObservableProperty]
+        string _curveRadiusOfCurvatureText;
+
+        [ObservableProperty]
+        string _curveArcLengthToPointText;
+
+        [ObservableProperty]
+        string _curveTotalArcLengthText;
+
+        [ObservableProperty]
+        string _curveLoopArcLengthText;
+
+        [ObservableProperty]
+        string _curveTotalAreaText;
+
+        [ObservableProperty]
+        string _curveLoopAreaText;
+
+        [ObservableProperty]
+        string _curveInflectionPointsText;
+
+        [ObservableProperty]
+        string _curveAsymptotesText;
+
+        // XAML cannot parse float literals for custom controls, so the limits are exposed for bindings
+        public float MinimumCurveScale => CurveRelatedConstants.MINIMUM_SCALE_CENTIMETERS;
+        public float MaximumCurveScale => CurveRelatedConstants.MAXIMUM_SCALE_CENTIMETERS;
+        public float MinimumCurvePointsCount => CurveRelatedConstants.MINIMUM_POINTS_COUNT;
+        public float MaximumCurvePointsCount => CurveRelatedConstants.MAXIMUM_POINTS_COUNT;
+        public float MinimumCurveTangentLength => CurveRelatedConstants.MINIMUM_TANGENT_LENGTH_CENTIMETERS;
+
+        async partial void OnCurveScaleChanged(float value)
+        {
+            if (!BernoulliLemniscate.IsValidScale(value) || value < CurveRelatedConstants.MINIMUM_SCALE_CENTIMETERS)
+            {
+                SetCurveScaleSilent(CurveRelatedConstants.MINIMUM_SCALE_CENTIMETERS);
+            }
+            else if (value > CurveRelatedConstants.MAXIMUM_SCALE_CENTIMETERS)
+            {
+                SetCurveScaleSilent(CurveRelatedConstants.MAXIMUM_SCALE_CENTIMETERS);
+            }
+
+            await RefreshCurveWithDelayAsync();
+        }
+
+        async partial void OnCurvePointsCountChanged(float value)
+        {
+            var pointsCount = float.IsFinite(value)
+                ? MathF.Round(value).Clamp(CurveRelatedConstants.MINIMUM_POINTS_COUNT, CurveRelatedConstants.MAXIMUM_POINTS_COUNT)
+                : CurveRelatedConstants.DEFAULT_POINTS_COUNT;
+
+            if (pointsCount != value)
+            {
+                SetCurvePointsCountSilent(pointsCount);
+            }
+
+            await RefreshCurveWithDelayAsync();
+        }
+
+        async partial void OnCurvePointParameterDegreesChanged(float value)
+        {
+            if (!float.IsFinite(value))
+            {
+                SetCurvePointParameterDegreesSilent(CurveRelatedConstants.DEFAULT_POINT_PARAMETER_DEGREES);
+            }
+
+            await RefreshCurveAsync();
+        }
+
+        async partial void OnCurveTangentLengthChanged(float value)
+        {
+            if (!float.IsFinite(value) || value < CurveRelatedConstants.MINIMUM_TANGENT_LENGTH_CENTIMETERS)
+            {
+                SetCurveTangentLengthSilent(CurveRelatedConstants.MINIMUM_TANGENT_LENGTH_CENTIMETERS);
+            }
+
+            await RefreshCurveWithDelayAsync();
+        }
+
+        async partial void OnCurveTangentVisibleChanged(bool value)
+        {
+            if (!value && PickCurvePointByMouse)
+            {
+                PickCurvePointByMouse = false;
+            }
+
+            await RefreshCurveAsync();
+        }
+
+        async partial void OnCurveInflectionPointsVisibleChanged(bool _)
+        {
+            await RefreshCurveAsync();
+        }
+
+        async partial void OnCurveRotationPointVisibleChanged(bool _)
+        {
+            await RefreshCurveAsync();
+        }
+
+        partial void OnPickCurvePointByMouseChanged(bool value)
+        {
+            _curveDraggingTarget = CurveDraggingTarget.None;
+
+            if (value && !CurveTangentVisible)
+            {
+                CurveTangentVisible = true;
+            }
+
+            if (!value)
+            {
+                ChangeMouseCursor(MouseCursor.Default);
+            }
+        }
+
+        async partial void OnCurveTranslationXChanged(float value)
+        {
+            await RefreshCurveWithDelayAsync();
+        }
+
+        async partial void OnCurveTranslationYChanged(float value)
+        {
+            await RefreshCurveWithDelayAsync();
+        }
+
+        async partial void OnCurveRotationPointXChanged(float value)
+        {
+            await RefreshCurveWithDelayAsync();
+        }
+
+        async partial void OnCurveRotationPointYChanged(float value)
+        {
+            await RefreshCurveWithDelayAsync();
+        }
+
+        async partial void OnCurveRotationAngleChanged(float value)
+        {
+            if (!float.IsFinite(value))
+            {
+                SetCurveRotationAngleSilent(0);
+            }
+
+            if (_isCurveInitialized)
+            {
+                ApplyCurveRotationDelta();
+            }
+
+            await RefreshCurveAsync();
+        }
+
+        void SetCurveScaleSilent(float newValue)
+        {
+            _curveScale = newValue;
+            OnPropertyChanged(nameof(CurveScale));
+        }
+
+        void SetCurvePointsCountSilent(float newValue)
+        {
+            _curvePointsCount = newValue;
+            OnPropertyChanged(nameof(CurvePointsCount));
+        }
+
+        void SetCurvePointParameterDegreesSilent(float newValue)
+        {
+            _curvePointParameterDegrees = newValue;
+            OnPropertyChanged(nameof(CurvePointParameterDegrees));
+        }
+
+        void SetCurveTangentLengthSilent(float newValue)
+        {
+            _curveTangentLength = newValue;
+            OnPropertyChanged(nameof(CurveTangentLength));
+        }
+
+        void SetPickCurvePointByMouseSilent(bool newValue)
+        {
+            _pickCurvePointByMouse = newValue;
+            OnPropertyChanged(nameof(PickCurvePointByMouse));
+        }
+
+        void SetCurveTranslationXSilent(float newValue)
+        {
+            _curveTranslationX = newValue;
+            OnPropertyChanged(nameof(CurveTranslationX));
+        }
+
+        void SetCurveTranslationYSilent(float newValue)
+        {
+            _curveTranslationY = newValue;
+            OnPropertyChanged(nameof(CurveTranslationY));
+        }
+
+        void SetCurveRotationPointXSilent(float newValue)
+        {
+            _curveRotationPointX = newValue;
+            OnPropertyChanged(nameof(CurveRotationPointX));
+        }
+
+        void SetCurveRotationPointYSilent(float newValue)
+        {
+            _curveRotationPointY = newValue;
+            OnPropertyChanged(nameof(CurveRotationPointY));
+        }
+
+        void SetCurveRotationAngleSilent(float newValue)
+        {
+            _curveRotationAngle = newValue;
+            OnPropertyChanged(nameof(CurveRotationAngle));
+        }
 
         async partial void OnProjectiveStartPointWeightChanged(float _)
         {

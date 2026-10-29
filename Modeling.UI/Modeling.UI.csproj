@@ -26,6 +26,7 @@
     </PropertyGroup>
     <ItemGroup>
       <None Remove="Resources\Controls\Miscellaneous\IncrementingTextBox\IncrementingTextBox.xaml" />
+      <None Remove="Resources\Controls\Pages\WonderfulCurvePage.xaml" />
       <None Remove="Resources\Styles\TextBoxStyles.xaml" />
     </ItemGroup>
 
@@ -64,6 +65,11 @@
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\Modeling.ViewModels\Modeling.ViewModels.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+      <Page Update="Resources\Controls\Pages\WonderfulCurvePage.xaml">
+        <Generator>MSBuild:Compile</Generator>
+      </Page>
     </ItemGroup>
     <ItemGroup>
       <Page Update="Resources\Styles\TextBoxStyles.xaml">
