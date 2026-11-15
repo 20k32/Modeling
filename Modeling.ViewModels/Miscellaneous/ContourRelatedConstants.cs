@@ -1,4 +1,4 @@
-namespace Modeling.ViewModels.Miscellaneous
+﻿namespace Modeling.ViewModels.Miscellaneous
 {
     static class ContourRelatedConstants
     {
@@ -17,6 +17,8 @@ namespace Modeling.ViewModels.Miscellaneous
         public const float DRAGGING_HIT_DISTANCE_PIXELS = 8;
 
         public const int NO_SELECTION = -1;
+
+        public const long DOUBLE_CLICK_TIME_MILLISECONDS = 400;
 
         public const string NUMBER_FORMAT = "0.###";
     }

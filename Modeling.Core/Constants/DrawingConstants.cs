@@ -75,6 +75,9 @@ namespace Modeling.Core.Constants
         public static readonly Color CONTOUR_POLYGON_COLOR = Colors.SteelBlue;
         public static readonly Color CONTOUR_ANCHOR_POINT_COLOR = Colors.DodgerBlue;
         public static readonly Color CONTOUR_CONTROL_POINT_COLOR = Colors.DarkOrange;
+        public static readonly Color CONTOUR_REFERENCE_POINT_COLOR = Colors.ForestGreen;
+        public static readonly Color CONTOUR_BREAK_POINT_COLOR = Colors.Red;
+        public static readonly Color CONTOUR_SELECTED_POINT_COLOR = Colors.DarkOrange;
 
         public const float X_Y_AXIS_THICKNESS = 3;
         public const float X_Y_AXIS_TICKS_LENGTH_PIXELS = 15;

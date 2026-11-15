@@ -188,5 +188,17 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         {
             await ResetContourTransformsCoreAsync();
         }
+
+        [RelayCommand]
+        async Task MakeAllContourNodesSmoothAsync()
+        {
+            await SetAllContourNodesBreakPointsAsync(isBreakPoint: false);
+        }
+
+        [RelayCommand]
+        async Task MakeAllContourNodesBreakPointsAsync()
+        {
+            await SetAllContourNodesBreakPointsAsync(isBreakPoint: true);
+        }
     }
 }

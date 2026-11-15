@@ -931,5 +931,47 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             _contourRotationAngle = newValue;
             OnPropertyChanged(nameof(ContourRotationAngle));
         }
+
+        [ObservableProperty]
+        bool _isSmoothContourMode;
+
+        [ObservableProperty]
+        bool _isSelectedContourPointNode;
+
+        [ObservableProperty]
+        bool _selectedContourPointIsBreakPoint;
+
+        [ObservableProperty]
+        string _contourSmoothnessText;
+
+        partial void OnIsSmoothContourModeChanged(bool value)
+        {
+            OnPropertyChanged(nameof(ContourTitleText));
+            OnPropertyChanged(nameof(ContourPolygonHintText));
+        }
+
+        public string ContourTitleText => IsSmoothContourMode
+            ? "Smooth curvilinear contour: poodle"
+            : "Curvilinear contour: poodle";
+
+        public string ContourPolygonHintText => IsSmoothContourMode
+            ? "Drag the points with the mouse: green points are reference points, blue points are smooth nodes, red points are break points. Double click a node to switch it between a smooth node and a break point."
+            : "Drag the reference points with the mouse: blue points are arc ends A, orange points are control points B. The selected point is red.";
+
+        async partial void OnSelectedContourPointIsBreakPointChanged(bool value)
+        {
+            if (_isContourInitialized && HasSelectedContourPoint && IsSelectedContourPointNode)
+            {
+                await SetContourBreakPointAsync(_selectedContourIndex, _selectedContourPointIndex, value);
+            }
+        }
+
+        void SetSelectedContourPointNodeStateSilent(bool isNode, bool isBreakPoint)
+        {
+            IsSelectedContourPointNode = isNode;
+
+            _selectedContourPointIsBreakPoint = isBreakPoint;
+            OnPropertyChanged(nameof(SelectedContourPointIsBreakPoint));
+        }
     }
 }

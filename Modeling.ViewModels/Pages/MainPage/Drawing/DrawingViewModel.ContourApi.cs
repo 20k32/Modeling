@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.DependencyInjection;
+﻿using CommunityToolkit.Mvvm.DependencyInjection;
 using Modeling.Core.Constants;
 using Modeling.Core.Drawing;
 using Modeling.Core.Enums;
@@ -51,18 +51,28 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
         float _lastContourRotationAngle;
 
+        // a second press on the same node within the double click time toggles a break point (Lab 4)
+        long _lastContourPressTicks;
+        int _lastPressedContourIndex = ContourRelatedConstants.NO_SELECTION;
+        int _lastPressedContourPointIndex = ContourRelatedConstants.NO_SELECTION;
+
         CancellationTokenSource _contourAnimationCancellationSource;
 
         bool HasSelectedContourPoint => _selectedContourIndex != ContourRelatedConstants.NO_SELECTION;
 
-        void InitializeContour(SizeSingle canvasSize, float pixelsPerCentimeter)
+        // Lab 3 builds the contour without smoothness, Lab 4 keeps the first order smoothness at the nodes
+        void InitializeContour(SizeSingle canvasSize, float pixelsPerCentimeter, bool isSmoothMode)
         {
+            IsSmoothContourMode = isSmoothMode;
+
             _contourCenter = new PointSingle(canvasSize.Width / 2f, canvasSize.Height / 2f);
             _contourPixelsPerCentimeter = pixelsPerCentimeter;
 
             _contourDraggingTarget = CurveDraggingTarget.None;
             _selectedContourIndex = ContourRelatedConstants.NO_SELECTION;
             _selectedContourPointIndex = ContourRelatedConstants.NO_SELECTION;
+            _lastPressedContourIndex = ContourRelatedConstants.NO_SELECTION;
+            _lastPressedContourPointIndex = ContourRelatedConstants.NO_SELECTION;
 
             _contours = PoodleContour.Create();
             _contourMorphTarget = PoodleContour.CreateMorphTargets();
@@ -278,20 +288,26 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
                 pointsCount += contour.PointsCount;
             }
 
-            ContourInfoText = $"Contours: {_contours.Count}, arcs: {segmentsCount}, reference points: {pointsCount}";
+            ContourInfoText = IsSmoothContourMode
+                ? $"Contours: {_contours.Count}, arcs: {segmentsCount}, nodes: {pointsCount / 2} (break points: {CountContourBreakPoints()}), reference points: {pointsCount / 2}"
+                : $"Contours: {_contours.Count}, arcs: {segmentsCount}, reference points: {pointsCount}";
             ContourMorphProgressText = $"Transition to the smiley: {Math.Round(_contourMorphProgress * 100)}%";
 
             if (!HasSelectedContourPoint)
             {
                 ContourSelectedPointText = "No point selected: click a reference point on the canvas";
                 ContourSelectedSegmentText = string.Empty;
+                ContourSmoothnessText = string.Empty;
+                SetSelectedContourPointNodeStateSilent(isNode: false, isBreakPoint: false);
                 return;
             }
 
             var selectedContour = _contours[_selectedContourIndex];
             var pointIndex = _selectedContourPointIndex;
             var point = selectedContour.GetPoint(pointIndex);
-            var pointKind = CurvilinearContour.IsControlPoint(pointIndex) ? "control point B" : "arc end A";
+            var pointKind = IsSmoothContourMode
+                ? CurvilinearContour.IsControlPoint(pointIndex) ? "reference point" : selectedContour.IsBreakPoint(pointIndex) ? "break point" : "node"
+                : CurvilinearContour.IsControlPoint(pointIndex) ? "control point B" : "arc end A";
 
             ContourSelectedPointText = $"Selected: {PoodleContour.CONTOUR_NAMES[_selectedContourIndex]}, point {pointIndex} ({pointKind}), "
                 + $"P = ({FormatContourNumber(point.X)}; {FormatContourNumber(point.Y)}) cm, w = {FormatContourNumber(selectedContour.GetWeight(pointIndex))}";
@@ -303,6 +319,50 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             ContourSelectedSegmentText = $"Arc {segment}: wA = {FormatContourNumber(selectedContour.GetWeight(start))}, "
                 + $"wB = {FormatContourNumber(selectedContour.GetWeight(start + 1))}, wC = {FormatContourNumber(selectedContour.GetWeight(end))}, "
                 + $"f = {FormatContourNumber(selectedContour.GetSegmentDiscriminant(segment))} — arc of {GetArcTypeName(selectedContour.GetSegmentArcType(segment))}";
+
+            UpdateContourSmoothnessInformation(selectedContour, pointIndex);
+        }
+
+        // for a node: is the smoothness kept there and the angle between the tangents of the two arcs
+        void UpdateContourSmoothnessInformation(CurvilinearContour contour, int pointIndex)
+        {
+            var isNode = CurvilinearContour.IsNode(pointIndex);
+
+            SetSelectedContourPointNodeStateSilent(isNode, contour.IsBreakPoint(pointIndex));
+
+            if (!IsSmoothContourMode)
+            {
+                ContourSmoothnessText = string.Empty;
+                return;
+            }
+
+            if (!isNode)
+            {
+                ContourSmoothnessText = "Reference point: moving it turns the opposite reference points around the smooth nodes next to it";
+                return;
+            }
+
+            var state = contour.IsBreakPoint(pointIndex) ? "break point, smoothness is not kept" : "smooth node (G1), smoothness is kept";
+
+            ContourSmoothnessText = $"Node: {state}; angle between the tangents of the arcs: {FormatContourNumber(contour.GetTangentBreakAngle(pointIndex))}°";
+        }
+
+        int CountContourBreakPoints()
+        {
+            var result = 0;
+
+            foreach (var contour in _contours)
+            {
+                for (var i = 0; i < contour.PointsCount; i += 2)
+                {
+                    if (contour.IsBreakPoint(i))
+                    {
+                        result++;
+                    }
+                }
+            }
+
+            return result;
         }
 
         PointListTransformMessageParameter GetDrawingContourMessage(PointListTransformMessageParameter parentMessage)
@@ -345,9 +405,15 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         // arc ends and control points get different colors, the selected point is highlighted
         PointListTransformMessageParameter GetDrawingContourPointsMessage(PointListTransformMessageParameter parentMessage)
         {
+            // Lab 4 colors follow the task: reference points are green, break points are red
             var anchorColor = new DrawingColor(DrawingConstants.CONTOUR_ANCHOR_POINT_COLOR);
-            var controlColor = new DrawingColor(DrawingConstants.CONTOUR_CONTROL_POINT_COLOR);
-            var selectedColor = new DrawingColor(DrawingConstants.CURVE_POINT_COLOR);
+            var breakPointColor = new DrawingColor(DrawingConstants.CONTOUR_BREAK_POINT_COLOR);
+            var controlColor = new DrawingColor(IsSmoothContourMode
+                ? DrawingConstants.CONTOUR_REFERENCE_POINT_COLOR
+                : DrawingConstants.CONTOUR_CONTROL_POINT_COLOR);
+            var selectedColor = new DrawingColor(IsSmoothContourMode
+                ? DrawingConstants.CONTOUR_SELECTED_POINT_COLOR
+                : DrawingConstants.CURVE_POINT_COLOR);
 
             var result = parentMessage;
 
@@ -362,7 +428,8 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
                     var color = isSelected
                         ? selectedColor
-                        : CurvilinearContour.IsControlPoint(pointIndex) ? controlColor : anchorColor;
+                        : CurvilinearContour.IsControlPoint(pointIndex) ? controlColor
+                        : IsSmoothContourMode && contour.IsBreakPoint(pointIndex) ? breakPointColor : anchorColor;
 
                     result = GetDrawingCurveFigureMessage(result, _contourPointMarker,
                         color,
@@ -428,6 +495,17 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
             ChangeMouseCursor(MouseCursor.Move);
 
+            if (_contourDraggingTarget == CurveDraggingTarget.ReferencePoint
+                && IsSmoothContourMode
+                && IsContourDoubleClick(contourIndex, pointIndex)
+                && CurvilinearContour.IsNode(pointIndex))
+            {
+                _contourDraggingTarget = CurveDraggingTarget.None;
+
+                await SetContourBreakPointAsync(contourIndex, pointIndex, !_contours[contourIndex].IsBreakPoint(pointIndex));
+                return;
+            }
+
             if (_contourDraggingTarget == CurveDraggingTarget.ReferencePoint)
             {
                 // an edited contour becomes the new start of the transition
@@ -459,6 +537,64 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             }
         }
 
+        bool IsContourDoubleClick(int contourIndex, int pointIndex)
+        {
+            var ticks = Environment.TickCount64;
+
+            var isDoubleClick = contourIndex == _lastPressedContourIndex
+                && pointIndex == _lastPressedContourPointIndex
+                && ticks - _lastContourPressTicks <= ContourRelatedConstants.DOUBLE_CLICK_TIME_MILLISECONDS;
+
+            // the second click of a double click does not start a new one
+            _lastContourPressTicks = isDoubleClick ? 0 : ticks;
+            _lastPressedContourIndex = contourIndex;
+            _lastPressedContourPointIndex = pointIndex;
+
+            return isDoubleClick;
+        }
+
+        // a node that becomes smooth gets the smoothness right away: the reference point after it is turned to the line of the one before it
+        async Task SetContourBreakPointAsync(int contourIndex, int pointIndex, bool isBreakPoint)
+        {
+            var contour = _contours[contourIndex];
+
+            contour.SetBreakPoint(pointIndex, isBreakPoint);
+
+            if (!isBreakPoint)
+            {
+                contour.EnforceSmoothness(pointIndex);
+            }
+
+            _selectedContourIndex = contourIndex;
+            _selectedContourPointIndex = pointIndex;
+
+            await StopContourAnimationAsync();
+            ResetContourMorphState();
+
+            await RefreshContourAsync();
+        }
+
+        async Task SetAllContourNodesBreakPointsAsync(bool isBreakPoint)
+        {
+            foreach (var contour in _contours)
+            {
+                for (var i = 0; i < contour.PointsCount; i += 2)
+                {
+                    contour.SetBreakPoint(i, isBreakPoint);
+
+                    if (!isBreakPoint)
+                    {
+                        contour.EnforceSmoothness(i);
+                    }
+                }
+            }
+
+            await StopContourAnimationAsync();
+            ResetContourMorphState();
+
+            await RefreshContourAsync();
+        }
+
         void HandleContourPointerReleased()
         {
             _contourDraggingTarget = CurveDraggingTarget.None;
@@ -471,7 +607,16 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         {
             var contourPoint = ToContourPoint(_figureTransform.Inverse() * point);
 
-            _contours[_selectedContourIndex].SetPoint(_selectedContourPointIndex, contourPoint);
+            var contour = _contours[_selectedContourIndex];
+
+            if (IsSmoothContourMode)
+            {
+                contour.MovePointWithSmoothness(_selectedContourPointIndex, contourPoint);
+            }
+            else
+            {
+                contour.SetPoint(_selectedContourPointIndex, contourPoint);
+            }
 
             UpdateContourGeometry();
             UpdateContourInformation();
@@ -532,6 +677,12 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
                     contour.SetPoint(j, new PointSingle(
                         start[j].X + (target[j].X - start[j].X) * _contourMorphProgress,
                         start[j].Y + (target[j].Y - start[j].Y) * _contourMorphProgress));
+                }
+
+                // straight paths of the points do not keep the nodes on the lines of their reference points
+                if (IsSmoothContourMode)
+                {
+                    contour.ProjectSmoothNodes();
                 }
             }
         }

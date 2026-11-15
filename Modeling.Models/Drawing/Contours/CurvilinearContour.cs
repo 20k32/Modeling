@@ -11,12 +11,13 @@ namespace Modeling.Models.Drawing.Contours
     /// A closed contour has an even number of points (the last arc ends at A0), an open one has an odd number.
     /// Every reference point has its own weight.
     /// </summary>
-    public sealed class CurvilinearContour
+    public sealed partial class CurvilinearContour
     {
         const float DEFAULT_WEIGHT = 1;
 
         readonly PointSingle[] _points;
         readonly float[] _weights;
+        readonly bool[] _breakPoints;
 
         public bool IsClosed { get; }
 
@@ -39,6 +40,7 @@ namespace Modeling.Models.Drawing.Contours
 
             _points = new PointSingle[referencePoints.Count];
             _weights = new float[referencePoints.Count];
+            _breakPoints = new bool[referencePoints.Count];
 
             for (var i = 0; i < referencePoints.Count; i++)
             {

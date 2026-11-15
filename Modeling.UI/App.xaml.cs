@@ -52,6 +52,7 @@ namespace Modeling.UI
             navigationProvider.AddNavigationPageMapping(typeof(SettingsPage), NavigationPage.SettingsPage);
             navigationProvider.AddNavigationPageMapping(typeof(WonderfulCurvePage), NavigationPage.SecondLabPage);
             navigationProvider.AddNavigationPageMapping(typeof(CurvilinearContourPage), NavigationPage.ThirdLabPage);
+            navigationProvider.AddNavigationPageMapping(typeof(CurvilinearContourPage), NavigationPage.FourthLabPage);
         }
     }
 }

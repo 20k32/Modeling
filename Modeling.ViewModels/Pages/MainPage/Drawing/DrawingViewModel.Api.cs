@@ -199,7 +199,9 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
                         || NavigationPage.SecondLabPage.HasFlag(navigationParameter.ToPage)
                         && !NavigationPage.SecondLabPage.HasFlag(navigationParameter.FromPage)
                         || NavigationPage.ThirdLabPage.HasFlag(navigationParameter.ToPage)
-                        && !NavigationPage.ThirdLabPage.HasFlag(navigationParameter.FromPage))
+                        && !NavigationPage.ThirdLabPage.HasFlag(navigationParameter.FromPage)
+                        || NavigationPage.FourthLabPage.HasFlag(navigationParameter.ToPage)
+                        && !NavigationPage.FourthLabPage.HasFlag(navigationParameter.FromPage))
                     {
                         await ResetFigureCoreAsync(resetDrawingAction: false);
                     }
@@ -504,7 +506,11 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             }
             else if (NavigationPage.ThirdLabPage.HasFlag(page))
             {
-                InitializeContour(canvasSize, pixelsPerCentimeter);
+                InitializeContour(canvasSize, pixelsPerCentimeter, isSmoothMode: false);
+            }
+            else if (NavigationPage.FourthLabPage.HasFlag(page))
+            {
+                InitializeContour(canvasSize, pixelsPerCentimeter, isSmoothMode: true);
             }
         }
 
