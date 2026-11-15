@@ -203,7 +203,9 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
                         || NavigationPage.FourthLabPage.HasFlag(navigationParameter.ToPage)
                         && !NavigationPage.FourthLabPage.HasFlag(navigationParameter.FromPage)
                         || NavigationPage.FifthLabPage.HasFlag(navigationParameter.ToPage)
-                        && !NavigationPage.FifthLabPage.HasFlag(navigationParameter.FromPage))
+                        && !NavigationPage.FifthLabPage.HasFlag(navigationParameter.FromPage)
+                        || NavigationPage.SixthLabPage.HasFlag(navigationParameter.ToPage)
+                        && !NavigationPage.SixthLabPage.HasFlag(navigationParameter.FromPage))
                     {
                         await ResetFigureCoreAsync(resetDrawingAction: false);
                     }
@@ -420,7 +422,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
                 applyAliasing: applyAliasingToDrawings,
                 drawingAliasing: applyAliasingToDrawings ? DrawingAliasing.Aliased : DrawingAliasing.AntiAliased);
 
-            if (_drawingSettingsProvider.Settings.DrawAxis && !_isPolyhedronInitialized)
+            if (_drawingSettingsProvider.Settings.DrawAxis && !IsSpatialSceneInitialized)
             {
                 currentDrawingMessage = currentDrawingMessage
                 .With(points: _horizontalAxis,
@@ -430,7 +432,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
                       color: verticalAxisDrawingColor);
             }
 
-            if (_drawingSettingsProvider.Settings.DrawAxisArrows && !_isPolyhedronInitialized)
+            if (_drawingSettingsProvider.Settings.DrawAxisArrows && !IsSpatialSceneInitialized)
             {
                 currentDrawingMessage = currentDrawingMessage
                 .With(points: _horizontalAxisArrows,
@@ -440,7 +442,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
                       color: verticalAxisDrawingColor);
             }
 
-            if (_drawingSettingsProvider.Settings.DrawAxisMarks && !_isPolyhedronInitialized)
+            if (_drawingSettingsProvider.Settings.DrawAxisMarks && !IsSpatialSceneInitialized)
             {
                 currentDrawingMessage = currentDrawingMessage
                  .With(points: _horizontalAxisMarks,
@@ -468,6 +470,11 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             if (_isPolyhedronInitialized)
             {
                 currentDrawingMessage = GetDrawingPolyhedronMessage(currentDrawingMessage);
+            }
+
+            if (_isSurfaceInitialized)
+            {
+                currentDrawingMessage = GetDrawingSurfaceMessage(currentDrawingMessage);
             }
 
             if (_canRedrawUserPoint)
@@ -522,6 +529,10 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             else if (NavigationPage.FifthLabPage.HasFlag(page))
             {
                 InitializePolyhedron(canvasSize, pixelsPerCentimeter);
+            }
+            else if (NavigationPage.SixthLabPage.HasFlag(page))
+            {
+                InitializeSurface(canvasSize, pixelsPerCentimeter);
             }
         }
 
@@ -721,6 +732,8 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             ClearContour();
 
             ClearPolyhedron();
+
+            ClearSurface();
         }
 
         void InitializeDrawingElements(SizeSingle canvasSize, float pixelsPerCentimeter)

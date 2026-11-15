@@ -81,6 +81,7 @@ namespace Modeling.Core.Constants
         public static readonly Color CONTOUR_SELECTED_POINT_COLOR = Colors.DarkOrange;
 
         public static readonly Color VANISHING_POINT_COLOR = Colors.DarkViolet;
+        public static readonly Color SURFACE_CONTOUR_COLOR = Colors.Magenta;
 
         public const float X_Y_AXIS_THICKNESS = 3;
         public const float X_Y_AXIS_TICKS_LENGTH_PIXELS = 15;

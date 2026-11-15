@@ -1,4 +1,4 @@
-using Modeling.Core.Drawing;
+﻿using Modeling.Core.Drawing;
 using System;
 using System.Numerics;
 
@@ -28,7 +28,7 @@ namespace Modeling.Models.Drawing.Projection
             0, 0, 0, 1);
 
         public static Vector4 Transform(Vector3 point, Matrix4x4 projection)
-            => Vector4.Transform(new Vector4(point, 1), projection);
+            => HomogeneousTransforms.Multiply(new Vector4(point, 1), projection);
 
         public static bool IsVisible(Vector4 homogeneous) => homogeneous.W >= MINIMUM_HOMOGENEOUS_WEIGHT;
 

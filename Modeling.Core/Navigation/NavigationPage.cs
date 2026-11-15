@@ -17,6 +17,7 @@ namespace Modeling.Core.Navigation
         ThirdLabPage = 1ul << 7,
         FourthLabPage = 1ul << 8,
         FifthLabPage = 1ul << 9,
+        SixthLabPage = 1ul << 10,
         FirstLabPage = ResizingPage | AffineTransformPage | EuclideanTransformPage | ProjectiveTransformPage,
     }
 }

@@ -230,9 +230,50 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         [RelayCommand]
         async Task ResetProjectionAsync()
         {
-            ResetProjectionValues();
+            if (_isSurfaceInitialized)
+            {
+                ResetSurfaceProjectionValues();
+            }
+            else
+            {
+                ResetProjectionValues();
+            }
 
-            await RefreshPolyhedronAsync();
+            await RefreshProjectionSceneAsync();
+        }
+
+        [RelayCommand]
+        async Task StartSurfaceAnimationAsync()
+        {
+            await StartSurfaceAnimationCoreAsync();
+        }
+
+        [RelayCommand]
+        async Task PauseSurfaceAnimationAsync()
+        {
+            await StopSurfaceAnimationAsync();
+        }
+
+        [RelayCommand]
+        async Task ResetSurfaceAnimationAsync()
+        {
+            await ResetSurfaceAnimationCoreAsync();
+        }
+
+        [RelayCommand]
+        async Task ResetSurfaceTransformsAsync()
+        {
+            ResetSurfaceTransformValues();
+
+            await RefreshSurfaceAsync();
+        }
+
+        [RelayCommand]
+        async Task ResetSurfaceContourTransformsAsync()
+        {
+            ResetSurfaceContourTransformValues();
+
+            await RefreshSurfaceAsync();
         }
     }
 }

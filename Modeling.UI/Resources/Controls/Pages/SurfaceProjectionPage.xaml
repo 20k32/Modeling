@@ -1,0 +1,345 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<UserControl x:Class="Modeling.UI.Resources.Controls.Pages.SurfaceProjectionPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:incrementingControl="using:Modeling.UI.Resources.Controls.Miscellaneous.IncrementingTextBox"
+             xmlns:local="using:Modeling.UI.Resources.Controls.Pages"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             DataContext="{Binding DrawingViewModel, Source={StaticResource ServiceLocator}}"
+             mc:Ignorable="d">
+
+    <ScrollViewer HorizontalScrollMode="Disabled" VerticalScrollBarVisibility="Auto">
+        <StackPanel Width="400"
+                    Padding="0,0,15,15"
+                    Spacing="10">
+
+            <!--  Surface  -->
+            <TextBlock FontWeight="SemiBold"
+                       Style="{StaticResource ApplicationTextBlockStyle}"
+                       Text="Surface: concave ellipsoid on top, sphere below" />
+            <TextBlock Text="x = a·cos u·cos v,  y = a·sin u·cos v&#x0a;z = a − k·a·sin v,  if a·sin v &gt; 0&#x0a;z = a·sin v,  otherwise" TextWrapping="Wrap" />
+            <TextBlock Text="{Binding SurfaceInfoText}" TextWrapping="Wrap" />
+            <Grid ColumnSpacing="10" RowSpacing="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Row="0"
+                           Grid.Column="0"
+                           VerticalAlignment="Center"
+                           Text="Radius a, cm:" />
+                <incrementingControl:IncrementingTextBox Grid.Row="0"
+                                                         Grid.Column="1"
+                                                         InCompactMode="False"
+                                                         IncrementingStep="{Binding UserInterfaceConstants.MediumIncrementingStep, Source={StaticResource ServiceLocator}}"
+                                                         IncrementingValue="{Binding SurfaceRadius, Mode=TwoWay}"
+                                                         MaximumIncrementingValue="{Binding MaximumSurfaceRadius}"
+                                                         MinimumIncrementingValue="{Binding MinimumSurfaceRadius}" />
+                <TextBlock Grid.Row="1"
+                           Grid.Column="0"
+                           VerticalAlignment="Center"
+                           Text="Depth coefficient k:" />
+                <incrementingControl:IncrementingTextBox Grid.Row="1"
+                                                         Grid.Column="1"
+                                                         InCompactMode="False"
+                                                         IncrementingStep="{Binding UserInterfaceConstants.MediumIncrementingStep, Source={StaticResource ServiceLocator}}"
+                                                         IncrementingValue="{Binding SurfaceDepthCoefficient, Mode=TwoWay}"
+                                                         MaximumIncrementingValue="{Binding MaximumSurfaceDepth}"
+                                                         MinimumIncrementingValue="{Binding MinimumSurfaceDepth}" />
+                <TextBlock Grid.Row="2"
+                           Grid.Column="0"
+                           VerticalAlignment="Center"
+                           Text="Mesh step u, degrees:" />
+                <incrementingControl:IncrementingTextBox Grid.Row="2"
+                                                         Grid.Column="1"
+                                                         InCompactMode="False"
+                                                         IncrementingStep="{Binding UserInterfaceConstants.LargeIncrementingStep, Source={StaticResource ServiceLocator}}"
+                                                         IncrementingValue="{Binding SurfaceMeshStepU, Mode=TwoWay}"
+                                                         MaximumIncrementingValue="{Binding MaximumSurfaceMeshStep}"
+                                                         MinimumIncrementingValue="{Binding MinimumSurfaceMeshStep}" />
+                <TextBlock Grid.Row="3"
+                           Grid.Column="0"
+                           VerticalAlignment="Center"
+                           Text="Mesh step v, degrees:" />
+                <incrementingControl:IncrementingTextBox Grid.Row="3"
+                                                         Grid.Column="1"
+                                                         InCompactMode="False"
+                                                         IncrementingStep="{Binding UserInterfaceConstants.LargeIncrementingStep, Source={StaticResource ServiceLocator}}"
+                                                         IncrementingValue="{Binding SurfaceMeshStepV, Mode=TwoWay}"
+                                                         MaximumIncrementingValue="{Binding MaximumSurfaceMeshStep}"
+                                                         MinimumIncrementingValue="{Binding MinimumSurfaceMeshStep}" />
+            </Grid>
+            <Button HorizontalAlignment="Stretch"
+                    Command="{Binding ResetFigureCommand}"
+                    Content="Reset surface" />
+
+            <!--  Euclidean transformations of the surface  -->
+            <TextBlock FontWeight="SemiBold" Text="Euclidean transformations of the surface" />
+            <TextBlock Text="Shift x; y; z, cm:" />
+            <Grid ColumnSpacing="10" RowSpacing="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <incrementingControl:IncrementingTextBox Grid.Row="0"
+                                                         Grid.Column="0"
+                                                         InCompactMode="True"
+                                                         IncrementingStep="{Binding UserInterfaceConstants.MediumIncrementingStep, Source={StaticResource ServiceLocator}}"
+                                                         IncrementingValue="{Binding SurfaceTranslationX, Mode=TwoWay}"
+                                                         MaximumIncrementingValue="{Binding MaximumPolyhedronTranslation}"
+                                                         MinimumIncrementingValue="{Binding MinimumPolyhedronTranslation}" />
+                <incrementingControl:IncrementingTextBox Grid.Row="0"
+                                                         Grid.Column="1"
+                                                         InCompactMode="True"
+                                                         IncrementingStep="{Binding UserInterfaceConstants.MediumIncrementingStep, Source={StaticResource ServiceLocator}}"
+                                                         IncrementingValue="{Binding SurfaceTranslationY, Mode=TwoWay}"
+                                                         MaximumIncrementingValue="{Binding MaximumPolyhedronTranslation}"
+                                                         MinimumIncrementingValue="{Binding MinimumPolyhedronTranslation}" />
+                <incrementingControl:IncrementingTextBox Grid.Row="0"
+                                                         Grid.Column="2"
+                                                         InCompactMode="True"
+                                                         IncrementingStep="{Binding UserInterfaceConstants.MediumIncrementingStep, Source={StaticResource ServiceLocator}}"
+                                                         IncrementingValue="{Binding SurfaceTranslationZ, Mode=TwoWay}"
+                                                         MaximumIncrementingValue="{Binding MaximumPolyhedronTranslation}"
+                                                         MinimumIncrementingValue="{Binding MinimumPolyhedronTranslation}" />
+            </Grid>
+            <Slider Maximum="180"
+                    Minimum="-180"
+                    StepFrequency="{Binding UserInterfaceConstants.SlidersStepFrequency, Source={StaticResource ServiceLocator}}"
+                    Value="{Binding SurfaceRotationX, Mode=TwoWay}">
+                <Slider.Header>
+                    <TextBlock>
+                        <Run Text="Rotation around own axis X, degrees:" />
+                        <Run Text="{Binding SurfaceRotationX}" />
+                    </TextBlock>
+                </Slider.Header>
+            </Slider>
+            <Slider Maximum="180"
+                    Minimum="-180"
+                    StepFrequency="{Binding UserInterfaceConstants.SlidersStepFrequency, Source={StaticResource ServiceLocator}}"
+                    Value="{Binding SurfaceRotationY, Mode=TwoWay}">
+                <Slider.Header>
+                    <TextBlock>
+                        <Run Text="Rotation around own axis Y, degrees:" />
+                        <Run Text="{Binding SurfaceRotationY}" />
+                    </TextBlock>
+                </Slider.Header>
+            </Slider>
+            <Slider Maximum="180"
+                    Minimum="-180"
+                    StepFrequency="{Binding UserInterfaceConstants.SlidersStepFrequency, Source={StaticResource ServiceLocator}}"
+                    Value="{Binding SurfaceRotationZ, Mode=TwoWay}">
+                <Slider.Header>
+                    <TextBlock>
+                        <Run Text="Rotation around own axis Z, degrees:" />
+                        <Run Text="{Binding SurfaceRotationZ}" />
+                    </TextBlock>
+                </Slider.Header>
+            </Slider>
+            <TextBlock Text="{Binding SurfacePivotText}" TextWrapping="Wrap" />
+            <CheckBox Content="Show own axes and center" IsChecked="{Binding PolyhedronOwnAxesVisible, Mode=TwoWay}" />
+            <Button HorizontalAlignment="Stretch"
+                    Command="{Binding ResetSurfaceTransformsCommand}"
+                    Content="Reset surface transformations" />
+
+            <!--  Contour on the surface  -->
+            <TextBlock FontWeight="SemiBold" Text="Curvilinear contour (lab 3) on the UV grid" />
+            <CheckBox Content="Show contour" IsChecked="{Binding SurfaceContourVisible, Mode=TwoWay}" />
+            <TextBlock Text="Shift on the grid Δu; Δv, degrees:" />
+            <Grid ColumnSpacing="10" RowSpacing="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <incrementingControl:IncrementingTextBox Grid.Row="0"
+                                                         Grid.Column="0"
+                                                         InCompactMode="True"
+                                                         IncrementingStep="{Binding UserInterfaceConstants.LargeIncrementingStep, Source={StaticResource ServiceLocator}}"
+                                                         IncrementingValue="{Binding SurfaceContourShiftU, Mode=TwoWay}"
+                                                         MaximumIncrementingValue="{Binding MaximumSurfaceContourShift}"
+                                                         MinimumIncrementingValue="{Binding MinimumSurfaceContourShift}" />
+                <incrementingControl:IncrementingTextBox Grid.Row="0"
+                                                         Grid.Column="1"
+                                                         InCompactMode="True"
+                                                         IncrementingStep="{Binding UserInterfaceConstants.LargeIncrementingStep, Source={StaticResource ServiceLocator}}"
+                                                         IncrementingValue="{Binding SurfaceContourShiftV, Mode=TwoWay}"
+                                                         MaximumIncrementingValue="{Binding MaximumSurfaceContourShift}"
+                                                         MinimumIncrementingValue="{Binding MinimumSurfaceContourShift}" />
+            </Grid>
+            <Slider Maximum="180"
+                    Minimum="-180"
+                    StepFrequency="{Binding UserInterfaceConstants.SlidersStepFrequency, Source={StaticResource ServiceLocator}}"
+                    Value="{Binding SurfaceContourAngle, Mode=TwoWay}">
+                <Slider.Header>
+                    <TextBlock>
+                        <Run Text="Rotation around the pivot point, degrees:" />
+                        <Run Text="{Binding SurfaceContourAngle}" />
+                    </TextBlock>
+                </Slider.Header>
+            </Slider>
+            <Grid ColumnSpacing="10" RowSpacing="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Row="0"
+                           Grid.Column="0"
+                           VerticalAlignment="Center"
+                           Text="Scale, degrees per cm:" />
+                <incrementingControl:IncrementingTextBox Grid.Row="0"
+                                                         Grid.Column="1"
+                                                         InCompactMode="False"
+                                                         IncrementingStep="{Binding UserInterfaceConstants.MediumIncrementingStep, Source={StaticResource ServiceLocator}}"
+                                                         IncrementingValue="{Binding SurfaceContourScale, Mode=TwoWay}"
+                                                         MaximumIncrementingValue="{Binding MaximumSurfaceContourScale}"
+                                                         MinimumIncrementingValue="{Binding MinimumSurfaceContourScale}" />
+            </Grid>
+            <TextBlock Text="{Binding SurfaceContourText}" TextWrapping="Wrap" />
+            <Button HorizontalAlignment="Stretch"
+                    Command="{Binding ResetSurfaceContourTransformsCommand}"
+                    Content="Reset contour transformations" />
+
+            <!--  Animation  -->
+            <TextBlock FontWeight="SemiBold" Text="Animation of the surface parameters" />
+            <TextBlock Text="Radius a from; to, cm:" />
+            <Grid ColumnSpacing="10" RowSpacing="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <incrementingControl:IncrementingTextBox Grid.Row="0"
+                                                         Grid.Column="0"
+                                                         InCompactMode="True"
+                                                         IncrementingStep="{Binding UserInterfaceConstants.MediumIncrementingStep, Source={StaticResource ServiceLocator}}"
+                                                         IncrementingValue="{Binding SurfaceAnimationRadiusMinimum, Mode=TwoWay}"
+                                                         MaximumIncrementingValue="{Binding MaximumSurfaceRadius}"
+                                                         MinimumIncrementingValue="{Binding MinimumSurfaceRadius}" />
+                <incrementingControl:IncrementingTextBox Grid.Row="0"
+                                                         Grid.Column="1"
+                                                         InCompactMode="True"
+                                                         IncrementingStep="{Binding UserInterfaceConstants.MediumIncrementingStep, Source={StaticResource ServiceLocator}}"
+                                                         IncrementingValue="{Binding SurfaceAnimationRadiusMaximum, Mode=TwoWay}"
+                                                         MaximumIncrementingValue="{Binding MaximumSurfaceRadius}"
+                                                         MinimumIncrementingValue="{Binding MinimumSurfaceRadius}" />
+            </Grid>
+            <TextBlock Text="Depth coefficient k from; to:" />
+            <Grid ColumnSpacing="10" RowSpacing="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <incrementingControl:IncrementingTextBox Grid.Row="0"
+                                                         Grid.Column="0"
+                                                         InCompactMode="True"
+                                                         IncrementingStep="{Binding UserInterfaceConstants.MediumIncrementingStep, Source={StaticResource ServiceLocator}}"
+                                                         IncrementingValue="{Binding SurfaceAnimationDepthMinimum, Mode=TwoWay}"
+                                                         MaximumIncrementingValue="{Binding MaximumSurfaceDepth}"
+                                                         MinimumIncrementingValue="{Binding MinimumSurfaceDepth}" />
+                <incrementingControl:IncrementingTextBox Grid.Row="0"
+                                                         Grid.Column="1"
+                                                         InCompactMode="True"
+                                                         IncrementingStep="{Binding UserInterfaceConstants.MediumIncrementingStep, Source={StaticResource ServiceLocator}}"
+                                                         IncrementingValue="{Binding SurfaceAnimationDepthMaximum, Mode=TwoWay}"
+                                                         MaximumIncrementingValue="{Binding MaximumSurfaceDepth}"
+                                                         MinimumIncrementingValue="{Binding MinimumSurfaceDepth}" />
+            </Grid>
+            <Grid ColumnSpacing="10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Button Grid.Column="0"
+                        HorizontalAlignment="Stretch"
+                        Command="{Binding StartSurfaceAnimationCommand}"
+                        Content="Start"
+                        IsEnabled="{Binding IsSurfaceAnimationRunning, Converter={StaticResource CommunityToolkit.BoolNegationConverter}}" />
+                <Button Grid.Column="1"
+                        HorizontalAlignment="Stretch"
+                        Command="{Binding PauseSurfaceAnimationCommand}"
+                        Content="Pause"
+                        IsEnabled="{Binding IsSurfaceAnimationRunning}" />
+                <Button Grid.Column="2"
+                        HorizontalAlignment="Stretch"
+                        Command="{Binding ResetSurfaceAnimationCommand}"
+                        Content="Reset" />
+            </Grid>
+
+            <!--  Projection  -->
+            <TextBlock FontWeight="SemiBold" Text="Projection (three point perspective, lab 5)" />
+            <TextBlock Text="Centers of projection xs; ys; zs, cm:" />
+            <Grid ColumnSpacing="10" RowSpacing="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <incrementingControl:IncrementingTextBox Grid.Row="0"
+                                                         Grid.Column="0"
+                                                         InCompactMode="True"
+                                                         IncrementingStep="{Binding UserInterfaceConstants.LargeIncrementingStep, Source={StaticResource ServiceLocator}}"
+                                                         IncrementingValue="{Binding ProjectionCenterX, Mode=TwoWay}"
+                                                         MaximumIncrementingValue="{Binding MaximumProjectionCenter}"
+                                                         MinimumIncrementingValue="{Binding MinimumProjectionCenter}" />
+                <incrementingControl:IncrementingTextBox Grid.Row="0"
+                                                         Grid.Column="1"
+                                                         InCompactMode="True"
+                                                         IncrementingStep="{Binding UserInterfaceConstants.LargeIncrementingStep, Source={StaticResource ServiceLocator}}"
+                                                         IncrementingValue="{Binding ProjectionCenterY, Mode=TwoWay}"
+                                                         MaximumIncrementingValue="{Binding MaximumProjectionCenter}"
+                                                         MinimumIncrementingValue="{Binding MinimumProjectionCenter}" />
+                <incrementingControl:IncrementingTextBox Grid.Row="0"
+                                                         Grid.Column="2"
+                                                         InCompactMode="True"
+                                                         IncrementingStep="{Binding UserInterfaceConstants.LargeIncrementingStep, Source={StaticResource ServiceLocator}}"
+                                                         IncrementingValue="{Binding ProjectionCenterZ, Mode=TwoWay}"
+                                                         MaximumIncrementingValue="{Binding MaximumProjectionCenter}"
+                                                         MinimumIncrementingValue="{Binding MinimumProjectionCenter}" />
+            </Grid>
+            <TextBlock FontFamily="Consolas"
+                       Text="{Binding ProjectionMatrixText}"
+                       TextWrapping="NoWrap" />
+            <TextBlock Text="{Binding VanishingPointsText}" TextWrapping="Wrap" />
+            <CheckBox Content="Show vanishing points" IsChecked="{Binding VanishingPointsVisible, Mode=TwoWay}" />
+            <Button HorizontalAlignment="Stretch"
+                    Command="{Binding ResetProjectionCommand}"
+                    Content="Reset projection" />
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

@@ -1075,12 +1075,12 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
         async partial void OnPolyhedronOwnAxesVisibleChanged(bool _)
         {
-            await RefreshPolyhedronAsync();
+            await RefreshProjectionSceneAsync();
         }
 
         async partial void OnVanishingPointsVisibleChanged(bool _)
         {
-            await RefreshPolyhedronAsync();
+            await RefreshProjectionSceneAsync();
         }
 
         async partial void OnPolyhedronSidesCountChanged(float value)
@@ -1290,7 +1290,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
                 SetProjectionCenterXSilent(validValue);
             }
 
-            await RefreshPolyhedronWithDelayAsync();
+            await RefreshProjectionSceneWithDelayAsync();
         }
 
         void SetProjectionCenterXSilent(float newValue)
@@ -1308,7 +1308,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
                 SetProjectionCenterYSilent(validValue);
             }
 
-            await RefreshPolyhedronWithDelayAsync();
+            await RefreshProjectionSceneWithDelayAsync();
         }
 
         void SetProjectionCenterYSilent(float newValue)
@@ -1326,7 +1326,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
                 SetProjectionCenterZSilent(validValue);
             }
 
-            await RefreshPolyhedronWithDelayAsync();
+            await RefreshProjectionSceneWithDelayAsync();
         }
 
         void SetProjectionCenterZSilent(float newValue)
@@ -1418,6 +1418,409 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         {
             _polyhedronAnimationRotationStepZ = newValue;
             OnPropertyChanged(nameof(PolyhedronAnimationRotationStepZ));
+        }
+
+        // Lab 6: surface, contour on the surface
+
+        [ObservableProperty]
+        float _surfaceRadius;
+
+        [ObservableProperty]
+        float _surfaceDepthCoefficient;
+
+        [ObservableProperty]
+        float _surfaceMeshStepU;
+
+        [ObservableProperty]
+        float _surfaceMeshStepV;
+
+        [ObservableProperty]
+        float _surfaceTranslationX;
+
+        [ObservableProperty]
+        float _surfaceTranslationY;
+
+        [ObservableProperty]
+        float _surfaceTranslationZ;
+
+        [ObservableProperty]
+        float _surfaceRotationX;
+
+        [ObservableProperty]
+        float _surfaceRotationY;
+
+        [ObservableProperty]
+        float _surfaceRotationZ;
+
+        [ObservableProperty]
+        float _surfaceContourShiftU;
+
+        [ObservableProperty]
+        float _surfaceContourShiftV;
+
+        [ObservableProperty]
+        float _surfaceContourAngle;
+
+        [ObservableProperty]
+        float _surfaceContourScale;
+
+        [ObservableProperty]
+        float _surfaceAnimationRadiusMinimum;
+
+        [ObservableProperty]
+        float _surfaceAnimationRadiusMaximum;
+
+        [ObservableProperty]
+        float _surfaceAnimationDepthMinimum;
+
+        [ObservableProperty]
+        float _surfaceAnimationDepthMaximum;
+
+        [ObservableProperty]
+        string _surfaceInfoText;
+
+        [ObservableProperty]
+        string _surfacePivotText;
+
+        [ObservableProperty]
+        string _surfaceContourText;
+
+        [ObservableProperty]
+        bool _isSurfaceAnimationRunning;
+
+        [ObservableProperty]
+        bool _surfaceContourVisible = true;
+
+        public float MinimumSurfaceRadius => SurfaceRelatedConstants.MINIMUM_RADIUS_CENTIMETERS;
+        public float MaximumSurfaceRadius => SurfaceRelatedConstants.MAXIMUM_RADIUS_CENTIMETERS;
+        public float MinimumSurfaceDepth => SurfaceRelatedConstants.MINIMUM_DEPTH_COEFFICIENT;
+        public float MaximumSurfaceDepth => SurfaceRelatedConstants.MAXIMUM_DEPTH_COEFFICIENT;
+        public float MinimumSurfaceMeshStep => SurfaceRelatedConstants.MINIMUM_MESH_STEP_DEGREES;
+        public float MaximumSurfaceMeshStep => SurfaceRelatedConstants.MAXIMUM_MESH_STEP_DEGREES;
+        public float MinimumSurfaceContourShift => -SurfaceRelatedConstants.MAXIMUM_CONTOUR_SHIFT_DEGREES;
+        public float MaximumSurfaceContourShift => SurfaceRelatedConstants.MAXIMUM_CONTOUR_SHIFT_DEGREES;
+        public float MinimumSurfaceContourScale => SurfaceRelatedConstants.MINIMUM_CONTOUR_SCALE;
+        public float MaximumSurfaceContourScale => SurfaceRelatedConstants.MAXIMUM_CONTOUR_SCALE;
+
+        async partial void OnSurfaceContourVisibleChanged(bool _)
+        {
+            await RefreshSurfaceAsync();
+        }
+
+        async partial void OnSurfaceRadiusChanged(float value)
+        {
+            var validValue = float.IsFinite(value) ? value.Clamp(SurfaceRelatedConstants.MINIMUM_RADIUS_CENTIMETERS, SurfaceRelatedConstants.MAXIMUM_RADIUS_CENTIMETERS) : SurfaceRelatedConstants.DEFAULT_RADIUS_CENTIMETERS;
+
+            if (validValue != value)
+            {
+                SetSurfaceRadiusSilent(validValue);
+            }
+
+            await RefreshSurfaceWithDelayAsync();
+        }
+
+        void SetSurfaceRadiusSilent(float newValue)
+        {
+            _surfaceRadius = newValue;
+            OnPropertyChanged(nameof(SurfaceRadius));
+        }
+
+        async partial void OnSurfaceDepthCoefficientChanged(float value)
+        {
+            var validValue = float.IsFinite(value) ? value.Clamp(SurfaceRelatedConstants.MINIMUM_DEPTH_COEFFICIENT, SurfaceRelatedConstants.MAXIMUM_DEPTH_COEFFICIENT) : SurfaceRelatedConstants.DEFAULT_DEPTH_COEFFICIENT;
+
+            if (validValue != value)
+            {
+                SetSurfaceDepthCoefficientSilent(validValue);
+            }
+
+            await RefreshSurfaceWithDelayAsync();
+        }
+
+        void SetSurfaceDepthCoefficientSilent(float newValue)
+        {
+            _surfaceDepthCoefficient = newValue;
+            OnPropertyChanged(nameof(SurfaceDepthCoefficient));
+        }
+
+        async partial void OnSurfaceMeshStepUChanged(float value)
+        {
+            var validValue = float.IsFinite(value) ? value.Clamp(SurfaceRelatedConstants.MINIMUM_MESH_STEP_DEGREES, SurfaceRelatedConstants.MAXIMUM_MESH_STEP_DEGREES) : SurfaceRelatedConstants.DEFAULT_MESH_STEP_DEGREES;
+
+            if (validValue != value)
+            {
+                SetSurfaceMeshStepUSilent(validValue);
+            }
+
+            await RefreshSurfaceWithDelayAsync();
+        }
+
+        void SetSurfaceMeshStepUSilent(float newValue)
+        {
+            _surfaceMeshStepU = newValue;
+            OnPropertyChanged(nameof(SurfaceMeshStepU));
+        }
+
+        async partial void OnSurfaceMeshStepVChanged(float value)
+        {
+            var validValue = float.IsFinite(value) ? value.Clamp(SurfaceRelatedConstants.MINIMUM_MESH_STEP_DEGREES, SurfaceRelatedConstants.MAXIMUM_MESH_STEP_DEGREES) : SurfaceRelatedConstants.DEFAULT_MESH_STEP_DEGREES;
+
+            if (validValue != value)
+            {
+                SetSurfaceMeshStepVSilent(validValue);
+            }
+
+            await RefreshSurfaceWithDelayAsync();
+        }
+
+        void SetSurfaceMeshStepVSilent(float newValue)
+        {
+            _surfaceMeshStepV = newValue;
+            OnPropertyChanged(nameof(SurfaceMeshStepV));
+        }
+
+        async partial void OnSurfaceTranslationXChanged(float value)
+        {
+            var validValue = float.IsFinite(value) ? value.Clamp(-PolyhedronRelatedConstants.MAXIMUM_TRANSLATION_CENTIMETERS, PolyhedronRelatedConstants.MAXIMUM_TRANSLATION_CENTIMETERS) : 0;
+
+            if (validValue != value)
+            {
+                SetSurfaceTranslationXSilent(validValue);
+            }
+
+            await RefreshSurfaceWithDelayAsync();
+        }
+
+        void SetSurfaceTranslationXSilent(float newValue)
+        {
+            _surfaceTranslationX = newValue;
+            OnPropertyChanged(nameof(SurfaceTranslationX));
+        }
+
+        async partial void OnSurfaceTranslationYChanged(float value)
+        {
+            var validValue = float.IsFinite(value) ? value.Clamp(-PolyhedronRelatedConstants.MAXIMUM_TRANSLATION_CENTIMETERS, PolyhedronRelatedConstants.MAXIMUM_TRANSLATION_CENTIMETERS) : 0;
+
+            if (validValue != value)
+            {
+                SetSurfaceTranslationYSilent(validValue);
+            }
+
+            await RefreshSurfaceWithDelayAsync();
+        }
+
+        void SetSurfaceTranslationYSilent(float newValue)
+        {
+            _surfaceTranslationY = newValue;
+            OnPropertyChanged(nameof(SurfaceTranslationY));
+        }
+
+        async partial void OnSurfaceTranslationZChanged(float value)
+        {
+            var validValue = float.IsFinite(value) ? value.Clamp(-PolyhedronRelatedConstants.MAXIMUM_TRANSLATION_CENTIMETERS, PolyhedronRelatedConstants.MAXIMUM_TRANSLATION_CENTIMETERS) : 0;
+
+            if (validValue != value)
+            {
+                SetSurfaceTranslationZSilent(validValue);
+            }
+
+            await RefreshSurfaceWithDelayAsync();
+        }
+
+        void SetSurfaceTranslationZSilent(float newValue)
+        {
+            _surfaceTranslationZ = newValue;
+            OnPropertyChanged(nameof(SurfaceTranslationZ));
+        }
+
+        async partial void OnSurfaceRotationXChanged(float value)
+        {
+            var validValue = float.IsFinite(value) ? WrapAngle(value) : 0;
+
+            if (validValue != value)
+            {
+                SetSurfaceRotationXSilent(validValue);
+            }
+
+            await RefreshSurfaceAsync();
+        }
+
+        void SetSurfaceRotationXSilent(float newValue)
+        {
+            _surfaceRotationX = newValue;
+            OnPropertyChanged(nameof(SurfaceRotationX));
+        }
+
+        async partial void OnSurfaceRotationYChanged(float value)
+        {
+            var validValue = float.IsFinite(value) ? WrapAngle(value) : 0;
+
+            if (validValue != value)
+            {
+                SetSurfaceRotationYSilent(validValue);
+            }
+
+            await RefreshSurfaceAsync();
+        }
+
+        void SetSurfaceRotationYSilent(float newValue)
+        {
+            _surfaceRotationY = newValue;
+            OnPropertyChanged(nameof(SurfaceRotationY));
+        }
+
+        async partial void OnSurfaceRotationZChanged(float value)
+        {
+            var validValue = float.IsFinite(value) ? WrapAngle(value) : 0;
+
+            if (validValue != value)
+            {
+                SetSurfaceRotationZSilent(validValue);
+            }
+
+            await RefreshSurfaceAsync();
+        }
+
+        void SetSurfaceRotationZSilent(float newValue)
+        {
+            _surfaceRotationZ = newValue;
+            OnPropertyChanged(nameof(SurfaceRotationZ));
+        }
+
+        async partial void OnSurfaceContourShiftUChanged(float value)
+        {
+            var validValue = float.IsFinite(value) ? value.Clamp(-SurfaceRelatedConstants.MAXIMUM_CONTOUR_SHIFT_DEGREES, SurfaceRelatedConstants.MAXIMUM_CONTOUR_SHIFT_DEGREES) : 0;
+
+            if (validValue != value)
+            {
+                SetSurfaceContourShiftUSilent(validValue);
+            }
+
+            await RefreshSurfaceWithDelayAsync();
+        }
+
+        void SetSurfaceContourShiftUSilent(float newValue)
+        {
+            _surfaceContourShiftU = newValue;
+            OnPropertyChanged(nameof(SurfaceContourShiftU));
+        }
+
+        async partial void OnSurfaceContourShiftVChanged(float value)
+        {
+            var validValue = float.IsFinite(value) ? value.Clamp(-SurfaceRelatedConstants.MAXIMUM_CONTOUR_SHIFT_DEGREES, SurfaceRelatedConstants.MAXIMUM_CONTOUR_SHIFT_DEGREES) : 0;
+
+            if (validValue != value)
+            {
+                SetSurfaceContourShiftVSilent(validValue);
+            }
+
+            await RefreshSurfaceWithDelayAsync();
+        }
+
+        void SetSurfaceContourShiftVSilent(float newValue)
+        {
+            _surfaceContourShiftV = newValue;
+            OnPropertyChanged(nameof(SurfaceContourShiftV));
+        }
+
+        async partial void OnSurfaceContourAngleChanged(float value)
+        {
+            var validValue = float.IsFinite(value) ? WrapAngle(value) : 0;
+
+            if (validValue != value)
+            {
+                SetSurfaceContourAngleSilent(validValue);
+            }
+
+            await RefreshSurfaceAsync();
+        }
+
+        void SetSurfaceContourAngleSilent(float newValue)
+        {
+            _surfaceContourAngle = newValue;
+            OnPropertyChanged(nameof(SurfaceContourAngle));
+        }
+
+        async partial void OnSurfaceContourScaleChanged(float value)
+        {
+            var validValue = float.IsFinite(value) ? value.Clamp(SurfaceRelatedConstants.MINIMUM_CONTOUR_SCALE, SurfaceRelatedConstants.MAXIMUM_CONTOUR_SCALE) : SurfaceRelatedConstants.DEFAULT_CONTOUR_SCALE_DEGREES_PER_CENTIMETER;
+
+            if (validValue != value)
+            {
+                SetSurfaceContourScaleSilent(validValue);
+            }
+
+            await RefreshSurfaceWithDelayAsync();
+        }
+
+        void SetSurfaceContourScaleSilent(float newValue)
+        {
+            _surfaceContourScale = newValue;
+            OnPropertyChanged(nameof(SurfaceContourScale));
+        }
+
+        partial void OnSurfaceAnimationRadiusMinimumChanged(float value)
+        {
+            var validValue = float.IsFinite(value) ? value.Clamp(SurfaceRelatedConstants.MINIMUM_RADIUS_CENTIMETERS, SurfaceRelatedConstants.MAXIMUM_RADIUS_CENTIMETERS) : SurfaceRelatedConstants.DEFAULT_ANIMATION_RADIUS_MINIMUM;
+
+            if (validValue != value)
+            {
+                SetSurfaceAnimationRadiusMinimumSilent(validValue);
+            }
+        }
+
+        void SetSurfaceAnimationRadiusMinimumSilent(float newValue)
+        {
+            _surfaceAnimationRadiusMinimum = newValue;
+            OnPropertyChanged(nameof(SurfaceAnimationRadiusMinimum));
+        }
+
+        partial void OnSurfaceAnimationRadiusMaximumChanged(float value)
+        {
+            var validValue = float.IsFinite(value) ? value.Clamp(SurfaceRelatedConstants.MINIMUM_RADIUS_CENTIMETERS, SurfaceRelatedConstants.MAXIMUM_RADIUS_CENTIMETERS) : SurfaceRelatedConstants.DEFAULT_ANIMATION_RADIUS_MAXIMUM;
+
+            if (validValue != value)
+            {
+                SetSurfaceAnimationRadiusMaximumSilent(validValue);
+            }
+        }
+
+        void SetSurfaceAnimationRadiusMaximumSilent(float newValue)
+        {
+            _surfaceAnimationRadiusMaximum = newValue;
+            OnPropertyChanged(nameof(SurfaceAnimationRadiusMaximum));
+        }
+
+        partial void OnSurfaceAnimationDepthMinimumChanged(float value)
+        {
+            var validValue = float.IsFinite(value) ? value.Clamp(SurfaceRelatedConstants.MINIMUM_DEPTH_COEFFICIENT, SurfaceRelatedConstants.MAXIMUM_DEPTH_COEFFICIENT) : SurfaceRelatedConstants.DEFAULT_ANIMATION_DEPTH_MINIMUM;
+
+            if (validValue != value)
+            {
+                SetSurfaceAnimationDepthMinimumSilent(validValue);
+            }
+        }
+
+        void SetSurfaceAnimationDepthMinimumSilent(float newValue)
+        {
+            _surfaceAnimationDepthMinimum = newValue;
+            OnPropertyChanged(nameof(SurfaceAnimationDepthMinimum));
+        }
+
+        partial void OnSurfaceAnimationDepthMaximumChanged(float value)
+        {
+            var validValue = float.IsFinite(value) ? value.Clamp(SurfaceRelatedConstants.MINIMUM_DEPTH_COEFFICIENT, SurfaceRelatedConstants.MAXIMUM_DEPTH_COEFFICIENT) : SurfaceRelatedConstants.DEFAULT_ANIMATION_DEPTH_MAXIMUM;
+
+            if (validValue != value)
+            {
+                SetSurfaceAnimationDepthMaximumSilent(validValue);
+            }
+        }
+
+        void SetSurfaceAnimationDepthMaximumSilent(float newValue)
+        {
+            _surfaceAnimationDepthMaximum = newValue;
+            OnPropertyChanged(nameof(SurfaceAnimationDepthMaximum));
         }
     }
 }

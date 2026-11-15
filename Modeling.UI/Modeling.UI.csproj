@@ -28,6 +28,7 @@
       <None Remove="Resources\Controls\Miscellaneous\IncrementingTextBox\IncrementingTextBox.xaml" />
       <None Remove="Resources\Controls\Pages\CurvilinearContourPage.xaml" />
       <None Remove="Resources\Controls\Pages\PolyhedronProjectionPage.xaml" />
+      <None Remove="Resources\Controls\Pages\SurfaceProjectionPage.xaml" />
       <None Remove="Resources\Controls\Pages\WonderfulCurvePage.xaml" />
       <None Remove="Resources\Styles\TextBoxStyles.xaml" />
     </ItemGroup>
@@ -69,6 +70,9 @@
         <ProjectReference Include="..\Modeling.ViewModels\Modeling.ViewModels.csproj" />
     </ItemGroup>
     <ItemGroup>
+      <Page Update="Resources\Controls\Pages\SurfaceProjectionPage.xaml">
+        <Generator>MSBuild:Compile</Generator>
+      </Page>
       <Page Update="Resources\Controls\Pages\PolyhedronProjectionPage.xaml">
         <Generator>MSBuild:Compile</Generator>
       </Page>

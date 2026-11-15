@@ -54,6 +54,7 @@ namespace Modeling.UI
             navigationProvider.AddNavigationPageMapping(typeof(CurvilinearContourPage), NavigationPage.ThirdLabPage);
             navigationProvider.AddNavigationPageMapping(typeof(CurvilinearContourPage), NavigationPage.FourthLabPage);
             navigationProvider.AddNavigationPageMapping(typeof(PolyhedronProjectionPage), NavigationPage.FifthLabPage);
+            navigationProvider.AddNavigationPageMapping(typeof(SurfaceProjectionPage), NavigationPage.SixthLabPage);
         }
     }
 }

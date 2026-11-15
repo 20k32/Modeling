@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.DependencyInjection;
+﻿using CommunityToolkit.Mvvm.DependencyInjection;
 using Modeling.Core.Constants;
 using Modeling.Core.Drawing;
 using Modeling.Core.Extensions;
@@ -207,7 +207,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
             for (var i = 0; i < vertices.Length; i++)
             {
-                vertices[i] = Vector3.Transform(vertices[i], world);
+                vertices[i] = HomogeneousTransforms.TransformPoint(vertices[i], world);
             }
 
             var edgeIndex = 0;
@@ -217,18 +217,26 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
                 SetProjectedLine(_polyhedronEdgeGeometries[edgeIndex++], vertices[start], vertices[end], projection);
             }
 
+            // own axes of the solid go through its center and turn together with it
+            var ownAxisLength = PolyhedronRelatedConstants.OWN_AXIS_LENGTH_RATIO * MathF.Max(tower.Radius, tower.Height / 2 + tower.RoofHeight) * PolyhedronScale;
+
+            var pivot = UpdateSpatialSceneHelpers(world, ownAxisLength, projection);
+
+            UpdatePolyhedronInformation(tower, pivot);
+        }
+
+        // axes of the space, own axes and center of the object, vanishing points: common for the solid (lab 5) and the surface (lab 6)
+        Vector3 UpdateSpatialSceneHelpers(Matrix4x4 world, float ownAxisLength, Matrix4x4 projection)
+        {
             SetProjectedLine(GetLineGeometry(_spatialAxisX), Vector3.Zero, new Vector3(GetVisibleAxisLength(ProjectionCenterX), 0, 0), projection);
             SetProjectedLine(GetLineGeometry(_spatialAxisY), Vector3.Zero, new Vector3(0, GetVisibleAxisLength(ProjectionCenterY), 0), projection);
             SetProjectedLine(GetLineGeometry(_spatialAxisZ), Vector3.Zero, new Vector3(0, 0, GetVisibleAxisLength(ProjectionCenterZ)), projection);
 
-            // own axes of the solid go through its center and turn together with it
-            var ownAxisLength = PolyhedronRelatedConstants.OWN_AXIS_LENGTH_RATIO * MathF.Max(tower.Radius, tower.Height / 2 + tower.RoofHeight) * PolyhedronScale;
+            SetProjectedLine(GetLineGeometry(_polyhedronOwnAxisX), HomogeneousTransforms.TransformPoint(-Vector3.UnitX * ownAxisLength, world), HomogeneousTransforms.TransformPoint(Vector3.UnitX * ownAxisLength, world), projection);
+            SetProjectedLine(GetLineGeometry(_polyhedronOwnAxisY), HomogeneousTransforms.TransformPoint(-Vector3.UnitY * ownAxisLength, world), HomogeneousTransforms.TransformPoint(Vector3.UnitY * ownAxisLength, world), projection);
+            SetProjectedLine(GetLineGeometry(_polyhedronOwnAxisZ), HomogeneousTransforms.TransformPoint(-Vector3.UnitZ * ownAxisLength, world), HomogeneousTransforms.TransformPoint(Vector3.UnitZ * ownAxisLength, world), projection);
 
-            SetProjectedLine(GetLineGeometry(_polyhedronOwnAxisX), Vector3.Transform(-Vector3.UnitX * ownAxisLength, world), Vector3.Transform(Vector3.UnitX * ownAxisLength, world), projection);
-            SetProjectedLine(GetLineGeometry(_polyhedronOwnAxisY), Vector3.Transform(-Vector3.UnitY * ownAxisLength, world), Vector3.Transform(Vector3.UnitY * ownAxisLength, world), projection);
-            SetProjectedLine(GetLineGeometry(_polyhedronOwnAxisZ), Vector3.Transform(-Vector3.UnitZ * ownAxisLength, world), Vector3.Transform(Vector3.UnitZ * ownAxisLength, world), projection);
-
-            var pivot = Vector3.Transform(Vector3.Zero, world);
+            var pivot = HomogeneousTransforms.TransformPoint(Vector3.Zero, world);
 
             _polyhedronPivotOnPlane = ThreePointPerspective.TryProject(pivot, projection, out var projectedPivot)
                 ? ToProjectionCanvasPoint(projectedPivot)
@@ -241,16 +249,22 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
                 ToProjectionCanvasPoint(ThreePointPerspective.GetVanishingPointZ(ProjectionCenterZ)),
             ];
 
-            UpdatePolyhedronInformation(tower, projection, pivot);
+            UpdateProjectionInformation(projection);
+
+            return pivot;
         }
 
         static string FormatPolyhedronNumber(float value) => value.ToString(PolyhedronRelatedConstants.NUMBER_FORMAT);
 
-        void UpdatePolyhedronInformation(TowerPolyhedron tower, Matrix4x4 projection, Vector3 pivot)
+        void UpdatePolyhedronInformation(TowerPolyhedron tower, Vector3 pivot)
         {
             PolyhedronInfoText = $"Tower: {tower.SidesCount}-gonal prism with a pyramid roof, vertices: {tower.VerticesCount}, edges: {tower.EdgesCount}, faces: {tower.FacesCount}";
 
             PolyhedronPivotText = $"Own center (rotation point): ({FormatPolyhedronNumber(pivot.X)}; {FormatPolyhedronNumber(pivot.Y)}; {FormatPolyhedronNumber(pivot.Z)}) cm";
+        }
+
+        void UpdateProjectionInformation(Matrix4x4 projection)
+        {
 
             ProjectionMatrixText = "M = | " + FormatMatrixRow(projection.M11, projection.M12, projection.M13, projection.M14) + " |\n"
                 + "      | " + FormatMatrixRow(projection.M21, projection.M22, projection.M23, projection.M24) + " |\n"
@@ -270,18 +284,33 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         PointListTransformMessageParameter GetDrawingPolyhedronMessage(PointListTransformMessageParameter parentMessage)
         {
             var identity = DrawingConstants.NON_TRANSFORM_MATRIX;
-            var axisThickness = _drawingSettingsProvider.Settings.AxisThickness;
-            var ownAxisThickness = DrawingConstants.GRID_DRAWING_THICKNESS * 2;
 
-            var result = GetDrawingCurveFigureMessage(parentMessage, _spatialAxisX,
-                new DrawingColor(DrawingConstants.X_AXIS_COLOR), identity, axisThickness);
-            result = GetDrawingCurveFigureMessage(result, _spatialAxisY, new DrawingColor(DrawingConstants.Y_AXIS_COLOR), identity);
-            result = GetDrawingCurveFigureMessage(result, _spatialAxisZ, new DrawingColor(DrawingConstants.Z_AXIS_COLOR), identity);
+            var result = GetDrawingSpatialAxesMessage(parentMessage);
 
             result = GetDrawingCurveFigureMessage(result, _polyhedronEdges,
                 new DrawingColor(_drawingSettingsProvider.Settings.DrawingColor),
                 identity,
                 _drawingSettingsProvider.Settings.FigureDrawingThickness);
+
+            return GetDrawingSpatialHelpersMessage(result);
+        }
+
+        PointListTransformMessageParameter GetDrawingSpatialAxesMessage(PointListTransformMessageParameter parentMessage)
+        {
+            var identity = DrawingConstants.NON_TRANSFORM_MATRIX;
+            var axisThickness = _drawingSettingsProvider.Settings.AxisThickness;
+
+            var result = GetDrawingCurveFigureMessage(parentMessage, _spatialAxisX,
+                new DrawingColor(DrawingConstants.X_AXIS_COLOR), identity, axisThickness);
+            result = GetDrawingCurveFigureMessage(result, _spatialAxisY, new DrawingColor(DrawingConstants.Y_AXIS_COLOR), identity);
+
+            return GetDrawingCurveFigureMessage(result, _spatialAxisZ, new DrawingColor(DrawingConstants.Z_AXIS_COLOR), identity);
+        }
+
+        PointListTransformMessageParameter GetDrawingSpatialHelpersMessage(PointListTransformMessageParameter result)
+        {
+            var identity = DrawingConstants.NON_TRANSFORM_MATRIX;
+            var ownAxisThickness = DrawingConstants.GRID_DRAWING_THICKNESS * 2;
 
             if (PolyhedronOwnAxesVisible)
             {
