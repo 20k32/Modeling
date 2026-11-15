@@ -36,11 +36,14 @@ namespace Modeling.ViewModels
 
             var lab4NavigationItem = new NavigationItem("Lab 4", NavigationPage.FourthLabPage);
 
+            var lab5NavigationItem = new NavigationItem("Lab 5", NavigationPage.FifthLabPage);
+
             _navigationItems = [
                     lab1NavigationItem,
                     lab2NavigationItem,
                     lab3NavigationItem,
                     lab4NavigationItem,
+                    lab5NavigationItem,
                     new NavigationItem("Settings", NavigationPage.SettingsPage)];
         }
 

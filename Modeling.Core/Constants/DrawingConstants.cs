@@ -61,6 +61,7 @@ namespace Modeling.Core.Constants
 
         public static readonly Color X_AXIS_COLOR = Colors.Red;
         public static readonly Color Y_AXIS_COLOR = Colors.Green;
+        public static readonly Color Z_AXIS_COLOR = Colors.Blue;
 
         public static readonly Color X_AXIS_TICKS_COLOR = Colors.Blue;
         public static readonly Color Y_AXIS_TICKS_COLOR = Colors.Blue;
@@ -78,6 +79,8 @@ namespace Modeling.Core.Constants
         public static readonly Color CONTOUR_REFERENCE_POINT_COLOR = Colors.ForestGreen;
         public static readonly Color CONTOUR_BREAK_POINT_COLOR = Colors.Red;
         public static readonly Color CONTOUR_SELECTED_POINT_COLOR = Colors.DarkOrange;
+
+        public static readonly Color VANISHING_POINT_COLOR = Colors.DarkViolet;
 
         public const float X_Y_AXIS_THICKNESS = 3;
         public const float X_Y_AXIS_TICKS_LENGTH_PIXELS = 15;

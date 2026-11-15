@@ -200,5 +200,39 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         {
             await SetAllContourNodesBreakPointsAsync(isBreakPoint: true);
         }
+
+        [RelayCommand]
+        async Task StartPolyhedronAnimationAsync()
+        {
+            await StartPolyhedronAnimationCoreAsync();
+        }
+
+        [RelayCommand]
+        async Task PausePolyhedronAnimationAsync()
+        {
+            await StopPolyhedronAnimationAsync();
+        }
+
+        [RelayCommand]
+        async Task ResetPolyhedronAnimationAsync()
+        {
+            await ResetPolyhedronAnimationCoreAsync();
+        }
+
+        [RelayCommand]
+        async Task ResetPolyhedronTransformsAsync()
+        {
+            ResetPolyhedronTransformValues();
+
+            await RefreshPolyhedronAsync();
+        }
+
+        [RelayCommand]
+        async Task ResetProjectionAsync()
+        {
+            ResetProjectionValues();
+
+            await RefreshPolyhedronAsync();
+        }
     }
 }

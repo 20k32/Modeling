@@ -973,5 +973,451 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             _selectedContourPointIsBreakPoint = isBreakPoint;
             OnPropertyChanged(nameof(SelectedContourPointIsBreakPoint));
         }
+
+        [ObservableProperty]
+        float _polyhedronSidesCount;
+
+        [ObservableProperty]
+        float _polyhedronRadius;
+
+        [ObservableProperty]
+        float _polyhedronHeight;
+
+        [ObservableProperty]
+        float _polyhedronRoofHeight;
+
+        [ObservableProperty]
+        float _polyhedronScale;
+
+        [ObservableProperty]
+        float _polyhedronTranslationX;
+
+        [ObservableProperty]
+        float _polyhedronTranslationY;
+
+        [ObservableProperty]
+        float _polyhedronTranslationZ;
+
+        [ObservableProperty]
+        float _polyhedronRotationX;
+
+        [ObservableProperty]
+        float _polyhedronRotationY;
+
+        [ObservableProperty]
+        float _polyhedronRotationZ;
+
+        [ObservableProperty]
+        float _projectionCenterX;
+
+        [ObservableProperty]
+        float _projectionCenterY;
+
+        [ObservableProperty]
+        float _projectionCenterZ;
+
+        [ObservableProperty]
+        float _polyhedronAnimationHeightMinimum;
+
+        [ObservableProperty]
+        float _polyhedronAnimationHeightMaximum;
+
+        [ObservableProperty]
+        float _polyhedronAnimationRotationStepX;
+
+        [ObservableProperty]
+        float _polyhedronAnimationRotationStepY;
+
+        [ObservableProperty]
+        float _polyhedronAnimationRotationStepZ;
+
+        [ObservableProperty]
+        string _polyhedronInfoText;
+
+        [ObservableProperty]
+        string _polyhedronPivotText;
+
+        [ObservableProperty]
+        string _projectionMatrixText;
+
+        [ObservableProperty]
+        string _vanishingPointsText;
+
+        [ObservableProperty]
+        bool _isPolyhedronAnimationRunning;
+
+        [ObservableProperty]
+        bool _polyhedronOwnAxesVisible = true;
+
+        [ObservableProperty]
+        bool _vanishingPointsVisible = true;
+
+        public float MinimumPolyhedronSidesCount => PolyhedronRelatedConstants.MINIMUM_SIDES_COUNT;
+        public float MaximumPolyhedronSidesCount => PolyhedronRelatedConstants.MAXIMUM_SIDES_COUNT;
+        public float MinimumPolyhedronSize => PolyhedronRelatedConstants.MINIMUM_SIZE_CENTIMETERS;
+        public float MaximumPolyhedronSize => PolyhedronRelatedConstants.MAXIMUM_SIZE_CENTIMETERS;
+        public float MinimumPolyhedronScale => PolyhedronRelatedConstants.MINIMUM_SCALE;
+        public float MaximumPolyhedronScale => PolyhedronRelatedConstants.MAXIMUM_SCALE;
+        public float MinimumPolyhedronTranslation => -PolyhedronRelatedConstants.MAXIMUM_TRANSLATION_CENTIMETERS;
+        public float MaximumPolyhedronTranslation => PolyhedronRelatedConstants.MAXIMUM_TRANSLATION_CENTIMETERS;
+        public float MinimumProjectionCenter => -PolyhedronRelatedConstants.MAXIMUM_CENTER_CENTIMETERS;
+        public float MaximumProjectionCenter => PolyhedronRelatedConstants.MAXIMUM_CENTER_CENTIMETERS;
+        public float MinimumAnimationRotationStep => -PolyhedronRelatedConstants.MAXIMUM_ANIMATION_ROTATION_STEP_DEGREES;
+        public float MaximumAnimationRotationStep => PolyhedronRelatedConstants.MAXIMUM_ANIMATION_ROTATION_STEP_DEGREES;
+
+        // a center of projection must not lie on the plane x = 0: |s| >= 1 cm, the sign chooses the side
+        static float ClampCenterDistance(float value)
+        {
+            var distance = MathF.Abs(value).Clamp(PolyhedronRelatedConstants.MINIMUM_CENTER_CENTIMETERS, PolyhedronRelatedConstants.MAXIMUM_CENTER_CENTIMETERS);
+
+            return value < 0 ? -distance : distance;
+        }
+
+        async partial void OnPolyhedronOwnAxesVisibleChanged(bool _)
+        {
+            await RefreshPolyhedronAsync();
+        }
+
+        async partial void OnVanishingPointsVisibleChanged(bool _)
+        {
+            await RefreshPolyhedronAsync();
+        }
+
+        async partial void OnPolyhedronSidesCountChanged(float value)
+        {
+            var validValue = float.IsFinite(value) ? MathF.Round(value).Clamp(PolyhedronRelatedConstants.MINIMUM_SIDES_COUNT, PolyhedronRelatedConstants.MAXIMUM_SIDES_COUNT) : PolyhedronRelatedConstants.DEFAULT_SIDES_COUNT;
+
+            if (validValue != value)
+            {
+                SetPolyhedronSidesCountSilent(validValue);
+            }
+
+            await RefreshPolyhedronWithDelayAsync();
+        }
+
+        void SetPolyhedronSidesCountSilent(float newValue)
+        {
+            _polyhedronSidesCount = newValue;
+            OnPropertyChanged(nameof(PolyhedronSidesCount));
+        }
+
+        async partial void OnPolyhedronRadiusChanged(float value)
+        {
+            var validValue = float.IsFinite(value) ? value.Clamp(PolyhedronRelatedConstants.MINIMUM_SIZE_CENTIMETERS, PolyhedronRelatedConstants.MAXIMUM_SIZE_CENTIMETERS) : PolyhedronRelatedConstants.DEFAULT_HEIGHT_CENTIMETERS;
+
+            if (validValue != value)
+            {
+                SetPolyhedronRadiusSilent(validValue);
+            }
+
+            await RefreshPolyhedronWithDelayAsync();
+        }
+
+        void SetPolyhedronRadiusSilent(float newValue)
+        {
+            _polyhedronRadius = newValue;
+            OnPropertyChanged(nameof(PolyhedronRadius));
+        }
+
+        async partial void OnPolyhedronHeightChanged(float value)
+        {
+            var validValue = float.IsFinite(value) ? value.Clamp(PolyhedronRelatedConstants.MINIMUM_SIZE_CENTIMETERS, PolyhedronRelatedConstants.MAXIMUM_SIZE_CENTIMETERS) : PolyhedronRelatedConstants.DEFAULT_HEIGHT_CENTIMETERS;
+
+            if (validValue != value)
+            {
+                SetPolyhedronHeightSilent(validValue);
+            }
+
+            await RefreshPolyhedronWithDelayAsync();
+        }
+
+        void SetPolyhedronHeightSilent(float newValue)
+        {
+            _polyhedronHeight = newValue;
+            OnPropertyChanged(nameof(PolyhedronHeight));
+        }
+
+        async partial void OnPolyhedronRoofHeightChanged(float value)
+        {
+            var validValue = float.IsFinite(value) ? value.Clamp(0, PolyhedronRelatedConstants.MAXIMUM_SIZE_CENTIMETERS) : PolyhedronRelatedConstants.DEFAULT_ROOF_HEIGHT_CENTIMETERS;
+
+            if (validValue != value)
+            {
+                SetPolyhedronRoofHeightSilent(validValue);
+            }
+
+            await RefreshPolyhedronWithDelayAsync();
+        }
+
+        void SetPolyhedronRoofHeightSilent(float newValue)
+        {
+            _polyhedronRoofHeight = newValue;
+            OnPropertyChanged(nameof(PolyhedronRoofHeight));
+        }
+
+        async partial void OnPolyhedronScaleChanged(float value)
+        {
+            var validValue = float.IsFinite(value) ? value.Clamp(PolyhedronRelatedConstants.MINIMUM_SCALE, PolyhedronRelatedConstants.MAXIMUM_SCALE) : PolyhedronRelatedConstants.DEFAULT_SCALE;
+
+            if (validValue != value)
+            {
+                SetPolyhedronScaleSilent(validValue);
+            }
+
+            await RefreshPolyhedronWithDelayAsync();
+        }
+
+        void SetPolyhedronScaleSilent(float newValue)
+        {
+            _polyhedronScale = newValue;
+            OnPropertyChanged(nameof(PolyhedronScale));
+        }
+
+        async partial void OnPolyhedronTranslationXChanged(float value)
+        {
+            var validValue = float.IsFinite(value) ? value.Clamp(-PolyhedronRelatedConstants.MAXIMUM_TRANSLATION_CENTIMETERS, PolyhedronRelatedConstants.MAXIMUM_TRANSLATION_CENTIMETERS) : 0;
+
+            if (validValue != value)
+            {
+                SetPolyhedronTranslationXSilent(validValue);
+            }
+
+            await RefreshPolyhedronWithDelayAsync();
+        }
+
+        void SetPolyhedronTranslationXSilent(float newValue)
+        {
+            _polyhedronTranslationX = newValue;
+            OnPropertyChanged(nameof(PolyhedronTranslationX));
+        }
+
+        async partial void OnPolyhedronTranslationYChanged(float value)
+        {
+            var validValue = float.IsFinite(value) ? value.Clamp(-PolyhedronRelatedConstants.MAXIMUM_TRANSLATION_CENTIMETERS, PolyhedronRelatedConstants.MAXIMUM_TRANSLATION_CENTIMETERS) : 0;
+
+            if (validValue != value)
+            {
+                SetPolyhedronTranslationYSilent(validValue);
+            }
+
+            await RefreshPolyhedronWithDelayAsync();
+        }
+
+        void SetPolyhedronTranslationYSilent(float newValue)
+        {
+            _polyhedronTranslationY = newValue;
+            OnPropertyChanged(nameof(PolyhedronTranslationY));
+        }
+
+        async partial void OnPolyhedronTranslationZChanged(float value)
+        {
+            var validValue = float.IsFinite(value) ? value.Clamp(-PolyhedronRelatedConstants.MAXIMUM_TRANSLATION_CENTIMETERS, PolyhedronRelatedConstants.MAXIMUM_TRANSLATION_CENTIMETERS) : 0;
+
+            if (validValue != value)
+            {
+                SetPolyhedronTranslationZSilent(validValue);
+            }
+
+            await RefreshPolyhedronWithDelayAsync();
+        }
+
+        void SetPolyhedronTranslationZSilent(float newValue)
+        {
+            _polyhedronTranslationZ = newValue;
+            OnPropertyChanged(nameof(PolyhedronTranslationZ));
+        }
+
+        async partial void OnPolyhedronRotationXChanged(float value)
+        {
+            var validValue = float.IsFinite(value) ? WrapAngle(value) : 0;
+
+            if (validValue != value)
+            {
+                SetPolyhedronRotationXSilent(validValue);
+            }
+
+            await RefreshPolyhedronAsync();
+        }
+
+        void SetPolyhedronRotationXSilent(float newValue)
+        {
+            _polyhedronRotationX = newValue;
+            OnPropertyChanged(nameof(PolyhedronRotationX));
+        }
+
+        async partial void OnPolyhedronRotationYChanged(float value)
+        {
+            var validValue = float.IsFinite(value) ? WrapAngle(value) : 0;
+
+            if (validValue != value)
+            {
+                SetPolyhedronRotationYSilent(validValue);
+            }
+
+            await RefreshPolyhedronAsync();
+        }
+
+        void SetPolyhedronRotationYSilent(float newValue)
+        {
+            _polyhedronRotationY = newValue;
+            OnPropertyChanged(nameof(PolyhedronRotationY));
+        }
+
+        async partial void OnPolyhedronRotationZChanged(float value)
+        {
+            var validValue = float.IsFinite(value) ? WrapAngle(value) : 0;
+
+            if (validValue != value)
+            {
+                SetPolyhedronRotationZSilent(validValue);
+            }
+
+            await RefreshPolyhedronAsync();
+        }
+
+        void SetPolyhedronRotationZSilent(float newValue)
+        {
+            _polyhedronRotationZ = newValue;
+            OnPropertyChanged(nameof(PolyhedronRotationZ));
+        }
+
+        async partial void OnProjectionCenterXChanged(float value)
+        {
+            var validValue = float.IsFinite(value) ? ClampCenterDistance(value) : PolyhedronRelatedConstants.DEFAULT_CENTER_X_CENTIMETERS;
+
+            if (validValue != value)
+            {
+                SetProjectionCenterXSilent(validValue);
+            }
+
+            await RefreshPolyhedronWithDelayAsync();
+        }
+
+        void SetProjectionCenterXSilent(float newValue)
+        {
+            _projectionCenterX = newValue;
+            OnPropertyChanged(nameof(ProjectionCenterX));
+        }
+
+        async partial void OnProjectionCenterYChanged(float value)
+        {
+            var validValue = float.IsFinite(value) ? ClampCenterDistance(value) : PolyhedronRelatedConstants.DEFAULT_CENTER_X_CENTIMETERS;
+
+            if (validValue != value)
+            {
+                SetProjectionCenterYSilent(validValue);
+            }
+
+            await RefreshPolyhedronWithDelayAsync();
+        }
+
+        void SetProjectionCenterYSilent(float newValue)
+        {
+            _projectionCenterY = newValue;
+            OnPropertyChanged(nameof(ProjectionCenterY));
+        }
+
+        async partial void OnProjectionCenterZChanged(float value)
+        {
+            var validValue = float.IsFinite(value) ? ClampCenterDistance(value) : PolyhedronRelatedConstants.DEFAULT_CENTER_X_CENTIMETERS;
+
+            if (validValue != value)
+            {
+                SetProjectionCenterZSilent(validValue);
+            }
+
+            await RefreshPolyhedronWithDelayAsync();
+        }
+
+        void SetProjectionCenterZSilent(float newValue)
+        {
+            _projectionCenterZ = newValue;
+            OnPropertyChanged(nameof(ProjectionCenterZ));
+        }
+
+        partial void OnPolyhedronAnimationHeightMinimumChanged(float value)
+        {
+            var validValue = float.IsFinite(value) ? value.Clamp(PolyhedronRelatedConstants.MINIMUM_SIZE_CENTIMETERS, PolyhedronRelatedConstants.MAXIMUM_SIZE_CENTIMETERS) : PolyhedronRelatedConstants.DEFAULT_HEIGHT_CENTIMETERS;
+
+            if (validValue != value)
+            {
+                SetPolyhedronAnimationHeightMinimumSilent(validValue);
+            }
+
+        }
+
+        void SetPolyhedronAnimationHeightMinimumSilent(float newValue)
+        {
+            _polyhedronAnimationHeightMinimum = newValue;
+            OnPropertyChanged(nameof(PolyhedronAnimationHeightMinimum));
+        }
+
+        partial void OnPolyhedronAnimationHeightMaximumChanged(float value)
+        {
+            var validValue = float.IsFinite(value) ? value.Clamp(PolyhedronRelatedConstants.MINIMUM_SIZE_CENTIMETERS, PolyhedronRelatedConstants.MAXIMUM_SIZE_CENTIMETERS) : PolyhedronRelatedConstants.DEFAULT_HEIGHT_CENTIMETERS;
+
+            if (validValue != value)
+            {
+                SetPolyhedronAnimationHeightMaximumSilent(validValue);
+            }
+
+        }
+
+        void SetPolyhedronAnimationHeightMaximumSilent(float newValue)
+        {
+            _polyhedronAnimationHeightMaximum = newValue;
+            OnPropertyChanged(nameof(PolyhedronAnimationHeightMaximum));
+        }
+
+        partial void OnPolyhedronAnimationRotationStepXChanged(float value)
+        {
+            var validValue = float.IsFinite(value) ? value.Clamp(-PolyhedronRelatedConstants.MAXIMUM_ANIMATION_ROTATION_STEP_DEGREES, PolyhedronRelatedConstants.MAXIMUM_ANIMATION_ROTATION_STEP_DEGREES) : 0;
+
+            if (validValue != value)
+            {
+                SetPolyhedronAnimationRotationStepXSilent(validValue);
+            }
+
+        }
+
+        void SetPolyhedronAnimationRotationStepXSilent(float newValue)
+        {
+            _polyhedronAnimationRotationStepX = newValue;
+            OnPropertyChanged(nameof(PolyhedronAnimationRotationStepX));
+        }
+
+        partial void OnPolyhedronAnimationRotationStepYChanged(float value)
+        {
+            var validValue = float.IsFinite(value) ? value.Clamp(-PolyhedronRelatedConstants.MAXIMUM_ANIMATION_ROTATION_STEP_DEGREES, PolyhedronRelatedConstants.MAXIMUM_ANIMATION_ROTATION_STEP_DEGREES) : 0;
+
+            if (validValue != value)
+            {
+                SetPolyhedronAnimationRotationStepYSilent(validValue);
+            }
+
+        }
+
+        void SetPolyhedronAnimationRotationStepYSilent(float newValue)
+        {
+            _polyhedronAnimationRotationStepY = newValue;
+            OnPropertyChanged(nameof(PolyhedronAnimationRotationStepY));
+        }
+
+        partial void OnPolyhedronAnimationRotationStepZChanged(float value)
+        {
+            var validValue = float.IsFinite(value) ? value.Clamp(-PolyhedronRelatedConstants.MAXIMUM_ANIMATION_ROTATION_STEP_DEGREES, PolyhedronRelatedConstants.MAXIMUM_ANIMATION_ROTATION_STEP_DEGREES) : 0;
+
+            if (validValue != value)
+            {
+                SetPolyhedronAnimationRotationStepZSilent(validValue);
+            }
+
+        }
+
+        void SetPolyhedronAnimationRotationStepZSilent(float newValue)
+        {
+            _polyhedronAnimationRotationStepZ = newValue;
+            OnPropertyChanged(nameof(PolyhedronAnimationRotationStepZ));
+        }
     }
 }
