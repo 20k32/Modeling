@@ -741,5 +741,195 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             _projectiveStartPointWeight = newValue;
             OnPropertyChanged(nameof(ProjectiveStartPointWeight));
         }
+
+        [ObservableProperty]
+        bool _contourPolygonVisible = true;
+
+        [ObservableProperty]
+        float _contourSegmentPointsCount;
+
+        [ObservableProperty]
+        float _contourControlWeight;
+
+        [ObservableProperty]
+        float _selectedContourPointWeight;
+
+        [ObservableProperty]
+        bool _isContourAnimationRunning;
+
+        [ObservableProperty]
+        float _contourTranslationX;
+
+        [ObservableProperty]
+        float _contourTranslationY;
+
+        [ObservableProperty]
+        float _contourRotationPointX;
+
+        [ObservableProperty]
+        float _contourRotationPointY;
+
+        [ObservableProperty]
+        float _contourRotationAngle;
+
+        [ObservableProperty]
+        bool _contourRotationPointVisible = true;
+
+        [ObservableProperty]
+        string _contourInfoText;
+
+        [ObservableProperty]
+        string _contourSelectedPointText;
+
+        [ObservableProperty]
+        string _contourSelectedSegmentText;
+
+        [ObservableProperty]
+        string _contourMorphProgressText;
+
+        public float MinimumContourSegmentPointsCount => ContourRelatedConstants.MINIMUM_SEGMENT_POINTS_COUNT;
+        public float MaximumContourSegmentPointsCount => ContourRelatedConstants.MAXIMUM_SEGMENT_POINTS_COUNT;
+        public float MinimumContourWeight => ContourRelatedConstants.MINIMUM_WEIGHT;
+        public float MaximumContourWeight => ContourRelatedConstants.MAXIMUM_WEIGHT;
+
+        static float ValidateContourWeight(float value)
+            => float.IsFinite(value)
+                ? value.Clamp(ContourRelatedConstants.MINIMUM_WEIGHT, ContourRelatedConstants.MAXIMUM_WEIGHT)
+                : ContourRelatedConstants.DEFAULT_WEIGHT;
+
+        async partial void OnContourPolygonVisibleChanged(bool _)
+        {
+            await RefreshContourAsync();
+        }
+
+        async partial void OnContourSegmentPointsCountChanged(float value)
+        {
+            var pointsCount = float.IsFinite(value)
+                ? MathF.Round(value).Clamp(ContourRelatedConstants.MINIMUM_SEGMENT_POINTS_COUNT, ContourRelatedConstants.MAXIMUM_SEGMENT_POINTS_COUNT)
+                : ContourRelatedConstants.DEFAULT_SEGMENT_POINTS_COUNT;
+
+            if (pointsCount != value)
+            {
+                SetContourSegmentPointsCountSilent(pointsCount);
+            }
+
+            await RefreshContourWithDelayAsync();
+        }
+
+        async partial void OnContourControlWeightChanged(float value)
+        {
+            var weight = ValidateContourWeight(value);
+
+            if (weight != value)
+            {
+                SetContourControlWeightSilent(weight);
+            }
+
+            ApplyContourControlWeight(weight);
+
+            await RefreshContourWithDelayAsync();
+        }
+
+        async partial void OnSelectedContourPointWeightChanged(float value)
+        {
+            var weight = ValidateContourWeight(value);
+
+            if (weight != value)
+            {
+                SetSelectedContourPointWeightSilent(weight);
+            }
+
+            ApplySelectedContourPointWeight(weight);
+
+            await RefreshContourWithDelayAsync();
+        }
+
+        async partial void OnContourTranslationXChanged(float value)
+        {
+            await RefreshContourWithDelayAsync();
+        }
+
+        async partial void OnContourTranslationYChanged(float value)
+        {
+            await RefreshContourWithDelayAsync();
+        }
+
+        async partial void OnContourRotationPointXChanged(float value)
+        {
+            await RefreshContourWithDelayAsync();
+        }
+
+        async partial void OnContourRotationPointYChanged(float value)
+        {
+            await RefreshContourWithDelayAsync();
+        }
+
+        async partial void OnContourRotationAngleChanged(float value)
+        {
+            if (!float.IsFinite(value))
+            {
+                SetContourRotationAngleSilent(0);
+            }
+
+            if (_isContourInitialized)
+            {
+                ApplyContourRotationDelta();
+            }
+
+            await RefreshContourAsync();
+        }
+
+        async partial void OnContourRotationPointVisibleChanged(bool _)
+        {
+            await RefreshContourAsync();
+        }
+
+        void SetContourSegmentPointsCountSilent(float newValue)
+        {
+            _contourSegmentPointsCount = newValue;
+            OnPropertyChanged(nameof(ContourSegmentPointsCount));
+        }
+
+        void SetContourControlWeightSilent(float newValue)
+        {
+            _contourControlWeight = newValue;
+            OnPropertyChanged(nameof(ContourControlWeight));
+        }
+
+        void SetSelectedContourPointWeightSilent(float newValue)
+        {
+            _selectedContourPointWeight = newValue;
+            OnPropertyChanged(nameof(SelectedContourPointWeight));
+        }
+
+        void SetContourTranslationXSilent(float newValue)
+        {
+            _contourTranslationX = newValue;
+            OnPropertyChanged(nameof(ContourTranslationX));
+        }
+
+        void SetContourTranslationYSilent(float newValue)
+        {
+            _contourTranslationY = newValue;
+            OnPropertyChanged(nameof(ContourTranslationY));
+        }
+
+        void SetContourRotationPointXSilent(float newValue)
+        {
+            _contourRotationPointX = newValue;
+            OnPropertyChanged(nameof(ContourRotationPointX));
+        }
+
+        void SetContourRotationPointYSilent(float newValue)
+        {
+            _contourRotationPointY = newValue;
+            OnPropertyChanged(nameof(ContourRotationPointY));
+        }
+
+        void SetContourRotationAngleSilent(float newValue)
+        {
+            _contourRotationAngle = newValue;
+            OnPropertyChanged(nameof(ContourRotationAngle));
+        }
     }
 }

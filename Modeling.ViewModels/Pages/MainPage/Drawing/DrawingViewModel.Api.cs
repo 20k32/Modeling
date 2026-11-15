@@ -197,7 +197,9 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
                     if (NavigationPage.FirstLabPage.HasFlag(navigationParameter.ToPage)
                         && !NavigationPage.FirstLabPage.HasFlag(navigationParameter.FromPage)
                         || NavigationPage.SecondLabPage.HasFlag(navigationParameter.ToPage)
-                        && !NavigationPage.SecondLabPage.HasFlag(navigationParameter.FromPage))
+                        && !NavigationPage.SecondLabPage.HasFlag(navigationParameter.FromPage)
+                        || NavigationPage.ThirdLabPage.HasFlag(navigationParameter.ToPage)
+                        && !NavigationPage.ThirdLabPage.HasFlag(navigationParameter.FromPage))
                     {
                         await ResetFigureCoreAsync(resetDrawingAction: false);
                     }
@@ -454,6 +456,11 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
                 currentDrawingMessage = GetDrawingCurveMessage(currentDrawingMessage);
             }
 
+            if (_isContourInitialized)
+            {
+                currentDrawingMessage = GetDrawingContourMessage(currentDrawingMessage);
+            }
+
             if (_canRedrawUserPoint)
             {
                 var circleColor = _drawingSettingsProvider.Settings.VerticalAxisColor;
@@ -494,6 +501,10 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             else if (NavigationPage.SecondLabPage.HasFlag(page))
             {
                 InitializeSecondLabFigure(canvasSize, pixelsPerCentimeter);
+            }
+            else if (NavigationPage.ThirdLabPage.HasFlag(page))
+            {
+                InitializeContour(canvasSize, pixelsPerCentimeter);
             }
         }
 
@@ -689,6 +700,8 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
             _userPoint.Points.Clear();
 
             ClearCurve();
+
+            ClearContour();
         }
 
         void InitializeDrawingElements(SizeSingle canvasSize, float pixelsPerCentimeter)

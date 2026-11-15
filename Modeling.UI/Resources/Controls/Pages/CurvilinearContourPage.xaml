@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<UserControl x:Class="Modeling.UI.Resources.Controls.Pages.CurvilinearContourPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:incrementingControl="using:Modeling.UI.Resources.Controls.Miscellaneous.IncrementingTextBox"
+             xmlns:local="using:Modeling.UI.Resources.Controls.Pages"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             DataContext="{Binding DrawingViewModel, Source={StaticResource ServiceLocator}}"
+             mc:Ignorable="d">
+
+    <ScrollViewer HorizontalScrollMode="Disabled" VerticalScrollBarVisibility="Auto">
+        <StackPanel Width="400"
+                    Padding="0,0,15,15"
+                    Spacing="10">
+
+            <!--  Contour construction  -->
+            <TextBlock FontWeight="SemiBold"
+                       Style="{StaticResource ApplicationTextBlockStyle}"
+                       Text="Curvilinear contour: poodle" />
+            <TextBlock Text="Second order arcs in the engineering form:&#x0a;r(u) = (rA·wA·(1−u)² + 2·rB·wB·u(1−u) + rC·wC·u²) /&#x0a;          (wA·(1−u)² + 2·wB·u(1−u) + wC·u²),  u ∈ [0; 1]" TextWrapping="Wrap" />
+            <TextBlock Text="{Binding ContourInfoText}" TextWrapping="Wrap" />
+
+            <Grid ColumnSpacing="10" RowSpacing="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Row="0"
+                           Grid.Column="0"
+                           VerticalAlignment="Center"
+                           Text="Points per arc:" />
+                <incrementingControl:IncrementingTextBox Grid.Row="0"
+                                                         Grid.Column="1"
+                                                         IncrementingStep="{Binding UserInterfaceConstants.LargeIncrementingStep, Source={StaticResource ServiceLocator}}"
+                                                         IncrementingValue="{Binding ContourSegmentPointsCount, Mode=TwoWay}"
+                                                         MaximumIncrementingValue="{Binding MaximumContourSegmentPointsCount}"
+                                                         MinimumIncrementingValue="{Binding MinimumContourSegmentPointsCount}" />
+                <Border Grid.Row="0"
+                        Grid.Column="2"
+                        Width="18"
+                        Height="18"
+                        Padding="0"
+                        Background="LightGray"
+                        CornerRadius="8"
+                        ToolTipService.ToolTip="Every arc is built from this amount of steps of the parameter u">
+                    <PathIcon Margin="0,-1.3,0,0"
+                              Data="{StaticResource QuestionIcon}"
+                              Foreground="Black">
+                        <PathIcon.RenderTransform>
+                            <ScaleTransform ScaleX="0.8" ScaleY="0.8" />
+                        </PathIcon.RenderTransform>
+                    </PathIcon>
+                </Border>
+            </Grid>
+
+            <!--  Characteristic polygon  -->
+            <TextBlock FontWeight="SemiBold" Text="Characteristic polygon" />
+            <CheckBox Content="Show characteristic polygon" IsChecked="{Binding ContourPolygonVisible, Mode=TwoWay}" />
+            <TextBlock Text="Drag the reference points with the mouse: blue points are arc ends A, orange points are control points B. The selected point is red." TextWrapping="Wrap" />
+
+            <!--  Curve parameters  -->
+            <TextBlock FontWeight="SemiBold" Text="Weights of the reference points" />
+            <Grid ColumnSpacing="10" RowSpacing="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Row="0"
+                           Grid.Column="0"
+                           VerticalAlignment="Center"
+                           Text="All control points wB:" />
+                <incrementingControl:IncrementingTextBox Grid.Row="0"
+                                                         Grid.Column="1"
+                                                         IncrementingStep="{Binding UserInterfaceConstants.MediumIncrementingStep, Source={StaticResource ServiceLocator}}"
+                                                         IncrementingValue="{Binding ContourControlWeight, Mode=TwoWay}"
+                                                         MaximumIncrementingValue="{Binding MaximumContourWeight}"
+                                                         MinimumIncrementingValue="{Binding MinimumContourWeight}" />
+                <Border Grid.Row="0"
+                        Grid.Column="2"
+                        Width="18"
+                        Height="18"
+                        Padding="0"
+                        Background="LightGray"
+                        CornerRadius="8"
+                        ToolTipService.ToolTip="wB below 1 gives arcs of ellipses, wB = 1 gives parabolas (Bezier curves), wB above 1 gives hyperbolas">
+                    <PathIcon Margin="0,-1.3,0,0"
+                              Data="{StaticResource QuestionIcon}"
+                              Foreground="Black">
+                        <PathIcon.RenderTransform>
+                            <ScaleTransform ScaleX="0.8" ScaleY="0.8" />
+                        </PathIcon.RenderTransform>
+                    </PathIcon>
+                </Border>
+
+                <TextBlock Grid.Row="1"
+                           Grid.Column="0"
+                           VerticalAlignment="Center"
+                           Text="Selected point w:" />
+                <incrementingControl:IncrementingTextBox Grid.Row="1"
+                                                         Grid.Column="1"
+                                                         IncrementingStep="{Binding UserInterfaceConstants.MediumIncrementingStep, Source={StaticResource ServiceLocator}}"
+                                                         IncrementingValue="{Binding SelectedContourPointWeight, Mode=TwoWay}"
+                                                         MaximumIncrementingValue="{Binding MaximumContourWeight}"
+                                                         MinimumIncrementingValue="{Binding MinimumContourWeight}" />
+                <Border Grid.Row="1"
+                        Grid.Column="2"
+                        Width="18"
+                        Height="18"
+                        Padding="0"
+                        Background="LightGray"
+                        CornerRadius="8"
+                        ToolTipService.ToolTip="Weight of the point selected on the canvas">
+                    <PathIcon Margin="0,-1.3,0,0"
+                              Data="{StaticResource QuestionIcon}"
+                              Foreground="Black">
+                        <PathIcon.RenderTransform>
+                            <ScaleTransform ScaleX="0.8" ScaleY="0.8" />
+                        </PathIcon.RenderTransform>
+                    </PathIcon>
+                </Border>
+            </Grid>
+            <TextBlock Text="{Binding ContourSelectedPointText}" TextWrapping="Wrap" />
+            <TextBlock Text="{Binding ContourSelectedSegmentText}" TextWrapping="Wrap" />
+
+            <!--  Animation  -->
+            <TextBlock FontWeight="SemiBold" Text="Animation (transition to a smiley)" />
+            <Grid ColumnSpacing="10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Button Grid.Column="0"
+                        HorizontalAlignment="Stretch"
+                        Command="{Binding StartContourAnimationCommand}"
+                        Content="Start"
+                        IsEnabled="{Binding IsContourAnimationRunning, Converter={StaticResource CommunityToolkit.BoolNegationConverter}}" />
+                <Button Grid.Column="1"
+                        HorizontalAlignment="Stretch"
+                        Command="{Binding PauseContourAnimationCommand}"
+                        Content="Pause"
+                        IsEnabled="{Binding IsContourAnimationRunning}" />
+                <Button Grid.Column="2"
+                        HorizontalAlignment="Stretch"
+                        Command="{Binding ResetContourAnimationCommand}"
+                        Content="Reset" />
+            </Grid>
+            <TextBlock Text="{Binding ContourMorphProgressText}" TextWrapping="Wrap" />
+
+            <!--  Euclidean transformations  -->
+            <TextBlock FontWeight="SemiBold" Text="Euclidean transformations" />
+            <Grid ColumnSpacing="10" RowSpacing="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Row="0"
+                           Grid.Column="0"
+                           VerticalAlignment="Center"
+                           Text="Shift (dx; dy), px:" />
+                <incrementingControl:IncrementingTextBox Grid.Row="0"
+                                                         Grid.Column="1"
+                                                         InCompactMode="True"
+                                                         IncrementingStep="{Binding UserInterfaceConstants.LargeIncrementingStep, Source={StaticResource ServiceLocator}}"
+                                                         IncrementingValue="{Binding ContourTranslationX, Mode=TwoWay}"
+                                                         MaximumIncrementingValue="{Binding SettingsViewModel.CanvasWidth, Source={StaticResource ServiceLocator}}"
+                                                         MinimumIncrementingValue="{Binding SettingsViewModel.CanvasWidth, Source={StaticResource ServiceLocator}, Converter={StaticResource InvertFloatConverter}}" />
+                <TextBlock Grid.Row="0"
+                           Grid.Column="2"
+                           VerticalAlignment="Center"
+                           Text=";" />
+                <incrementingControl:IncrementingTextBox Grid.Row="0"
+                                                         Grid.Column="3"
+                                                         InCompactMode="True"
+                                                         IncrementingStep="{Binding UserInterfaceConstants.LargeIncrementingStep, Source={StaticResource ServiceLocator}}"
+                                                         IncrementingValue="{Binding ContourTranslationY, Mode=TwoWay}"
+                                                         MaximumIncrementingValue="{Binding SettingsViewModel.CanvasHeight, Source={StaticResource ServiceLocator}}"
+                                                         MinimumIncrementingValue="{Binding SettingsViewModel.CanvasHeight, Source={StaticResource ServiceLocator}, Converter={StaticResource InvertFloatConverter}}" />
+                <Border Grid.Row="0"
+                        Grid.Column="4"
+                        Width="18"
+                        Height="18"
+                        Padding="0"
+                        Background="LightGray"
+                        CornerRadius="8"
+                        ToolTipService.ToolTip="Translation vector in pixels (y points down)">
+                    <PathIcon Margin="0,-1.3,0,0"
+                              Data="{StaticResource QuestionIcon}"
+                              Foreground="Black">
+                        <PathIcon.RenderTransform>
+                            <ScaleTransform ScaleX="0.8" ScaleY="0.8" />
+                        </PathIcon.RenderTransform>
+                    </PathIcon>
+                </Border>
+
+                <TextBlock Grid.Row="1"
+                           Grid.Column="0"
+                           VerticalAlignment="Center"
+                           Text="Rotation point, px:" />
+                <incrementingControl:IncrementingTextBox Grid.Row="1"
+                                                         Grid.Column="1"
+                                                         InCompactMode="True"
+                                                         IncrementingStep="{Binding UserInterfaceConstants.LargeIncrementingStep, Source={StaticResource ServiceLocator}}"
+                                                         IncrementingValue="{Binding ContourRotationPointX, Mode=TwoWay}"
+                                                         MaximumIncrementingValue="{Binding SettingsViewModel.CanvasWidth, Source={StaticResource ServiceLocator}}"
+                                                         MinimumIncrementingValue="{Binding SettingsViewModel.CanvasWidth, Source={StaticResource ServiceLocator}, Converter={StaticResource InvertFloatConverter}}" />
+                <TextBlock Grid.Row="1"
+                           Grid.Column="2"
+                           VerticalAlignment="Center"
+                           Text=";" />
+                <incrementingControl:IncrementingTextBox Grid.Row="1"
+                                                         Grid.Column="3"
+                                                         InCompactMode="True"
+                                                         IncrementingStep="{Binding UserInterfaceConstants.LargeIncrementingStep, Source={StaticResource ServiceLocator}}"
+                                                         IncrementingValue="{Binding ContourRotationPointY, Mode=TwoWay}"
+                                                         MaximumIncrementingValue="{Binding SettingsViewModel.CanvasHeight, Source={StaticResource ServiceLocator}}"
+                                                         MinimumIncrementingValue="{Binding SettingsViewModel.CanvasHeight, Source={StaticResource ServiceLocator}, Converter={StaticResource InvertFloatConverter}}" />
+                <Border Grid.Row="1"
+                        Grid.Column="4"
+                        Width="18"
+                        Height="18"
+                        Padding="0"
+                        Background="LightGray"
+                        CornerRadius="8"
+                        ToolTipService.ToolTip="Rotation point relative to top left canvas corner. You can also drag the green cross on the canvas">
+                    <PathIcon Margin="0,-1.3,0,0"
+                              Data="{StaticResource QuestionIcon}"
+                              Foreground="Black">
+                        <PathIcon.RenderTransform>
+                            <ScaleTransform ScaleX="0.8" ScaleY="0.8" />
+                        </PathIcon.RenderTransform>
+                    </PathIcon>
+                </Border>
+            </Grid>
+            <CheckBox Content="Show rotation point" IsChecked="{Binding ContourRotationPointVisible, Mode=TwoWay}" />
+            <Slider Maximum="360"
+                    Minimum="-360"
+                    StepFrequency="{Binding UserInterfaceConstants.SlidersStepFrequency, Source={StaticResource ServiceLocator}}"
+                    Value="{Binding ContourRotationAngle, Mode=TwoWay}">
+                <Slider.Header>
+                    <TextBlock>
+                        <Run Text="Rotation angle (counterclockwise), degrees:" />
+                        <Run Text="{Binding ContourRotationAngle}" />
+                    </TextBlock>
+                </Slider.Header>
+            </Slider>
+            <Button HorizontalAlignment="Stretch"
+                    Command="{Binding ResetContourTransformsCommand}"
+                    Content="Reset transformations" />
+
+
+            <Button HorizontalAlignment="Stretch"
+                    Command="{Binding ResetFigureCommand}"
+                    Content="Reset contour" />
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

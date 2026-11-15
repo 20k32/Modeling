@@ -39,6 +39,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
                 case UserPointDrawingAction.FigurePointSelection: SelectSegmentOnFigure(point); break;
                 case UserPointDrawingAction.EntireFigureSelection: await SelectEntireFigureAsync(point); break;
                 case UserPointDrawingAction.CurveRelatedPointSelection: await HandleCurvePointerMovedAsync(point); break;
+                case UserPointDrawingAction.ContourPointSelection: await HandleContourPointerMovedAsync(point); break;
                 default: break;
             }
         }
@@ -52,6 +53,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
                 case UserPointDrawingAction.FigurePointSelection: EndSegmentSelection(); break;
                 case UserPointDrawingAction.EntireFigureSelection: StartFigureSelection(point); break;
                 case UserPointDrawingAction.CurveRelatedPointSelection: await HandleCurvePointerPressedAsync(point); break;
+                case UserPointDrawingAction.ContourPointSelection: await HandleContourPointerPressedAsync(point); break;
                 default: break;
             }
         }
@@ -64,6 +66,7 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
                 case UserPointDrawingAction.AxisPointSelection: EndUserPointRedrawing(point); break;
                 case UserPointDrawingAction.EntireFigureSelection: EndFigureSelection(point); break;
                 case UserPointDrawingAction.CurveRelatedPointSelection: HandleCurvePointerReleased(); break;
+                case UserPointDrawingAction.ContourPointSelection: HandleContourPointerReleased(); break;
                 default: break;
             }
         }
@@ -122,7 +125,8 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
 
             SetRotationPointControlVisibleSilent(false);
 
-            await ResetApiLayerAsync(resetDrawingAction);
+            // the Lab 2 curve and the Lab 3 contour handle the canvas pointer events themselves, their action must survive the reset
+            await ResetApiLayerAsync(resetDrawingAction && !_isCurveInitialized && !_isContourInitialized);
         }
 
         [RelayCommand]
@@ -159,6 +163,30 @@ namespace Modeling.ViewModels.Pages.MainPage.Drawing
         async Task ResetCurveTransformsAsync()
         {
             await ResetCurveTransformsCoreAsync();
+        }
+
+        [RelayCommand]
+        async Task StartContourAnimationAsync()
+        {
+            await StartContourAnimationCoreAsync();
+        }
+
+        [RelayCommand]
+        async Task PauseContourAnimationAsync()
+        {
+            await StopContourAnimationAsync();
+        }
+
+        [RelayCommand]
+        async Task ResetContourAnimationAsync()
+        {
+            await ResetContourAnimationCoreAsync();
+        }
+
+        [RelayCommand]
+        async Task ResetContourTransformsAsync()
+        {
+            await ResetContourTransformsCoreAsync();
         }
     }
 }

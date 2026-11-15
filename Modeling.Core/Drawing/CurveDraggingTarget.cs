@@ -1,4 +1,4 @@
-namespace Modeling.Core.Drawing
+﻿namespace Modeling.Core.Drawing
 {
     public enum CurveDraggingTarget
     {
@@ -6,5 +6,6 @@ namespace Modeling.Core.Drawing
         Figure,
         RotationPoint,
         CurvePoint,
+        ReferencePoint,
     }
 }

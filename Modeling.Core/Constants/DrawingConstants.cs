@@ -72,6 +72,10 @@ namespace Modeling.Core.Constants
         public static readonly Color CURVE_INFLECTION_POINT_COLOR = Colors.DodgerBlue;
         public static readonly Color CURVE_ROTATION_POINT_COLOR = Colors.SeaGreen;
 
+        public static readonly Color CONTOUR_POLYGON_COLOR = Colors.SteelBlue;
+        public static readonly Color CONTOUR_ANCHOR_POINT_COLOR = Colors.DodgerBlue;
+        public static readonly Color CONTOUR_CONTROL_POINT_COLOR = Colors.DarkOrange;
+
         public const float X_Y_AXIS_THICKNESS = 3;
         public const float X_Y_AXIS_TICKS_LENGTH_PIXELS = 15;
         public const float X_Y_AXIST_TICKS_THICKNESS = 5;
